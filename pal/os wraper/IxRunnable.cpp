@@ -1,53 +1,57 @@
+#include <iostream>
+using namespace std;
+
 #include "IxRunnable.h"
-#include "Utils.h"
 
 //--------------------------------class ----------------------------------------
-IxRunnable::IxRunnable( portCHAR * pcName ):   
-  taskdID( 0 )
+
+IxRunnable::IxRunnable( char *pcName ):   
+  thread( 0 )
 {
-   mod_memset( pcTaskName, 0, sizeof(pcTaskName), sizeof(pcTaskName) );  
-   mod_strncpy( pcTaskName, (char*)pcName, sizeof(pcTaskName) );  
+   strcpy_s( pcTaskName, configMAX_TASK_NAME_LEN, pcName );  
 } 
 
 IxRunnable::~IxRunnable()
 {
-
+   //task_delete( )
 }
     
 void IxRunnable::task_suspend( )
 { 
-   vTaskSuspend( taskdID );
+
 }      
 
 void IxRunnable::task_delete( )
 {
-   vTaskDelete( taskdID );
+   //pthread_cancel(thread);
 }   
-
-void IxRunnable::task_sleep( portTickType xTicksToDelay )
-{
-   vTaskDelay( xTicksToDelay );  
-}
 
 void IxRunnable::task_run( )
 {
-   create_thread(); 
+   //create_thread(); 
 }
 
 unsigned long IxRunnable::get_sys_tick()
 {
-  return  xTaskGetTickCount( );
+   return  0; 
 }
   
 portBASE_TYPE IxRunnable::create_thread( )
 {
-   signed portBASE_TYPE task_result = 0;
+   int task_result = 0;
 
-   task_result = xTaskCreate( thRunnableFunction, (const signed portCHAR *)pcTaskName,  configMINIMAL_STACK_SIZE, this, tskIDLE_PRIORITY + 1, &taskdID );
-
+   //result = pthread_create(&thread, NULL, thRunnableFunction, this);
+   if (result != 0) 
+   {
+      perror("thread error !");
+   }
+   else
+   {
+      //pthread_setname_np(thread, pcTaskName);
+   }
+	
    return task_result;
 }
-
 
 void IxRunnable::thRunnableFunction( void *pvParameters )
 {   
@@ -56,9 +60,14 @@ void IxRunnable::thRunnableFunction( void *pvParameters )
 
 void IxRunnable::RUN()
 {
-  for( ;; )
+  for( int i=0; i<5; i++;)
   {   
     TaskProcessor();
-    vTaskDelay( 5 );  
+    sleep( 100 );  
   }  
 } 
+
+void IxRunnable::TaskProcessor()
+{
+	printf("Thread %s works\n", pcTaskName);
+}

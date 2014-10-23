@@ -23,10 +23,10 @@ TOPDIR=../../
 
 include $(TOPDIR)/config.mk
 
-LIB	= libfat.a
+LIB	= libwrapper.a
 
 AOBJS	=
-COBJS	= fat.o file.o
+COBJS	= IxRunnable.o
 
 OBJS	= $(AOBJS) $(COBJS)
 

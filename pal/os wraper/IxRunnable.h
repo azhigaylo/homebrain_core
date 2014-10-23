@@ -2,9 +2,13 @@
 #define _IX_RUNENABLED
 
 //------------------------------------------------------------------------------
-#include "FreeRTOS.h"
-#include "task.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <pthread.h>
 //------------------------------------------------------------------------------
+#define configMAX_TASK_NAME_LEN 15
+
 
 class IxRunnable
 { 
@@ -15,21 +19,19 @@ class IxRunnable
     void task_suspend ( );     
     void task_delete  ( );   
     void task_run     ( );
-    void task_sleep   ( portTickType xTicksToDelay );
-    
+
     unsigned long get_sys_tick();
     
   protected:  
 
-    // function's   
-    IxRunnable( portCHAR * pcName );   
+    // function's
+    IxRunnable( const char * pcName );
 
-    virtual void TaskProcessor() = 0;
+    virtual void TaskProcessor();
         
-    portCHAR  pcTaskName[ configMAX_TASK_NAME_LEN ];    
+    const char *pcTaskName[ configMAX_TASK_NAME_LEN ];    
 
-    xTaskHandle taskdID;        
-
+	pthread_t *thread;
         
   private:       
     
