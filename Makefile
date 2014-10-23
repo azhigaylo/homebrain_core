@@ -1,9 +1,11 @@
-CC=gcc
+CC=g++
 CFLAGS=-c
 LDFLAGS=
 SOURCES=test.c
 OBJECTS=$(SOURCES:.c=.o)
-EXECUTABLE=test_app
+EXECUTABLE=brain_app
+
+LIBS += /pal/libwrapper.a
 
 all: $(EXECUTABLE)
     
