@@ -1,19 +1,11 @@
-CC=g++
-CFLAGS=-c
-LDFLAGS=
-SOURCES=test.c
-OBJECTS=$(SOURCES:.c=.o)
-EXECUTABLE=brain_app
+include defaults.mk
 
-LIBS += /pal/libwrapper.a
+TARGET_NAME 	:= HomeBrainVx01
 
-all: $(EXECUTABLE)
-    
-$(EXECUTABLE): $(OBJECTS) 
-	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
+#ROOT := src
+SOURCE_SUBDIRS	:= main pal/os_wraper
 
-.c.o:
-	$(CC) $(CFLAGS) $< -o $@
-	
-clean:
-	rm -rf *.o
+#COMPILER_PREFIX := arm-none-eabi-
+LINK = $(CXX)
+
+include rules.mk
