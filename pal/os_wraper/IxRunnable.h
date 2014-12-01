@@ -2,13 +2,13 @@
 #define _IX_RUNENABLED
 
 //------------------------------------------------------------------------------
-#include <stdlib.h>
-#include <stdio.h>
-#include <errno.h>
 #include <pthread.h>
+#include <time.h>
 //------------------------------------------------------------------------------
-#define configMAX_TASK_NAME_LEN 15
-
+#include "ptypes.h"
+//------------------------------------------------------------------------------
+#define configMAX_TASK_NAME_LEN 50
+//------------------------------------------------------------------------------
 
 class IxRunnable
 { 
@@ -16,33 +16,33 @@ class IxRunnable
 
     ~IxRunnable();
 
-    void task_suspend ( );     
-    void task_delete  ( );   
-    void task_run     ( );
-
-    unsigned long get_sys_tick();
+    void task_delete();   
+    void task_run();
+	
+    // get time in s from thread start
+    uint64_t get_time();
     
   protected:  
 
-    // function's
-    IxRunnable( const char * pcName );
-
     virtual void TaskProcessor();
         
-    const char *pcTaskName[ configMAX_TASK_NAME_LEN ];    
+    char pcTaskName[configMAX_TASK_NAME_LEN];    
 
-	pthread_t *thread;
+	pthread_t thread;
+	time_t    start_time;
         
   private:       
+
+    IxRunnable( const char *pcName );
+	
+    void run(); 
     
-    void RUN(); 
+    static void * thRunnableFunction( void *args );
     
-    static void thRunnableFunction( void *pvParameters );
+    int32_t create_thread( );  
     
-    portBASE_TYPE create_thread( );  
-    
-    IxRunnable( const IxRunnable & );
-    IxRunnable & operator=( const IxRunnable & );    
+    IxRunnable( const IxRunnable & ){}
+    IxRunnable & operator=( const IxRunnable & ){}
     
 }; typedef IxRunnable *pIxRunnable;
 
