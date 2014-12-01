@@ -1,97 +1,77 @@
+//------------------------------------------------------------------------------
+#include <time.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <signal.h>
+#include <errno.h>
+#include <string.h>
+//------------------------------------------------------------------------------
+#include "slog.h"
+#include "utils.h"
 #include "CxQueue.h"
-
+//------------------------------------------------------------------------------
+#define MSG_PRIO 1
 //------------------------------------------------------------------------------
 
-CxQueue::CxQueue( unsigned long queueLength, unsigned long itemSize )
+
+CxQueue::CxQueue( const char *name, int32_t queueLength, int32_t itemSize ):
+    xQueue( -1 )
 {
-   xQueue = NULL;
-   Create( queueLength, itemSize );
+   strncpy_m( queueName, const_cast<char*>(name), configMAX_QUEUE_NAME_LEN );
+
+   queueAttr.mq_flags   = O_NONBLOCK;   // Flags: 0 or O_NONBLOCK
+   queueAttr.mq_maxmsg  = queueLength;  // Max. # of messages on queue
+   queueAttr.mq_msgsize = itemSize;     // Max. message size (bytes)
+   queueAttr.mq_curmsgs = 0;            // # of messages currently in queue
+
+   xQueue = mq_open(name, O_RDWR|O_CREAT|O_NONBLOCK, S_IRUSR|S_IWUSR|S_IXUSR, &queueAttr);
+
+   if( xQueue == -1 )
+   {
+      printError("CxQueue/%s: queue=%s creation error=%d(%s)!!!", __FUNCTION__, queueName, errno, strerror(errno));
+   }
 }
 
 CxQueue::~CxQueue()
 {
-   Delete( );
+   if (xQueue != -1)
+   {
+      mq_close(xQueue);
+	  mq_unlink(queueName);
+   }
 }
 
 //------------------------------------------------------------------------------
 
-bool CxQueue::Send( void *pItemToQueue )
+bool CxQueue::send( const void *pItemToQueue, int32_t msg_size )
 {
-  bool result = false;
-  if( xQueue != NULL ) 
-  {  
-    result = static_cast<bool>(xQueueSend( xQueue, pItemToQueue, ( portTickType ) 0 ));
+   bool result = false;
+   if( xQueue != -1 ) 
+   {  
+     result = (0 == mq_send( xQueue, reinterpret_cast<const char*>(pItemToQueue), msg_size, MSG_PRIO));
+   }  
+   return result;  
+}
+
+bool CxQueue::timedSend( const void *pItemToQueue, int32_t msg_size, uint64_t time )   
+{
+   bool result = false;
+   const timespec abs_timeout = {(time/1000000000), (time % 1000000000)};
+
+   if( xQueue != -1 ) 
+   {  
+     result = (0 == mq_timedsend( xQueue, reinterpret_cast<const char*>(pItemToQueue), msg_size, MSG_PRIO, &abs_timeout));
+   }  
+   return result;  
+}
+
+int32_t CxQueue::receive( void *pItemFromQueue, int32_t msg_size )
+{
+  int32_t bytes_read = -1;
+  if( xQueue != -1 ) 
+  {
+      bytes_read = mq_receive(xQueue, reinterpret_cast<char*>(pItemFromQueue), msg_size, NULL);
   }  
-  return result;  
-}
-
-bool CxQueue::SendToBack( void *pItemToQueue )
-{
-  bool result = false;
-  if( xQueue != NULL ) 
-  {  
-    result = static_cast<bool>(xQueueSendToBack( xQueue, pItemToQueue, ( portTickType ) 0 ));
-  }  
-  return result;  
-}
-
-bool CxQueue::SendToFront( void *pItemToQueue )
-{
-  bool result = false;
-  if( xQueue != NULL ) 
-  {  
-    result = static_cast<bool>(xQueueSendToFront( xQueue, pItemToQueue, ( portTickType ) 0 ));
-  }  
-  return result;  
-}
-
-bool CxQueue::Receive( void *pItemFromQueue )
-{
-  bool result = false;
-  if( xQueue != NULL ) 
-  {  
-    result = static_cast<bool>(xQueueReceive( xQueue, pItemFromQueue, ( portTickType ) 0 ));
-  }  
-  return result;  
-}
-
-bool CxQueue::Peek( void *pItemFromQueue )
-{
-  bool result = false;
-  if( xQueue != NULL ) 
-  {  
-    result = static_cast<bool>(xQueuePeek( xQueue, pItemFromQueue, ( portTickType ) 0 ));
-  }  
-  return result;  
-}
-
-bool CxQueue::AddToRegistry( signed char *Name )
-{
-  bool result = false;
-  if( xQueue != NULL ) 
-  {  
-    vQueueAddToRegistry( xQueue, Name );
-    result = true;
-  }  
-  return result;    
-}
-
-unsigned long CxQueue::Occupancy( )
-{
-  unsigned long result = 0;
-  if( xQueue != NULL ) 
-  {  
-    result = static_cast<unsigned long>(uxQueueMessagesWaiting( xQueue ));
-  }  
-  return result;    
-}
-
-void CxQueue::Create( unsigned long queueLength, unsigned long itemSize )
-{
-   xQueue = xQueueCreate( queueLength, itemSize );
-}
-
-void CxQueue::Delete( )
-{
-  vQueueDelete( xQueue );
+  return bytes_read;  
 }
