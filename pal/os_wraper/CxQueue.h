@@ -1,11 +1,13 @@
 #ifndef _CX_QUEUE
 #define _CX_QUEUE
 
-//----------------------only wraper for FREERTOS xQueue ------------------------
-
-#include "FreeRTOS.h"
-#include "queue.h"
-
+//------------------------------------------------------------------------------
+#include "ptypes.h"
+#include <fcntl.h>    // Defines O_* constants
+#include <sys/stat.h> // Defines mode constants
+#include <mqueue.h>
+//------------------------------------------------------------------------------
+#define configMAX_QUEUE_NAME_LEN 50
 //------------------------------------------------------------------------------
 
 class CxQueue
@@ -13,28 +15,21 @@ class CxQueue
   public:       
 
     // function's   
-    CxQueue( unsigned long queueLength, unsigned long itemSize );      
+    CxQueue( const char *name, int32_t queueLength, int32_t itemSize );      
     ~CxQueue();
 
-    bool Send           ( void *pItemToQueue   );   
-    bool SendToBack     ( void *pItemToQueue   );
-    bool SendToFront    ( void *pItemToQueue   );
-    bool Receive        ( void *pItemFromQueue );
-    bool Peek           ( void *pItemFromQueue );
-    bool AddToRegistry  ( signed char *Name    );
-    unsigned long Occupancy ( );
+    bool send       (const void *pItemToQueue, int32_t msg_size);   
+    bool timedSend  (const void *pItemToQueue, int32_t msg_size, uint64_t time);   
+    int32_t receive (void *pItemFromQueue, int32_t msg_size);
 
-  protected:  
-
-    void Create ( unsigned long queueLength, unsigned long itemSize );    
-    void Delete ( );
-    
   private:       
     
-    xQueueHandle xQueue;
+   mqd_t   xQueue;
+   mq_attr queueAttr; 
+   char queueName[configMAX_QUEUE_NAME_LEN];   
     
-   CxQueue(const CxQueue& rhs);
-   CxQueue& operator=(const CxQueue& rhs);  
+   CxQueue(const CxQueue& rhs){}
+   CxQueue& operator=(const CxQueue& rhs){}
    
  }; typedef CxQueue *pCxQueue;
 
