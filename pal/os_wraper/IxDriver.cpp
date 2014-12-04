@@ -1,52 +1,45 @@
 //------------------------------------------------------------------------------
-
-#include "CxDriverManager.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <iostream>
+//------------------------------------------------------------------------------
+#include "slog.h"
+#include "utils.h"
 #include "IxDriver.h"
-#include "Utils.h"
-
 //------------------------------------------------------------------------------
 
-IxDriver::IxDriver( portCHAR * pcName ):   
-   CxSystemQueue ( ) 
-  ,DrvID         ( CRC16_T(pcName, mod_strlen(pcName, configMAX_TASK_NAME_LEN)) )  
+IxDriver::IxDriver( const char *pcName ):
+   DrvID         ( CRC16_T(const_cast<char*>(pcName), strlen_m(const_cast<char*>(pcName), configMAX_DRIVER_NAME_LEN)) )  
   ,ConsumerID    ( 0 )  
-  ,taskdID       ( 0 )    
+  ,taskdID       ( 0 )  
+  ,startTime     ( time(NULL) )  
+  ,inQueue       ( strcat(strncpy_m( pcDrvName, const_cast<char*>(pcName), sizeof(pcDrvName) ), "_in"), 10, sizeof(TCommand) )
+  ,outQueue      ( strcat(strncpy_m( pcDrvName, const_cast<char*>(pcName), sizeof(pcDrvName) ), "_out"), 10, sizeof(TCommand) )
   ,initAttempt   ( 0 )  
 {
-   mod_memset( pcDrvName, 0, sizeof(pcDrvName), sizeof(pcDrvName) );  
-   mod_strncpy( pcDrvName, (char*)pcName, sizeof(pcDrvName) );
-   
-   // registration in drv manager   
-   registration();
+   strncpy_m( pcDrvName, const_cast<char*>(pcName), sizeof(pcDrvName) );  
 } 
 
 //------------------------------------------------------------------------------
 
 IxDriver::~IxDriver()
 {
-
+   task_delete();
 }
-
-//------------------------------------------------------------------------------
-
-void IxDriver::task_suspend( )
-{ 
-   vTaskSuspend( taskdID );
-}      
 
 //------------------------------------------------------------------------------
 
 void IxDriver::task_delete( )
-{
-   vTaskDelete( taskdID );
+{  
+   if (taskdID != 0)
+   {
+      pthread_cancel(taskdID);
+   
+      printDebug("IxDriver/%s: driver=%s deleted", __FUNCTION__, pcDrvName);
+   }
 }   
-
-//------------------------------------------------------------------------------
-
-void IxDriver::task_sleep( portTickType xTicksToDelay )
-{
-   vTaskDelay( xTicksToDelay );  
-}
 
 //------------------------------------------------------------------------------
 
@@ -54,87 +47,107 @@ void IxDriver::task_run( )
 {
    create_thread(); 
 }
-
+  
 //------------------------------------------------------------------------------
 
-portBASE_TYPE IxDriver::create_thread( )
+int32_t IxDriver::create_thread( )
 {
-   signed portBASE_TYPE task_result = 0;
+   int32_t task_result = 0;
 
-   task_result = xTaskCreate( thRunnableFunction, (const signed portCHAR *)pcDrvName,  configMINIMAL_STACK_SIZE, this, tskIDLE_PRIORITY + 1, &taskdID );
+   task_result = pthread_create(&taskdID, NULL, thRunnableFunction, this);
+
+   if (task_result != 0) 
+   {
+      printError("IxDriver/%s: driver=%s error!!!", __FUNCTION__, pcDrvName);
+   }
+   else
+   {
+      pthread_setname_np(taskdID, pcDrvName);
+   }
 
    return task_result;
 }
 
 //------------------------------------------------------------------------------
 
-unsigned long IxDriver::get_sys_tick()
+uint64_t IxDriver::get_time()
 {
-  return  xTaskGetTickCount( );
+   return difftime(time(NULL), startTime); 
 }
   
 //------------------------------------------------------------------------------
 
-void IxDriver::thRunnableFunction( void *pvParameters )
+void * IxDriver::thRunnableFunction( void *args )
 {   
-  (reinterpret_cast<IxDriver*>(pvParameters))->RUN();
+   (reinterpret_cast<IxDriver*>(args))->run();
 }
 
-void IxDriver::RUN()
+void IxDriver::run()
 {
-  for( ;; )
+  while(true)
   {   
     DrvProcessor();
-    vTaskDelay( 5 );      
   }  
 } 
 
 //------------------------------------------------------------------------------
 
-void IxDriver::registration()
-{
-  CxDriverManager &driverManager = CxDriverManager::getInstance();  
-  driverManager.driverRegistration ( DrvID, this );
-}
-
 void IxDriver::DrvProcessor()
 {
-  TCommand Command = { 0, 0, 0, 0, NULL };
+   TCommand Command = { 0, 0, 0, 0, NULL };
 
-  if( IsCommand() > 0 )
-  {
-    if( true == PeekCommand( &Command ) )
-    {
-      if( Command.ConsumerID == DrvID )
+   if (-1 != inQueue.receive(reinterpret_cast<void*>(&Command), sizeof(TCommand)))
+   {
+      if (Command.ConsumerID == DrvID)
       {
-        if( true == ReceiveCommand ( &Command ) )      
-        {
-          // command is mine
-          if( (Command.ComType == identification_request) && (Command.ComID == DIReq) )
-          {
-             // remember current consumer
-             ConsumerID = Command.SenderID;
-             // set up resonce for top level driver
-             Command.ConsumerID = Command.SenderID;  
-             Command.SenderID   = DrvID;               
-             Command.ComType    = identification_response;
-             Command.ComID      = DIRes;
-             SendCommand( &Command );
-            
-             initAttempt++;
-          }
-          else
-          {
-             CommandProcessor( Command );
-          }  
-        }        
-      }  
-    }
-  }
-  
-  // if driver was initialised - call thread processor
-  if( initAttempt > 0 )
-  {  
-    ThreadProcessor( ); 
-  }
+         // command is mine
+         if ((Command.ComType == identification_request) && (Command.ComID == DIReq))
+         {
+            printDebug("IxDriver/%s: ConsumerID=%d, SenderID=%d,ComType=%d, ComID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID, Command.ComType, Command.ComID);
+
+            // remember current consumer
+            ConsumerID = Command.SenderID;
+
+            // set up resonce for top level driver
+            Command.ConsumerID = Command.SenderID;  
+            Command.SenderID   = DrvID;               
+            Command.ComType    = identification_response;
+            Command.ComID      = DIRes;
+
+            outQueue.send( reinterpret_cast<const void*>(&Command), sizeof(TCommand) );   
+
+            initAttempt++;
+         }
+         else
+         {
+            CommandProcessor( Command );
+         }  
+      }        
+   }  
+
+   // if driver was initialised - call thread processor
+   if (initAttempt > 0)
+   {  
+      ThreadProcessor( ); 
+   }
 }
+
+/*
+uint16_t counter_item = 0;
+
+void IxDriver::ThreadProcessor( )
+{
+   counter_item++;
+   
+   TCommand Command = { 0, 0, 0, 0, NULL };
+   // set up resonce for top level driver
+   Command.ConsumerID = 10;  
+   Command.SenderID   = 11;               
+   Command.ComType    = 12;
+   Command.ComID      = counter_item;
+
+   outQueue.send(reinterpret_cast<const void*>(&Command), sizeof(TCommand)); 
+
+   sleep_s(5);
+}
+*/
