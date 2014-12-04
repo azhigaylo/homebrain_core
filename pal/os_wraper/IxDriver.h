@@ -2,56 +2,79 @@
 #define _IX_DRIVER
 
 //------------------------------------------------------------------------------
-#include "FreeRTOS.h"
-#include "task.h"
-#include "CxSystemQueue.h"
+#include <pthread.h>
+#include <time.h>
+//------------------------------------------------------------------------------
+#include "ptypes.h"
+#include "CxQueue.h"
+//------------------------------------------------------------------------------
+#define configMAX_DRIVER_NAME_LEN 50
+//------------------------------------------------------------------------------
+// command type
+#define identification_request  1
+#define identification_response 2
+#define request                 3
+#define response                4
+
+// common command ID
+#define DIReq                   1
+#define DIRes                   2
+//------------------------------------------------------------------------------
+struct TCommand
+{
+  uint16_t SenderID;  
+  uint16_t ConsumerID;  
+  uint8_t  ComType;
+  uint8_t  ComID;
+  void *Container;
+};
 //------------------------------------------------------------------------------
 
 // driver idettification request format
 
-class IxDriver :  public CxSystemQueue
+class IxDriver
 { 
   public:       
 
     ~IxDriver();
-
-    void task_suspend ( );     
-    void task_delete  ( );   
-    void task_run     ( );
-    void task_sleep   ( portTickType xTicksToDelay );
-    
+	
+    void task_delete();   
+    void task_run();
+	    
   protected:  
 
-    unsigned long get_sys_tick();
-      
-    // function's   
-    IxDriver( portCHAR * pcName );   
+    // get time in s from thread start
+    uint64_t get_time();
     
     virtual void CommandProcessor( TCommand &Command ) = 0;
     virtual void ThreadProcessor ( ) = 0;
     
-    unsigned short DrvID;                                                       // this is CRC of drivers name
-    unsigned short ConsumerID;                                                  // consumer ID which is connected currently to this driver.    
+    uint16_t DrvID;                       // this is CRC of drivers name
+    uint16_t ConsumerID;                  // consumer ID which is connected currently to this driver.    
          
   private:  
-    
-    void registration();
-    
+
+    // we hide it because everybody should inherit it !  
+    IxDriver( const char *pcName );   
+
     void DrvProcessor();
     
-    void RUN(); 
-    static void thRunnableFunction( void *pvParameters );
+    void run(); 
+    static void * thRunnableFunction( void *args );
     
-    portBASE_TYPE create_thread( );  
+    int32_t create_thread( ); 
         
-    portCHAR  pcDrvName[ configMAX_TASK_NAME_LEN ];    
-    xTaskHandle taskdID;    
-    
+    pthread_t taskdID;
+	time_t    startTime;
+	CxQueue   inQueue;
+	CxQueue   outQueue;
+
     IxDriver( const IxDriver & );
     IxDriver & operator=( const IxDriver & );    
 
-    unsigned short initAttempt;    
-                 
+    uint16_t  initAttempt;    
+    char      pcDrvName[configMAX_DRIVER_NAME_LEN];     
+
  }; typedef IxDriver *pIxDriver;
 
 //------------------------------------------------------------------------------
