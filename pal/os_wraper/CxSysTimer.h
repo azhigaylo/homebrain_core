@@ -5,8 +5,6 @@
 #include <signal.h>
 #include <time.h>
 
-#include "CxQueue.h"
-
 //------------------------------------------------------------------------------
 
 #define configMAX_TIMER_NAME_LEN 50
