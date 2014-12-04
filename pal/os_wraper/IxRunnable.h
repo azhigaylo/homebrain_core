@@ -18,12 +18,12 @@ class IxRunnable
 
     void task_delete();   
     void task_run();
-	
-    // get time in s from thread start
-    uint64_t get_time();
-    
+	    
   protected:  
-
+    
+	// get time in s from thread start
+    uint64_t get_time();
+	
     virtual void TaskProcessor();
         
     char pcTaskName[configMAX_TASK_NAME_LEN];    
@@ -32,7 +32,8 @@ class IxRunnable
 	time_t    start_time;
         
   private:       
-
+  
+    // we hide it because everybody should inherit it !   
     IxRunnable( const char *pcName );
 	
     void run(); 
