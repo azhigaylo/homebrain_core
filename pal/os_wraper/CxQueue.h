@@ -15,7 +15,7 @@ class CxQueue
   public:
 
     // function's
-    CxQueue ( const char *name, int32_t queueLength, int32_t itemSize );
+    CxQueue ( const char *name, int32_t queueLength, int32_t itemSize, bool blocked );
     ~CxQueue();
 
     bool send       (const void *pItemToQueue, int32_t msg_size);

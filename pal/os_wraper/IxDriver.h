@@ -25,8 +25,8 @@ struct TCommand
 {
   uint16_t SenderID;  
   uint16_t ConsumerID;  
-  uint8_t  ComType;
-  uint8_t  ComID;
+  uint16_t  ComType;
+  uint16_t  ComID;
   void *Container;
 };
 //------------------------------------------------------------------------------
@@ -38,21 +38,22 @@ class IxDriver
   public:
 
     ~IxDriver();
+    // we hide it because everybody should inherit it !  
+    IxDriver( const char *pcName );	
 
-    void task_delete(); 
     void task_run();
-	
-  protected:  
 
     // get time in s from thread start
     uint64_t get_time();
 
-    virtual void CommandProcessor( TCommand &Command ) = 0;
-    virtual void ThreadProcessor ( ) = 0;
+  protected:  
+
+    virtual void CommandProcessor( TCommand &Command ){} // = 0;
+    virtual void ThreadProcessor ( );
 
     // we hide it because everybody should inherit it !  
-    IxDriver( const char *pcName );
-	
+    //IxDriver( const char *pcName );
+
     uint16_t DrvID;                       // this is CRC of drivers name
     uint16_t ConsumerID;                  // consumer ID which is connected currently to this driver.
 
@@ -61,14 +62,23 @@ class IxDriver
     // we hide it because everybody should inherit it !  
     //IxDriver( const char *pcName );
 
-    void DrvProcessor();
-
-    void run();
-    static void * thRunnableFunction( void *args );
-
     int32_t create_thread( );
+    int32_t create_comm_thread( );
 
-    pthread_t taskdID;
+    void task_delete( );
+    void comm_task_delete( );
+
+    void run( );
+    void run_comm( );
+    static void * thRunnableFunction_IxDriver( void *args );
+    static void * thRunnableCommFunction_IxDriver( void *args );
+
+    void DrvProcessor( );
+    void CommProcessor( );
+
+    pthread_t workThreadID;
+    pthread_t commThreadID;
+
     time_t    startTime;
     CxQueue   inQueue;
     CxQueue   outQueue;
@@ -78,6 +88,7 @@ class IxDriver
 
     uint16_t  initAttempt;
     char      pcDrvName[configMAX_DRIVER_NAME_LEN];
+    char      pcCommThreadName[configMAX_DRIVER_NAME_LEN];
 
  }; typedef IxDriver *pIxDriver;
 

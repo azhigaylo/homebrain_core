@@ -15,21 +15,72 @@ CxThreadIO::CxThreadIO(  const char *taskName,  const char *drvName ):
   ,threadIOState ( ST_IO_UNKNOWN )
   ,drvID         ( CRC16_T(const_cast<char*>(drvName), strlen_m(const_cast<char*>(drvName), configMAX_DRIVER_NAME_LEN)) )
   ,threadID      ( CRC16_T(const_cast<char*>(taskName), strlen_m(const_cast<char*>(taskName), configMAX_TASK_NAME_LEN)) )  
-  ,inQueue       ( strcat(strncpy_m( pcDrvName, const_cast<char*>(drvName), sizeof(pcDrvName) ), "_out"), 10, sizeof(TCommand) )
-  ,outQueue      ( strcat(strncpy_m( pcDrvName, const_cast<char*>(drvName), sizeof(pcDrvName) ), "_in"),  10, sizeof(TCommand) )
+  ,commThreadID  ( 0 )
+  ,inQueue       ( strcat(strncpy_m( pcDrvName, const_cast<char*>(drvName), sizeof(pcDrvName) ), "_out"), 10, sizeof(TCommand), true )
+  ,outQueue      ( strcat(strncpy_m( pcDrvName, const_cast<char*>(drvName), sizeof(pcDrvName) ), "_in"),  10, sizeof(TCommand), true )
+  ,initAttempt   ( 0 )
 {
    strncpy_m( pcDrvName, const_cast<char*>(drvName), sizeof(pcDrvName) );
+   strcat(strncpy_m( pcCommThreadName, const_cast<char*>(drvName), sizeof(pcCommThreadName) ), "_com");
 } 
 
 CxThreadIO::~CxThreadIO( )
 {
+   comm_task_delete();
    printDebug("CxThreadIO/%s: OI thread=%s deleted", __FUNCTION__, pcTaskName);
 }
+
+//------------------------------------------------------------------------------
 
 void CxThreadIO::Start()
 { 
   // create thread
-  task_run( );
+  create_comm_thread();
+  
+  task_run( ); 
+}
+
+//------------------------------------------------------------------------------
+
+int32_t CxThreadIO::create_comm_thread( )
+{
+   int32_t task_result = 0;
+
+   task_result = pthread_create(&commThreadID, NULL, thRunnableCommFunction_ThreadIO, this);
+
+   if (task_result != 0)
+   {
+      printError("CxThreadIO/%s: comm thread=%s error!!!", __FUNCTION__, pcCommThreadName);
+   }
+   else
+   {
+      pthread_setname_np(commThreadID, pcCommThreadName);
+   }
+
+   return task_result;
+}
+
+void *CxThreadIO::thRunnableCommFunction_ThreadIO( void *args )
+{   
+   (reinterpret_cast<CxThreadIO*>(args))->run_comm();
+}
+
+void CxThreadIO::run_comm()
+{
+  while(true)
+  {   
+    CheckDrvCommand();
+  }
+} 
+
+void CxThreadIO::comm_task_delete( )
+{  
+   if (commThreadID != 0)
+   {
+      pthread_cancel(commThreadID);
+
+      printDebug("CxThreadIO/%s: thread=%s deleted", __FUNCTION__, pcCommThreadName);
+   }
 }
 
 //------------------------------------------------------------------------------
@@ -51,7 +102,7 @@ void CxThreadIO::TaskProcessor()
       }
       case ST_IO_WAIT_DRV_RESP :
       { 
-        if( true == CheckDrvCommand() )
+        if( initAttempt > 0 )
         {
            threadIOState = ST_IO_NORMAL_WORK;             // put in next state        
         }  
@@ -59,9 +110,8 @@ void CxThreadIO::TaskProcessor()
       }	
       case ST_IO_NORMAL_WORK :
       {
-        CheckDrvCommand();
         ThreadProcessor();
-		sleep_mcs(10);
+        sleep_mcs(10);
         break;
       }
       default : break;
@@ -81,25 +131,20 @@ bool CxThreadIO::CheckDrvCommand()
    bool result = false;
    TCommand Command = { 0, 0, 0, 0, NULL };
 
-   int32_t msg_s = outQueue.occupancy();
-
-   if (msg_s > 0)
+   if (-1 != inQueue.receive(reinterpret_cast<void*>(&Command), sizeof(TCommand)))
    {
-      if (-1 != inQueue.receive(reinterpret_cast<void*>(&Command), sizeof(TCommand)))
+      printDebug("CxThreadIO/%s: ConsumerID=%d, SenderID=%d,ComType=%d, ComID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID, Command.ComType, Command.ComID);
+
+      if( Command.ConsumerID == threadID && Command.SenderID == drvID )
       {
-         printDebug("CxThreadIO/%s: ConsumerID=%d, SenderID=%d,ComType=%d, ComID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID, Command.ComType, Command.ComID);
-			
-         if( Command.ConsumerID == threadID && Command.SenderID == drvID )
+         // command is mine
+         if( (Command.ComType == identification_response) && (Command.ComID == DIRes) )
          {
-            // command is mine
-            if( (Command.ComType == identification_response) && (Command.ComID == DIRes) )
-            {
-               result = true;
-            }
-            else
-            {
-               CommandProcessor( Command );
-            }
+            initAttempt++;
+         }
+         else
+         {
+            CommandProcessor( Command );
          }
       }
    }
@@ -108,16 +153,14 @@ bool CxThreadIO::CheckDrvCommand()
 }
    
 //------------------------------------------------------------------------------
-/*
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
 #include "CxMutex.h"
 uint16_t counter_item = 0;
 
 void CxThreadIO::ThreadProcessor( )
 {
-   CxMutex m( "mux" );
-   
-   m.take();
-   
    counter_item++;
    
    TCommand Command = { 0, 0, 0, 0, NULL };
@@ -131,4 +174,3 @@ void CxThreadIO::ThreadProcessor( )
 
    sleep_s(1);
 }
-*/

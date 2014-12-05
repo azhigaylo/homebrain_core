@@ -6,7 +6,7 @@
 
 CxMutex::CxMutex( const char *name )
 {
-   strncpy_m( &mutexName[1], const_cast<char*>(name), configMAX_MUTEX_NAME_LEN );
+   strncpy_m( mutexName, const_cast<char*>(name), configMAX_MUTEX_NAME_LEN );
 
    pthread_mutexattr_t mutexattr;
    

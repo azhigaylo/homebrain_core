@@ -13,13 +13,15 @@
 IxDriver::IxDriver( const char *pcName ):
    DrvID         ( CRC16_T(const_cast<char*>(pcName), strlen_m(const_cast<char*>(pcName), configMAX_DRIVER_NAME_LEN)) )  
   ,ConsumerID    ( 0 )  
-  ,taskdID       ( 0 )  
+  ,workThreadID  ( 0 )
+  ,commThreadID  ( 0 )
   ,startTime     ( time(NULL) )  
-  ,inQueue       ( strcat(strncpy_m( pcDrvName, const_cast<char*>(pcName), sizeof(pcDrvName) ), "_in"), 10, sizeof(TCommand) )
-  ,outQueue      ( strcat(strncpy_m( pcDrvName, const_cast<char*>(pcName), sizeof(pcDrvName) ), "_out"), 10, sizeof(TCommand) )
+  ,inQueue       ( strcat(strncpy_m( pcDrvName, const_cast<char*>(pcName), sizeof(pcDrvName) ), "_in"), 10, sizeof(TCommand), true )
+  ,outQueue      ( strcat(strncpy_m( pcDrvName, const_cast<char*>(pcName), sizeof(pcDrvName) ), "_out"), 10, sizeof(TCommand), true )
   ,initAttempt   ( 0 )  
 {
    strncpy_m( pcDrvName, const_cast<char*>(pcName), sizeof(pcDrvName) );  
+   strcat(strncpy_m( pcCommThreadName, const_cast<char*>(pcName), sizeof(pcDrvName) ), "_com");
 } 
 
 //------------------------------------------------------------------------------
@@ -27,18 +29,9 @@ IxDriver::IxDriver( const char *pcName ):
 IxDriver::~IxDriver()
 {
    task_delete();
-}
-
-//------------------------------------------------------------------------------
-
-void IxDriver::task_delete( )
-{  
-   if (taskdID != 0)
-   {
-      pthread_cancel(taskdID);
-
-      printDebug("IxDriver/%s: driver=%s deleted", __FUNCTION__, pcDrvName);
-   }
+   comm_task_delete();
+   
+   printDebug("IxDriver/%s: driver=%s deleted", __FUNCTION__, pcDrvName);
 }
 
 //------------------------------------------------------------------------------
@@ -46,28 +39,8 @@ void IxDriver::task_delete( )
 void IxDriver::task_run( )
 {
    create_thread(); 
+   create_comm_thread();
 }
-
-//------------------------------------------------------------------------------
-
-int32_t IxDriver::create_thread( )
-{
-   int32_t task_result = 0;
-
-   task_result = pthread_create(&taskdID, NULL, thRunnableFunction, this);
-
-   if (task_result != 0)
-   {
-      printError("IxDriver/%s: driver=%s error!!!", __FUNCTION__, pcDrvName);
-   }
-   else
-   {
-      pthread_setname_np(taskdID, pcDrvName);
-   }
-
-   return task_result;
-}
-
 //------------------------------------------------------------------------------
 
 uint64_t IxDriver::get_time()
@@ -77,10 +50,65 @@ uint64_t IxDriver::get_time()
 
 //------------------------------------------------------------------------------
 
-void * IxDriver::thRunnableFunction( void *args )
-{   
-   (reinterpret_cast<IxDriver*>(args))->run();
+int32_t IxDriver::create_thread( )
+{
+   int32_t task_result = 0;
+
+   task_result = pthread_create(&workThreadID, NULL, thRunnableFunction_IxDriver, this);
+
+   if (task_result != 0)
+   {
+      printError("IxDriver/%s: driver=%s error!!!", __FUNCTION__, pcDrvName);
+   }
+   else
+   {
+      pthread_setname_np(workThreadID, pcDrvName);
+   }
+
+   return task_result;
 }
+
+int32_t IxDriver::create_comm_thread( )
+{
+   int32_t task_result = 0;
+
+   task_result = pthread_create(&commThreadID, NULL, thRunnableCommFunction_IxDriver, this);
+
+   if (task_result != 0)
+   {
+      printError("IxDriver/%s: comm thread =%s error!!!", __FUNCTION__, pcCommThreadName);
+   }
+   else
+   {
+      pthread_setname_np(commThreadID, pcCommThreadName);
+   }
+
+   return task_result;
+}
+
+//------------------------------------------------------------------------------
+
+void IxDriver::task_delete( )
+{  
+   if (workThreadID != 0)
+   {
+      pthread_cancel(workThreadID);
+
+      printDebug("IxDriver/%s: thread=%s deleted", __FUNCTION__, pcDrvName);
+   }
+}
+
+void IxDriver::comm_task_delete( )
+{  
+   if (commThreadID != 0)
+   {
+      pthread_cancel(commThreadID);
+
+      printDebug("IxDriver/%s: thread=%s deleted", __FUNCTION__, pcCommThreadName);
+   }
+}
+
+//------------------------------------------------------------------------------
 
 void IxDriver::run()
 {
@@ -91,46 +119,29 @@ void IxDriver::run()
   }
 } 
 
+void IxDriver::run_comm()
+{
+  while(true)
+  {   
+    CommProcessor();
+	sleep_mcs(10);
+  }
+} 
+
+void * IxDriver::thRunnableFunction_IxDriver( void *args )
+{   
+   (reinterpret_cast<IxDriver*>(args))->run();
+}
+
+void * IxDriver::thRunnableCommFunction_IxDriver( void *args )
+{   
+   (reinterpret_cast<IxDriver*>(args))->run_comm();
+}
+
 //------------------------------------------------------------------------------
 
 void IxDriver::DrvProcessor()
 {
-   TCommand Command = { 0, 0, 0, 0, NULL };
-
-   int32_t msg_s = outQueue.occupancy();
-
-   if (msg_s > 0)
-   {
-      if (-1 != inQueue.receive(reinterpret_cast<void*>(&Command), sizeof(TCommand)))
-      {
-         if (Command.ConsumerID == DrvID)
-         {
-            printDebug("IxDriver/%s: ConsumerID=%d, SenderID=%d,ComType=%d, ComID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID, Command.ComType, Command.ComID);
-
-            // command is mine
-            if ((Command.ComType == identification_request) && (Command.ComID == DIReq))
-            {
-               // remember current consumer
-               ConsumerID = Command.SenderID;
-
-               // set up resonce for top level driver
-               Command.ConsumerID = Command.SenderID;  
-               Command.SenderID   = DrvID;               
-               Command.ComType    = identification_response;
-               Command.ComID      = DIRes;
-
-               outQueue.send( reinterpret_cast<const void*>(&Command), sizeof(TCommand) );
-
-               initAttempt++;
-            }
-            else
-            {
-               CommandProcessor( Command );
-            }  
-         }
-      }
-   }
-
    // if driver was initialised - call thread processor
    if (initAttempt > 0)
    {
@@ -138,7 +149,52 @@ void IxDriver::DrvProcessor()
    }
 }
 
+void IxDriver::CommProcessor( )
+{
+   TCommand Command = { 0, 0, 0, 0, NULL };
+
+   if (-1 != inQueue.receive(reinterpret_cast<void*>(&Command), sizeof(TCommand)))
+   {
+      if (Command.ConsumerID == DrvID)
+      {
+         printDebug("IxDriver/%s: ConsumerID=%d, SenderID=%d,ComType=%d, ComID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID, Command.ComType, Command.ComID);
+         // command is mine
+         if ((Command.ComType == identification_request) && (Command.ComID == DIReq))
+         {
+            // remember current consumer
+            ConsumerID = Command.SenderID;
+
+            // set up resonce for top level driver
+            Command.ConsumerID = Command.SenderID;  
+            Command.SenderID   = DrvID;               
+            Command.ComType    = identification_response;
+            Command.ComID      = DIRes;
+
+            outQueue.send( reinterpret_cast<const void*>(&Command), sizeof(TCommand) );
+
+            initAttempt++;
+         }
+         else
+         {
+            CommandProcessor( Command );
+         }  
+      }
+   }
+}
+
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
 /*
+void IxDriver::ThreadProcessor( )
+{
+   workThreadID = 0;
+   printError("IxDriver/%s: thread=%s not implemented, EXIT!!!", __FUNCTION__, pcDrvName);
+   pthread_exit(0);
+}
+*/
+
+
 uint16_t counterr_item = 0;
 
 void IxDriver::ThreadProcessor( )
@@ -156,4 +212,3 @@ void IxDriver::ThreadProcessor( )
 
    sleep_s(3);
 }
-*/

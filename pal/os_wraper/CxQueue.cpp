@@ -14,18 +14,30 @@
 #define MSG_PRIO 1
 //------------------------------------------------------------------------------
 
-CxQueue::CxQueue( const char *name, int32_t queueLength, int32_t itemSize ):
+CxQueue::CxQueue( const char *name, int32_t queueLength, int32_t itemSize, bool blocked ):
     xQueue( -1 )
 {
    queueName[0] = '/';
    strncpy_m( &queueName[1], const_cast<char*>(name), configMAX_QUEUE_NAME_LEN-1 );
 
-   queueAttr.mq_flags   = O_NONBLOCK;   // Flags: 0 or O_NONBLOCK
-   queueAttr.mq_maxmsg  = queueLength;  // Max. # of messages on queue
-   queueAttr.mq_msgsize = itemSize;     // Max. message size (bytes)
-   queueAttr.mq_curmsgs = 0;            // # of messages currently in queue
+   if (true == blocked)
+   {
+      queueAttr.mq_flags   = 0;            // Flags: 0 or O_NONBLOCK
+      queueAttr.mq_maxmsg  = queueLength;  // Max. # of messages on queue
+      queueAttr.mq_msgsize = itemSize;     // Max. message size (bytes)
+      queueAttr.mq_curmsgs = 0;            // # of messages currently in queue
 
-   xQueue = mq_open(queueName, O_RDWR|O_CREAT|O_NONBLOCK, S_IRUSR|S_IWUSR|S_IXUSR, &queueAttr);
+      xQueue = mq_open(queueName, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR|S_IXUSR, &queueAttr);
+   }
+   else
+   {
+      queueAttr.mq_flags   = O_NONBLOCK;   // Flags: 0 or O_NONBLOCK
+      queueAttr.mq_maxmsg  = queueLength;  // Max. # of messages on queue
+      queueAttr.mq_msgsize = itemSize;     // Max. message size (bytes)
+      queueAttr.mq_curmsgs = 0;            // # of messages currently in queue
+
+      xQueue = mq_open(queueName, O_RDWR|O_CREAT|O_NONBLOCK, S_IRUSR|S_IWUSR|S_IXUSR, &queueAttr);
+   }
 
    if( xQueue == -1 )
    {

@@ -20,33 +20,42 @@ class CxThreadIO : public IxRunnable
 
   public:
 
+     ~CxThreadIO();
+     // we hide it because everybody should inherit it !  
+     CxThreadIO(  const char *taskName,  const char *drvName );
+
      // start all parts of system task
      void Start();
 
-     virtual void CommandProcessor( TCommand &Command ) = 0;
-     virtual void ThreadProcessor ( ) = 0;
-	 
-     CxThreadIO(  const char *taskName,  const char *drvName );
-     ~CxThreadIO();
-	 
   protected:
 
      // we hide it because everybody should inherit it !  
-     CxThreadIO(  const char *taskName,  const char *drvName );
+     //CxThreadIO(  const char *taskName,  const char *drvName );
+
+     virtual void CommandProcessor( TCommand &Command ){} //  = 0;
+     virtual void ThreadProcessor ( ); // = 0;
+
+     int32_t create_comm_thread( );
+     static void *thRunnableCommFunction_ThreadIO( void *args );
+     void run_comm();
+     void comm_task_delete();
 
      virtual void TaskProcessor();
 
      void DriverIdentificationRequest();
      bool CheckDrvCommand();
-     void WorkCycle();
 
      uint16_t threadID;
      uint16_t drvID;
 
-    CxQueue  inQueue;
-    CxQueue  outQueue;
+    pthread_t commThreadID;
 
+     CxQueue  inQueue;
+     CxQueue  outQueue;
+     
+     uint16_t  initAttempt;	 
      char     pcDrvName[configMAX_DRIVER_NAME_LEN];
+     char     pcCommThreadName[configMAX_DRIVER_NAME_LEN];
 
   private:
      // FSM process
