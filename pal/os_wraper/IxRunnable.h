@@ -16,35 +16,35 @@ class IxRunnable
 
     ~IxRunnable();
 
-    void task_delete();   
+    void task_delete();
     void task_run();
-	    
-  protected:  
-    
-	// get time in s from thread start
+
+  protected:
+
+    // get time in s from thread start
     uint64_t get_time();
-	
-    virtual void TaskProcessor();
-        
+
     char pcTaskName[configMAX_TASK_NAME_LEN];    
 
-	pthread_t thread;
-	time_t    start_time;
-        
-  private:       
-  
-    // we hide it because everybody should inherit it !   
+    pthread_t thread;
+    time_t    start_time;
+
+    // we hide it because everybody should inherit it !
     IxRunnable( const char *pcName );
-	
+
+    virtual void TaskProcessor();
+
+  private:
+
     void run(); 
-    
+
     static void * thRunnableFunction( void *args );
-    
+
     int32_t create_thread( );  
-    
+
     IxRunnable( const IxRunnable & ){}
     IxRunnable & operator=( const IxRunnable & ){}
-    
+
 }; typedef IxRunnable *pIxRunnable;
 
 //------------------------------------------------------------------------------

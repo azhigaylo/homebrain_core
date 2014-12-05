@@ -12,16 +12,16 @@
 uint16_t CxSysTimer::timer_sigID = SIGRTMIN;
 //------------------------------------------------------------------------------
 
-CxSysTimer::CxSysTimer( const char *name, uint64_t period, bool cyclic ): 
+CxSysTimer::CxSysTimer( const char *name, uint64_t period, bool cyclic ):
     timerid ( 0 )
    ,expCount( 0 )
 {
    memset_m( &sev, 0, sizeof(sev), sizeof(sev) );
    memset_m( &its, 0, sizeof(its), sizeof(its) );
    memset_m( &sa,  0, sizeof(sa),  sizeof(sa)  );
-   
+
    strncpy_m( timerName, const_cast<char*>(name), configMAX_TIMER_NAME_LEN );
-   
+
    // establish handler for timer signal
    sa.sa_flags = SA_SIGINFO;
    sa.sa_sigaction = CxSysTimer::commonHandler;
@@ -39,13 +39,13 @@ CxSysTimer::CxSysTimer( const char *name, uint64_t period, bool cyclic ):
    {
       printError("CxSysTimer/%s: timer=%s timer_create error!!!", __FUNCTION__, timerName);
    }
-   
+
    // init the timer
    its.it_value.tv_sec = period / 1000000000;
    its.it_value.tv_nsec = period % 1000000000;
    its.it_interval.tv_sec = its.it_value.tv_sec;
    its.it_interval.tv_nsec = its.it_value.tv_nsec;   
-   
+
    printDebug("CxSysTimer/%s: timer=%s / ID=0x%lx", __FUNCTION__, timerName, (long) timerid);
 }
 
@@ -90,20 +90,20 @@ CxSysTimer::~CxSysTimer()
    if (timerid != 0)
    {
       timer_delete( timerid );
-	  printDebug("CxSysTimer/%s: timer=%s / ID=0x%lx Deleted", __FUNCTION__, timerName, (long) timerid);
+      printDebug("CxSysTimer/%s: timer=%s / ID=0x%lx Deleted", __FUNCTION__, timerName, (long) timerid);
    }
 }
 
 //------------------------------------------------------------------------------
 
 void CxSysTimer::commonHandler(int sig, siginfo_t *si, void *uc)
-{   
+{
    CxSysTimer *pSysTimer = (reinterpret_cast<CxSysTimer*>(si->si_value.sival_ptr)) ;
 
    if (pSysTimer != 0)
    {
       pSysTimer->sigHandler();
-	  pSysTimer->expCount++;
+      pSysTimer->expCount++;
    }
 }
 

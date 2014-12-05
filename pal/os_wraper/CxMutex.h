@@ -1,25 +1,22 @@
 #ifndef _CX_MUTEX
 #define _CX_MUTEX
-
-
-//----------------------only wraper for FREERTOS xQueue ------------------------
-
-#include "FreeRTOS.h"
-#include "semphr.h"
-
-
 //------------------------------------------------------------------------------
-
+#include <pthread.h>
+//------------------------------------------------------------------------------
+#include "ptypes.h"
+#include "utils.h"
+//------------------------------------------------------------------------------
+#define configMAX_MUTEX_NAME_LEN 50
+//------------------------------------------------------------------------------
 
 class CxMutex
 {
 public:
   
-   CxMutex( );
+   CxMutex( const char *name );
    ~CxMutex( );
 
    void take( );
-   void give( );
 
 private:
 
@@ -28,8 +25,8 @@ private:
 
 protected:
      
-   xSemaphoreHandle mutex; 
-  
+   pthread_mutex_t mutex; 
+   char mutexName[configMAX_MUTEX_NAME_LEN];
 };
 
 #endif

@@ -2,12 +2,14 @@
 #define _CX_THREADIO
 
 //------------------------------------------------------------------------------
+#include "ptypes.h"
+#include "CxQueue.h"
+#include "IxDriver.h"
 #include "IxRunnable.h"
-#include "CxSystemQueue.h"
 //------------------------------------------------------------------------------
 
-class CxThreadIO : public IxRunnable, public CxSystemQueue
-{   
+class CxThreadIO : public IxRunnable
+{
   enum TThreadIOState
   {
       ST_IO_UNKNOWN = 0,
@@ -16,40 +18,45 @@ class CxThreadIO : public IxRunnable, public CxSystemQueue
       ST_IO_NORMAL_WORK
   };
 
-  public:  
+  public:
 
      // start all parts of system task
      void Start();
 
      virtual void CommandProcessor( TCommand &Command ) = 0;
      virtual void ThreadProcessor ( ) = 0;
-
-  protected:    
-
-     // function's   
-     CxThreadIO( portCHAR * taskName,  portCHAR * drvName );       
+	 
+     CxThreadIO(  const char *taskName,  const char *drvName );
      ~CxThreadIO();
-         
+	 
+  protected:
+
+     // we hide it because everybody should inherit it !  
+     CxThreadIO(  const char *taskName,  const char *drvName );
+
      virtual void TaskProcessor();
-     
+
      void DriverIdentificationRequest();
      bool CheckDrvCommand();
      void WorkCycle();
-     
-     unsigned short threadID;
-     unsigned short drvID;     
-    
-  private:       
+
+     uint16_t threadID;
+     uint16_t drvID;
+
+    CxQueue  inQueue;
+    CxQueue  outQueue;
+
+     char     pcDrvName[configMAX_DRIVER_NAME_LEN];
+
+  private:
      // FSM process
      void Process();
-     
+
      TThreadIOState threadIOState;
-     
-     char* drvName;
-     
+
      CxThreadIO( const CxThreadIO & );
-     CxThreadIO & operator=( const CxThreadIO & );      
-     
+     CxThreadIO & operator=( const CxThreadIO & );
+
  }; typedef CxThreadIO *pCxThreadIO;
  
 //------------------------------------------------------------------------------

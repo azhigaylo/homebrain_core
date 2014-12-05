@@ -38,7 +38,7 @@ CxQueue::~CxQueue()
    if (xQueue != -1)
    {
       mq_close(xQueue);
-	  mq_unlink(queueName);
+      mq_unlink(queueName);
    }
 }
 
@@ -48,11 +48,11 @@ bool CxQueue::send( const void *pItemToQueue, int32_t msg_size )
 {
    bool result = false;
 
-   if( xQueue != -1 ) 
+   if( xQueue != -1 )
    {  
      result = (0 == mq_send( xQueue, reinterpret_cast<const char*>(pItemToQueue), msg_size, MSG_PRIO));
    }  
-   return result;  
+   return result;
 }
 
 bool CxQueue::timedSend( const void *pItemToQueue, int32_t msg_size, uint64_t time )   
@@ -60,21 +60,21 @@ bool CxQueue::timedSend( const void *pItemToQueue, int32_t msg_size, uint64_t ti
    bool result = false;
    const timespec abs_timeout = {(time/1000000000), (time % 1000000000)};
 
-   if( xQueue != -1 ) 
-   {  
+   if( xQueue != -1 )
+   {
      result = (0 == mq_timedsend( xQueue, reinterpret_cast<const char*>(pItemToQueue), msg_size, MSG_PRIO, &abs_timeout));
-   }  
-   return result;  
+   }
+   return result;
 }
 
 int32_t CxQueue::receive( void *pItemFromQueue, int32_t msg_size )
 {
   int32_t bytes_read = -1;
 
-  if( xQueue != -1 ) 
+  if( xQueue != -1 )
   {
       bytes_read = mq_receive(xQueue, reinterpret_cast<char*>(pItemFromQueue), msg_size, NULL);
-  }  
+  }
   return bytes_read;  
 }
 
@@ -82,13 +82,13 @@ int32_t CxQueue::occupancy( )
 {
    mq_attr tmpAttr; 
    int32_t msg_in_queue = -1;
-   
+
    if( xQueue != -1 ) 
    {
       if (-1 != mq_getattr(xQueue, &tmpAttr))
-	  {
+      {
          msg_in_queue = tmpAttr.mq_curmsgs;
-	  }
+      }
    }
    return msg_in_queue;
 }

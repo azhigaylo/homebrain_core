@@ -36,10 +36,10 @@ void IxDriver::task_delete( )
    if (taskdID != 0)
    {
       pthread_cancel(taskdID);
-   
+
       printDebug("IxDriver/%s: driver=%s deleted", __FUNCTION__, pcDrvName);
    }
-}   
+}
 
 //------------------------------------------------------------------------------
 
@@ -47,7 +47,7 @@ void IxDriver::task_run( )
 {
    create_thread(); 
 }
-  
+
 //------------------------------------------------------------------------------
 
 int32_t IxDriver::create_thread( )
@@ -56,7 +56,7 @@ int32_t IxDriver::create_thread( )
 
    task_result = pthread_create(&taskdID, NULL, thRunnableFunction, this);
 
-   if (task_result != 0) 
+   if (task_result != 0)
    {
       printError("IxDriver/%s: driver=%s error!!!", __FUNCTION__, pcDrvName);
    }
@@ -72,9 +72,9 @@ int32_t IxDriver::create_thread( )
 
 uint64_t IxDriver::get_time()
 {
-   return difftime(time(NULL), startTime); 
+   return difftime(time(NULL), startTime);
 }
-  
+
 //------------------------------------------------------------------------------
 
 void * IxDriver::thRunnableFunction( void *args )
@@ -87,7 +87,8 @@ void IxDriver::run()
   while(true)
   {   
     DrvProcessor();
-  }  
+	sleep_mcs(10);
+  }
 } 
 
 //------------------------------------------------------------------------------
@@ -96,58 +97,63 @@ void IxDriver::DrvProcessor()
 {
    TCommand Command = { 0, 0, 0, 0, NULL };
 
-   if (-1 != inQueue.receive(reinterpret_cast<void*>(&Command), sizeof(TCommand)))
+   int32_t msg_s = outQueue.occupancy();
+
+   if (msg_s > 0)
    {
-      if (Command.ConsumerID == DrvID)
+      if (-1 != inQueue.receive(reinterpret_cast<void*>(&Command), sizeof(TCommand)))
       {
-         // command is mine
-         if ((Command.ComType == identification_request) && (Command.ComID == DIReq))
+         if (Command.ConsumerID == DrvID)
          {
             printDebug("IxDriver/%s: ConsumerID=%d, SenderID=%d,ComType=%d, ComID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID, Command.ComType, Command.ComID);
 
-            // remember current consumer
-            ConsumerID = Command.SenderID;
+            // command is mine
+            if ((Command.ComType == identification_request) && (Command.ComID == DIReq))
+            {
+               // remember current consumer
+               ConsumerID = Command.SenderID;
 
-            // set up resonce for top level driver
-            Command.ConsumerID = Command.SenderID;  
-            Command.SenderID   = DrvID;               
-            Command.ComType    = identification_response;
-            Command.ComID      = DIRes;
+               // set up resonce for top level driver
+               Command.ConsumerID = Command.SenderID;  
+               Command.SenderID   = DrvID;               
+               Command.ComType    = identification_response;
+               Command.ComID      = DIRes;
 
-            outQueue.send( reinterpret_cast<const void*>(&Command), sizeof(TCommand) );   
+               outQueue.send( reinterpret_cast<const void*>(&Command), sizeof(TCommand) );
 
-            initAttempt++;
+               initAttempt++;
+            }
+            else
+            {
+               CommandProcessor( Command );
+            }  
          }
-         else
-         {
-            CommandProcessor( Command );
-         }  
-      }        
-   }  
+      }
+   }
 
    // if driver was initialised - call thread processor
    if (initAttempt > 0)
-   {  
-      ThreadProcessor( ); 
+   {
+      ThreadProcessor( );
    }
 }
 
 /*
-uint16_t counter_item = 0;
+uint16_t counterr_item = 0;
 
 void IxDriver::ThreadProcessor( )
 {
-   counter_item++;
+   counterr_item++;
    
    TCommand Command = { 0, 0, 0, 0, NULL };
    // set up resonce for top level driver
-   Command.ConsumerID = 10;  
-   Command.SenderID   = 11;               
-   Command.ComType    = 12;
-   Command.ComID      = counter_item;
+   Command.ConsumerID = 11857;  
+   Command.SenderID   = 1895;               
+   Command.ComType    = 13;
+   Command.ComID      = counterr_item;
 
    outQueue.send(reinterpret_cast<const void*>(&Command), sizeof(TCommand)); 
 
-   sleep_s(5);
+   sleep_s(3);
 }
 */

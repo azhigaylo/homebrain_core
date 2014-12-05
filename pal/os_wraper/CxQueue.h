@@ -11,27 +11,27 @@
 //------------------------------------------------------------------------------
 
 class CxQueue
-{ 
-  public:       
+{
+  public:
 
-    // function's   
+    // function's
     CxQueue ( const char *name, int32_t queueLength, int32_t itemSize );
     ~CxQueue();
 
-    bool send       (const void *pItemToQueue, int32_t msg_size);   
-    bool timedSend  (const void *pItemToQueue, int32_t msg_size, uint64_t time);   
+    bool send       (const void *pItemToQueue, int32_t msg_size);
+    bool timedSend  (const void *pItemToQueue, int32_t msg_size, uint64_t time);
     int32_t receive (void *pItemFromQueue, int32_t msg_size);
-	int32_t occupancy( );
+    int32_t occupancy( );
 
-  private:       
-    
+  private:
+
    mqd_t   xQueue;
-   mq_attr queueAttr; 
-   char queueName[configMAX_QUEUE_NAME_LEN];   
-    
+   mq_attr queueAttr;
+   char queueName[configMAX_QUEUE_NAME_LEN];
+
    CxQueue(const CxQueue& rhs){}
    CxQueue& operator=(const CxQueue& rhs){}
-   
+
  }; typedef CxQueue *pCxQueue;
 
 //------------------------------------------------------------------------------

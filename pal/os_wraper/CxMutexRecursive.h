@@ -1,34 +1,33 @@
-#ifndef _CX_MUTEXRECURSIVE
-#define _CX_MUTEXRECURSIVE
-
-
-//----------------------only wraper for FREERTOS xQueue ------------------------
-
-#include "FreeRTOS.h"
-#include "semphr.h"
-
+#ifndef _CX_MUTEX
+#define _CX_MUTEX
 //------------------------------------------------------------------------------
-
+#include <pthread.h>
+//------------------------------------------------------------------------------
+#include "ptypes.h"
+#include "utils.h"
+//------------------------------------------------------------------------------
+#define configMAX_MUTEX_NAME_LEN 50
+//------------------------------------------------------------------------------
 
 class CxMutexRecursive
 {
 public:
   
-   CxMutexRecursive();
-   ~CxMutexRecursive();
+   CxMutexRecursive( const char *name );
+   ~CxMutexRecursive( );
 
-   void take();
-   void give();
+   void take( );
+   void give( );
 
 private:
 
-   CxMutexRecursive(const CxMutexRecursive& rhs);
-   CxMutexRecursive& operator=(const CxMutexRecursive& rhs);
+   CxMutexRecursive( const CxMutexRecursive& rhs );
+   CxMutexRecursive& operator=( const CxMutexRecursive& rhs );
 
 protected:
      
-   xSemaphoreHandle mutex; 
-  
+   pthread_mutex_t mutex; 
+   char mutexName[configMAX_MUTEX_NAME_LEN];
 };
 
 #endif
