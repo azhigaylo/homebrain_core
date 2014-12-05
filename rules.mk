@@ -21,10 +21,10 @@ dirs :
 	@mkdir -p $(BUILDDIR) $(OBJDIR) $(BINDIR)
 
 %.o : %.cpp | dirs
-	$(CXX) -o $(OBJDIR)/$@ -c $< $(CPPFLAGS) -MD -MT $@ $(CXXFLAGS) $(addprefix -I, $(INC_DIRS))
+	$(CXX) -o $(OBJDIR)/$@ -c $< $(CPPFLAGS) -MD -MT $@ $(CXXFLAGS) $(addprefix -I , $(INC_DIRS))
  
 %.o : %.c | dirs
-	$(CC) -o $(OBJDIR)/$@ -c $< $(CPPFLAGS) -MD -MT $@ $(CFLAGS) $(addprefix -I, $(INC_DIRS))
+	$(CC) -o $(OBJDIR)/$@ -c $< $(CPPFLAGS) -MD -MT $@ $(CFLAGS) $(addprefix -I , $(INC_DIRS))
  
 .PHONY : clean
  
