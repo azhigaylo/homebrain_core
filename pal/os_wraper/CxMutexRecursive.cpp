@@ -28,7 +28,7 @@ CxMutexRecursive::~CxMutexRecursive( )
    }  
 }
 
-void CxMutexRecursive::take( )
+void CxMutexRecursive::lock( )
 {
    if (0 != pthread_mutex_lock(&mutex))
    {
@@ -36,7 +36,7 @@ void CxMutexRecursive::take( )
    }  
 }
 
-void CxMutexRecursive::give( )
+void CxMutexRecursive::unlock( )
 {
    if (0 != pthread_mutex_unlock(&mutex))
    {

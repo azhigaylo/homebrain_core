@@ -16,8 +16,8 @@ public:
    CxMutexRecursive( const char *name );
    ~CxMutexRecursive( );
 
-   void take( );
-   void give( );
+   void lock( );
+   void unlock( );
 
 private:
 

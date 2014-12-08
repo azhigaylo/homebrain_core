@@ -25,11 +25,6 @@ CxMutex::CxMutex( const char *name )
 
 CxMutex::~CxMutex( )
 {
-   if (0 != pthread_mutex_unlock(&mutex))
-   {
-      printError("CxMutex/%s: mutex=%s unlock error !!!", __FUNCTION__, mutexName);
-   }  
-
    if (0 != pthread_mutex_destroy(&mutex))
    {
       printError("CxMutex/%s: mutex=%s destroy error !!!", __FUNCTION__, mutexName);
@@ -39,10 +34,18 @@ CxMutex::~CxMutex( )
    }
 }
 
-void CxMutex::take( )
+void CxMutex::lock( )
 {
    if (0 != pthread_mutex_lock(&mutex))
    {
       printError("CxMutex/%s: mutex=%s lock error !!!", __FUNCTION__, mutexName);
+   }  
+}
+
+void CxMutex::unlock( )
+{
+   if (0 != pthread_mutex_unlock(&mutex))
+   {
+      printError("CxMutex/%s: mutex=%s unlock error !!!", __FUNCTION__, mutexName);
    }  
 }

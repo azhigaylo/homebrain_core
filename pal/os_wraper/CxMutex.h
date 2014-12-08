@@ -16,7 +16,8 @@ public:
    CxMutex( const char *name );
    ~CxMutex( );
 
-   void take( );
+   void lock( );
+   void unlock( );
 
 private:
 
