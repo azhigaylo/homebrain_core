@@ -1,41 +1,47 @@
 //------------------------------------------------------------------------------
 #include "slog.h"
 #include "utils.h"
-#include "QMutexLocker.h"
+#include "CxMutexLocker.h"
 //------------------------------------------------------------------------------
 
-QMutexLocker::QMutexLocker( CxMutex *mutex )
+CxMutexLocker::CxMutexLocker( CxMutex *mtx ):
+   mutex( mtx )
 {
    if (0 != mutex)
    {
-      mutex.lock();
+      mutex->lock();
    }
    else
    {
-     printError("QMutexLocker/%s: mutex=0", __FUNCTION__);
+     printError("CxMutexLocker/%s: mutex=0", __FUNCTION__);
    }
 }
 
-QMutexLocker::~QMutexLocker( )
+CxMutexLocker::~CxMutexLocker( )
 {
    if (0 != mutex)
    {
-      mutex.unlock();
+      mutex->unlock();
    }
    else
    {
-     printError("QMutexLocker/%s: mutex=0", __FUNCTION__);
+     printError("CxMutexLocker/%s: mutex=0", __FUNCTION__);
    }
 }
  
-void QMutexLocker::unlock( )
+void CxMutexLocker::unlock( )
 {
    if (0 != mutex)
    {
-      mutex.unlock();
+      mutex->unlock();
    }
    else
    {
-     printError("QMutexLocker/%s: mutex=0", __FUNCTION__);
+     printError("CxMutexLocker/%s: mutex=0", __FUNCTION__);
    } 
+}
+
+CxMutex * CxMutexLocker::getmutex( )
+{
+   return mutex;
 }

@@ -7,20 +7,22 @@
 #include "CxMutex.h"
 //------------------------------------------------------------------------------
 
-class QMutexLocker
+class CxMutexLocker
 {
 public:
   
-   QMutexLocker( CxMutex *mutex );
-   ~QMutexLocker( );
+   CxMutexLocker( CxMutex *mtx );
+   ~CxMutexLocker( );
 
-   CxMutex * mutex( );
+   CxMutex * getmutex( );
    void unlock( );
 
 private:
 
-   QMutexLocker( const QMutexLocker& rhs );
-   QMutexLocker& operator=( const QMutexLocker& rhs );
+   CxMutexLocker( const CxMutexLocker& rhs );
+   CxMutexLocker& operator=( const CxMutexLocker& rhs );
+   
+   CxMutex *mutex;
 
 };
 
