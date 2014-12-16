@@ -340,7 +340,7 @@ short CxVector<TElement>::indexOf( TElement* pElement )
 }
 
 template <class TElement>
-CxVector<TElement>::TIntBlk* CxVector<TElement>::GetIntBlkByElement(TElement* pElement)
+typename CxVector<TElement>::TIntBlk* CxVector<TElement>::GetIntBlkByElement(TElement* pElement)
 {
   TIntBlk* pIntBlk = NULL;
   
@@ -354,5 +354,5 @@ CxVector<TElement>::TIntBlk* CxVector<TElement>::GetIntBlkByElement(TElement* pE
   return pIntBlk;    
 }
 
-#endif /*_CX_STATIC_POOL*/   
+#endif /*_CX_VECTOR*/   
 

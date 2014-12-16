@@ -7,15 +7,13 @@ class IxLogDevice
 {
  public: 
 
-   IxLogDevice();
-   ~IxLogDevice(){}
-   
-   // 
-   virtual void SwitchOn()  = 0;
-   virtual void SwitchOff() = 0;      
-   virtual char *GetDeviceName() = 0; 
-   virtual void SetCommunicationPort( char* pPortName, unsigned long PortRate, char PortParity ) = 0;
-   virtual void Start() = 0;
+   IxLogDevice(){}
+   virtual ~IxLogDevice(){}
+
+   virtual void open()  = 0;
+   virtual void close() = 0;      
+   virtual const char *getDeviceName() = 0; 
+   virtual void start() = 0;
    
 }; typedef IxLogDevice *pIxLogDevice;
 

@@ -1,33 +1,45 @@
 #ifndef _CX_STATIC_POOL
 #define _CX_STATIC_POOL
 
-#include "..\pal\utils.h"
+//------------------------------------------------------------------------------
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <iostream>
+//------------------------------------------------------------------------------
+#include "slog.h"
+#include "utils.h"
 #include "CxMutex.h"
+//------------------------------------------------------------------------------
+#define configSTATICPOOL_SIZE ( 20480 )     // in byte
+//------------------------------------------------------------------------------
 
-#define configSTATICPOOL_SIZE ( 6000 )     // in byte
 
 //-------------------------------Static pool declaration------------------------
 
 class CxStaticPool
 {
- public: 
-    static CxStaticPool& getInstance();
-    
-    void *pStaticMalloc( size_t xSize );
-    unsigned short GetFreeSize( )const;
-    virtual ~CxStaticPool( ){}    
+   public:
 
- protected:   
-    CxStaticPool();
+      static CxStaticPool *getInstance();
+      void delInstance();
 
- private:              
-    unsigned short sRecNumb;
-    char* pHead;    
-    char staticpool[configSTATICPOOL_SIZE];
-    
-    CxMutex StaticPoolMutex;
-    
-}; 
+      void *pStaticMalloc( unsigned short xSize );
+
+   private:
+
+      CxStaticPool();
+      ~CxStaticPool( ){}
+      unsigned short GetFreeSize( ) const;
+
+      unsigned short sRecNumb;
+      char* pHead;
+      static CxMutex StaticPoolMutex;
+      static CxStaticPool* theInstance;
+
+      char staticpool[configSTATICPOOL_SIZE];
+};
 typedef CxStaticPool *pTCxStaticPool;
 
 
@@ -49,58 +61,58 @@ class CxStaticPoolAllocator
  public:
    CxStaticPoolAllocator( unsigned short count );
    ~CxStaticPoolAllocator( ){}
-   
+
    bool isEmpty( )const;
    TElement* getContainer( );
-   TElement* getContainer( const TElement& );   
+   TElement* getContainer( const TElement& );
    bool delContainer( TElement* );
    bool isContainerBusy( TElement* )const;    // if conteyner is Busy - function terurn "true"
    unsigned short getSize( )const;
    TElement* searchByFunktion( bool(*execution_func)(TElement*) );
-   
+
  private:
-   
+
    CxMutex SPAmutex;
-   
+
    struct TIntBlk
    {
      bool busy;     // if true - busy
      TElement element;
    };
-   
+
    // Block - memory field in CxStaticPool
    // element - data part - TElement
-   pTMemBlockHeader pStrtBlock;   
-   pTMemBlockHeader pCurentBlock;      
+   pTMemBlockHeader pStrtBlock;
+   pTMemBlockHeader pCurentBlock;
    unsigned short sElementsCount;
-   
+
    TElement* getFreeElementPosition( );  
    pTMemBlockHeader createOneMoreBlock( );
    pTMemBlockHeader getLastBlock( );
-   pTMemBlockHeader getNextBlock( );   
+   pTMemBlockHeader getNextBlock( );
 };
 
 //--------------------CxStaticPoolAllocator--------------
 template <class TElement>
 CxStaticPoolAllocator<TElement>::CxStaticPoolAllocator( unsigned short count ):
-   SPAmutex( )
+   SPAmutex("SPAmutex")
 {
-   SPAmutex.take();    
-   
-      CxStaticPool &StaticPool = CxStaticPool::getInstance();
-     
-      pTMemBlockHeader pTmpStrtBlock = reinterpret_cast<pTMemBlockHeader>( StaticPool.pStaticMalloc(sizeof(TMemBlockHeader) + sizeof(TIntBlk)*count) );
+   SPAmutex.lock();
+
+      CxStaticPool *pStaticPool = CxStaticPool::getInstance();
+
+      pTMemBlockHeader pTmpStrtBlock = reinterpret_cast<pTMemBlockHeader>( pStaticPool->pStaticMalloc(sizeof(TMemBlockHeader) + sizeof(TIntBlk)*count) );
       if( pTmpStrtBlock )
       {
-        pStrtBlock = pCurentBlock = pTmpStrtBlock;     
-        mod_memset( reinterpret_cast<char*>(pStrtBlock), 0, sizeof(TMemBlockHeader) + sizeof(TIntBlk)*count, sizeof(TMemBlockHeader) + sizeof(TIntBlk)*count );
+        pStrtBlock = pCurentBlock = pTmpStrtBlock;
+        memset_m( reinterpret_cast<char*>(pStrtBlock), 0, sizeof(TMemBlockHeader) + sizeof(TIntBlk)*count, sizeof(TMemBlockHeader) + sizeof(TIntBlk)*count );
         pStrtBlock->sBlkSize = sizeof(TIntBlk)*count;
         pStrtBlock->pNextMemBlockHeader = NULL;
         pStrtBlock->cElemCount = 0;
-        sElementsCount = 0;       
+        sElementsCount = 0;
       }
-      
-   SPAmutex.give();
+
+   SPAmutex.unlock();
 }
 
 template <class TElement>
@@ -112,9 +124,9 @@ bool CxStaticPoolAllocator<TElement>::isEmpty( )const
 
 template <class TElement>
 TElement* CxStaticPoolAllocator<TElement>::getContainer( const TElement& element )
-{  
-   SPAmutex.take();
-   
+{
+   SPAmutex.lock();
+
     TElement* pNewElement = getFreeElementPosition();
     if( pNewElement != NULL )
     {
@@ -132,17 +144,18 @@ TElement* CxStaticPoolAllocator<TElement>::getContainer( const TElement& element
            sElementsCount++;
          }
       }  
-    }      
-    
-  SPAmutex.give();    
+    }
+
+  SPAmutex.unlock(); 
+
   return pNewElement;
 }
 
 template <class TElement>
 TElement* CxStaticPoolAllocator<TElement>::getContainer()
-{  
-  SPAmutex.take();
-  
+{
+  SPAmutex.lock();
+
     TElement* pNewElement = getFreeElementPosition();
     if(pNewElement != NULL)
     {
@@ -157,46 +170,47 @@ TElement* CxStaticPoolAllocator<TElement>::getContainer()
          {
            sElementsCount++;
          }
-      }  
-    }      
-    
-  SPAmutex.give();  
+      }
+    }
+
+  SPAmutex.unlock();
+
   return pNewElement;
 }
 
 template <class TElement>
 bool CxStaticPoolAllocator<TElement>::delContainer( TElement* pElement )
 {
-  SPAmutex.take();
-  
+  SPAmutex.lock();
+
     pTMemBlockHeader pMemBlockHeader = pStrtBlock;
     if(pMemBlockHeader != NULL)
     {
       while(pMemBlockHeader != NULL)
-      {      
+      {
         if(pMemBlockHeader->cElemCount)
-        {        
+        {
           // free space in this block is to be available 
           TIntBlk* pIntBlk = reinterpret_cast<TIntBlk*>(reinterpret_cast<char*>(pMemBlockHeader) + sizeof(TMemBlockHeader));
           
           for( unsigned short iterator = 0; iterator <= static_cast<unsigned short>(pMemBlockHeader->sBlkSize/sizeof(TIntBlk)); iterator++, pIntBlk++ )
-          {            
+          {
             if( (&(pIntBlk->element) == pElement) && (pIntBlk->busy == true) )
             {
-              mod_memset( reinterpret_cast<char*>(pIntBlk), 0, sizeof(TIntBlk), sizeof(TIntBlk) );            
+              memset_m( reinterpret_cast<char*>(pIntBlk), 0, sizeof(TIntBlk), sizeof(TIntBlk) );
               pMemBlockHeader->cElemCount--;
               sElementsCount--;
-              SPAmutex.give();               
+              SPAmutex.unlock();
               return true;
             }
-          }  
+          }
           
-        }                  
-        pMemBlockHeader = pMemBlockHeader->pNextMemBlockHeader;  
-      }  
-    }      
-    
-  SPAmutex.give();  
+        }
+        pMemBlockHeader = pMemBlockHeader->pNextMemBlockHeader;
+      }
+    }
+
+  SPAmutex.unlock();
   return false;
 }
 
@@ -205,8 +219,8 @@ bool CxStaticPoolAllocator<TElement>::isContainerBusy( TElement* pElement )const
 {
   for( unsigned short i=0; i<sizeof(TElement); i++ )
   {
-    if( *(reinterpret_cast<char*>(pElement) + i ) != 0 ) return true;    
-  }  
+    if( *(reinterpret_cast<char*>(pElement) + i ) != 0 ) return true;
+  }
   return false;
 }
 
@@ -223,9 +237,9 @@ TElement* CxStaticPoolAllocator<TElement>::searchByFunktion( bool (*execution_fu
   if( pMemBlockHeader != NULL )
   {
      while( pMemBlockHeader != NULL )
-     {      
+     {
        if( pMemBlockHeader->cElemCount )
-       {        
+       {
          // free space in this block is to be available 
          TIntBlk* pIntBlk = reinterpret_cast<TIntBlk*>(reinterpret_cast<char*>(pMemBlockHeader) + sizeof(TMemBlockHeader));
          for( unsigned short iterator = 0; iterator < pMemBlockHeader->sBlkSize/static_cast<unsigned short>(sizeof(TIntBlk)); iterator++, pIntBlk++ )
@@ -234,14 +248,14 @@ TElement* CxStaticPoolAllocator<TElement>::searchByFunktion( bool (*execution_fu
            {
              if( true == (*execution_func)(&(pIntBlk->element)) )
              {
-               return( &(pIntBlk->element) ); 
+               return( &(pIntBlk->element) );
              }
-           }           
-         }  
-       }                  
-       pMemBlockHeader = pMemBlockHeader->pNextMemBlockHeader;  
-     }  
-  }      
+           }
+         }
+       }
+       pMemBlockHeader = pMemBlockHeader->pNextMemBlockHeader;
+     }
+  }
   return NULL;
 }
 
@@ -250,18 +264,18 @@ TElement* CxStaticPoolAllocator<TElement>::getFreeElementPosition()
 {
   pTMemBlockHeader pMemBlockHeader = pStrtBlock;
   TElement* pFirstFreePos = NULL;
-    
+
   if( pMemBlockHeader != NULL )
-  {  
+  {
     while( pMemBlockHeader != NULL )
     {
       if( pMemBlockHeader->cElemCount*sizeof(TIntBlk) < pMemBlockHeader->sBlkSize )
-      {        
+      {
         // free space in this block is to be available 
         TIntBlk* pIntBlk = reinterpret_cast<TIntBlk*>(reinterpret_cast<char*>(pMemBlockHeader) + sizeof(TMemBlockHeader));
-               
+
         for( unsigned short iterator = 0; iterator <= static_cast<unsigned short>(pMemBlockHeader->sBlkSize/sizeof(TIntBlk)); iterator++, pIntBlk++ )
-        {                     
+        {
           if( pIntBlk->busy == false )
           {
             pIntBlk->busy = true;
@@ -269,21 +283,21 @@ TElement* CxStaticPoolAllocator<TElement>::getFreeElementPosition()
             pFirstFreePos = &(pIntBlk->element);
             break;
           }
-        }        
+        }
         break;
-      }        
-      pMemBlockHeader = pMemBlockHeader->pNextMemBlockHeader;  
+      }
+      pMemBlockHeader = pMemBlockHeader->pNextMemBlockHeader;
     }
-  }   
-  
-  return( pFirstFreePos );  
+  }
+
+  return( pFirstFreePos );
 }
 
 template <class TElement>
 pTMemBlockHeader CxStaticPoolAllocator<TElement>::getNextBlock()
 {
-  if( pCurentBlock->pNextMemBlockHeader != NULL ) pCurentBlock = pCurentBlock->pNextMemBlockHeader; 
-  return( pCurentBlock->pNextMemBlockHeader );  
+  if( pCurentBlock->pNextMemBlockHeader != NULL ) pCurentBlock = pCurentBlock->pNextMemBlockHeader;
+  return( pCurentBlock->pNextMemBlockHeader );
 }
 
 template <class TElement>
@@ -294,29 +308,29 @@ pTMemBlockHeader CxStaticPoolAllocator<TElement>::getLastBlock()
   {
     while( pMemBlockHeader->pNextMemBlockHeader != NULL )
     {
-      pMemBlockHeader = pMemBlockHeader->pNextMemBlockHeader;  
-    }  
-  }  
-  return pMemBlockHeader;  
+      pMemBlockHeader = pMemBlockHeader->pNextMemBlockHeader;
+    }
+  }
+  return pMemBlockHeader;
 }
 
 template <class TElement>
 pTMemBlockHeader CxStaticPoolAllocator<TElement>::createOneMoreBlock()
 {
-   CxStaticPool &StaticPool = CxStaticPool::getInstance();
+   CxStaticPool *pStaticPool = CxStaticPool::getInstance();
    pTMemBlockHeader pLastMemBlockHeader = getLastBlock();
-   
-   pTMemBlockHeader pTmpBlock = reinterpret_cast<pTMemBlockHeader>( StaticPool.pStaticMalloc(sizeof(TMemBlockHeader) 
+
+   pTMemBlockHeader pTmpBlock = reinterpret_cast<pTMemBlockHeader>( pStaticPool->pStaticMalloc(sizeof(TMemBlockHeader) 
                                                               +   sizeof(TIntBlk)*(pStrtBlock->cElemCount/2 + 1)) );
    if( pTmpBlock != NULL && pLastMemBlockHeader != NULL )
    {
-     pLastMemBlockHeader->pNextMemBlockHeader = pTmpBlock;     
-     mod_memset(reinterpret_cast<char*>(pTmpBlock), 0, sizeof(TMemBlockHeader) + sizeof(TIntBlk)*(pStrtBlock->cElemCount/2 + 1),
+     pLastMemBlockHeader->pNextMemBlockHeader = pTmpBlock;
+     memset_m(reinterpret_cast<char*>(pTmpBlock), 0, sizeof(TMemBlockHeader) + sizeof(TIntBlk)*(pStrtBlock->cElemCount/2 + 1),
                                                      sizeof(TMemBlockHeader)  + sizeof(TIntBlk)*(pStrtBlock->cElemCount/2 + 1));
      pTmpBlock->sBlkSize = sizeof(TIntBlk)*(pStrtBlock->cElemCount/2 + 1);
      pTmpBlock->pNextMemBlockHeader = NULL;
      pTmpBlock->cElemCount = 0;
-     sElementsCount = 0;       
+     sElementsCount = 0;
    }
    
   return pTmpBlock;

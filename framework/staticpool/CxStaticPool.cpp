@@ -1,46 +1,74 @@
+//------------------------------------------------------------------------------
+#include "slog.h"
+#include "utils.h"
+#include "CxMutexLocker.h"
 #include "CxStaticPool.h"
-#include "CxAssertion.h"
 //------------------------------------------------------------------------------
 //-------------------------------STATIC POOL class------------------------------
 //------------------------------------------------------------------------------
+CxMutex CxStaticPool::StaticPoolMutex("pool_mutex");
+CxStaticPool *CxStaticPool::theInstance = 0;
+//------------------------------------------------------------------------------
 
-CxStaticPool::CxStaticPool()
-{   
-   sRecNumb = 0;    
-   mod_memset( staticpool, 0, configSTATICPOOL_SIZE, configSTATICPOOL_SIZE );
-   pHead = staticpool;
+CxStaticPool::CxStaticPool():
+    sRecNumb( 0 )
+   ,pHead   ( staticpool )
+{    
+   memset_m( staticpool, 0, configSTATICPOOL_SIZE, configSTATICPOOL_SIZE );
 }
 
-CxStaticPool &CxStaticPool::getInstance()
+CxStaticPool *CxStaticPool::getInstance()
 {
-  static CxStaticPool theInstance;
-  return theInstance;
+   if(CxStaticPool::theInstance == 0)
+   {
+      CxMutexLocker locker(&CxStaticPool::StaticPoolMutex);
+
+      if(CxStaticPool::theInstance == 0)
+      {
+         CxStaticPool::theInstance = new CxStaticPool();
+      }
+   }
+
+   return theInstance;
 }
 
-unsigned short CxStaticPool::GetFreeSize()const
+void CxStaticPool::delInstance()
 {
-  return( (staticpool + configSTATICPOOL_SIZE) - pHead );
+   if(CxStaticPool::theInstance != 0)
+   {
+      sRecNumb = 0;
+      pHead    = 0;
+      memset_m( staticpool, 0, configSTATICPOOL_SIZE, configSTATICPOOL_SIZE );
+
+      delete this;
+   }
 }
 
-void* CxStaticPool::pStaticMalloc( size_t xSize )
+void* CxStaticPool::pStaticMalloc( unsigned short xSize )
 {
   void *pTmpHead = NULL;
-  
-  StaticPoolMutex.take();
-  
+
+  CxMutexLocker locker(&CxStaticPool::StaticPoolMutex);
+
   if( pHead != NULL && ( GetFreeSize() >= xSize) )
   {
     pTmpHead = pHead;
     pHead += xSize;
-    sRecNumb++;    
+    sRecNumb++;
+
+    printDebug("CxStaticPool/%s: allocated size = %d  ", __FUNCTION__, xSize);
   }
-  else 
+  else
   {
     pTmpHead = pHead;
-    vApplicationStaticPoolFailedHook();
+
+    printError("CxStaticPool/%s: bad allocation with size = %d  ", __FUNCTION__, xSize);
   }
-  
-  StaticPoolMutex.give();
-  
-  return reinterpret_cast<void*>(pTmpHead);
+
+  return pTmpHead;
+}
+
+unsigned short CxStaticPool::GetFreeSize() const
+{
+   return( (staticpool + configSTATICPOOL_SIZE) - pHead );
 }

@@ -1,39 +1,34 @@
 #ifndef _CX_LOGDEVICE
 #define _CX_LOGDEVICE
 
-#include "IxLogDevice.h"
-
 //------------------------------------------------------------------------------
+#include "ptypes.h"
+#include "IxLogDevice.h"
+//------------------------------------------------------------------------------
+#define configMAX_DEVICE_NAME_LEN 50
+//------------------------------------------------------------------------------
+
    
 class CxLogDevice : public IxLogDevice
 {
  public: 
-   
-   // 
-   virtual void  SwitchOn();
-   virtual void  SwitchOff();      
-   virtual char* GetDeviceName();
-   virtual void  SetCommunicationPort( char* pPortName, unsigned long PortRate, char PortParity );
-   virtual void  Start() = 0;   
-   
- protected:
 
-   CxLogDevice( char *deviceName );
-   ~CxLogDevice(){}
+   virtual const char *getDeviceName();
+
+   virtual void open(){}   // !!! should be fixed 
+   virtual void close(){}  // !!! should be fixed  
+   virtual void start(){}  // !!! should be fixed 
    
-   // com port settings
-   char PORT_NAME[20];
-   unsigned long BaudRate;
-   char Parity;  
-   int PORT;
-   
-   bool enable_operation;                                                       // true - enable / false - disable    
+ //protected:   // !!! should be fixed 
+
+   virtual ~CxLogDevice(){}
+   CxLogDevice( const char *deviceName );
    
  private:    
    
-   void DeviceRegistration();
+   void registration();
    
-   char DEVICE_NAME[20]; 
+   char pcDeviceName[configMAX_DEVICE_NAME_LEN]; 
    
 }; typedef CxLogDevice *pCxLogDevice;
 
