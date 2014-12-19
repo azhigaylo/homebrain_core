@@ -1,22 +1,25 @@
 #ifndef _IX_EVENT_PRODUCER
 #define _IX_EVENT_PRODUCER
 
-#include "CxEvent.h"
-
 //------------------------------------------------------------------------------
 //----------------interface class for evrnt consumer objects--------------------
 //------------------------------------------------------------------------------
+#include "CxEvent.h"
+#include "EventDefinition.h"
+//------------------------------------------------------------------------------
+using namespace event_pool;
+//------------------------------------------------------------------------------
 
-class IxEventProducer  
+class IxEventProducer
 {
- public:
-   IxEventProducer();    
-   virtual ~IxEventProducer();
-   
-   virtual bool sendEvent( CxEvent::EventType, void* ); 
-   
- private:
-}; // end of IxEventConsumer
+   public:
+      IxEventProducer();
+      virtual ~IxEventProducer();
+
+      virtual bool sendEvent( eEventType event, void* eventContainer );
+
+   private:
+};
 
 #endif // _IX_EVENTCONSUMER_H
 

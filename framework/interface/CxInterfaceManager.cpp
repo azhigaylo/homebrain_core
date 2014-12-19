@@ -12,7 +12,7 @@
 #include "CxInterfaceManager.h"
 //------------------------------------------------------------------------------
 CxInterfaceManager* CxInterfaceManager::theInstance = 0;
-CxMutex CxInterfaceManager::singlInterfaceLock("singlLocker");
+CxMutex CxInterfaceManager::singlInterfaceLock("singlInterfaceLocker");
 //------------------------------------------------------------------------------
 
 CxInterfaceManager::CxInterfaceManager( ):

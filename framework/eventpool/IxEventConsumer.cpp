@@ -1,29 +1,50 @@
+//------------------------------------------------------------------------------
+#include <stdlib.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <iostream>
+//------------------------------------------------------------------------------
+#include "slog.h"
+#include "utils.h"
 #include "IxEventConsumer.h"
 #include "CxEventDispatcher.h"
+//------------------------------------------------------------------------------
+using namespace event_pool;
+//------------------------------------------------------------------------------
 
 IxEventConsumer::IxEventConsumer()
 {
 
 }  // end of destructor
 
-
 IxEventConsumer::~IxEventConsumer()
 {
 
 }  // end of destructor
 
-bool IxEventConsumer::setNotification(CxEvent::EventType event)
+bool IxEventConsumer::setNotification(eEventType event)
 {
-    CxEventDispatcher &Dispatcher = CxEventDispatcher::getInstance();
-    TEvent EventData; EventData.eventType = event;
-    if(Dispatcher.setNotification(EventData,this))return true;
-     else return false;
+   CxEventDispatcher *pDispatcher = CxEventDispatcher::getInstance();
+
+   TEvent EventData;
+   EventData.eventType = event;
+
+   if(pDispatcher->setNotification(EventData,this))return true;
+
+   return false;
 }
 
-bool IxEventConsumer::clrNotification(CxEvent::EventType event)
+bool IxEventConsumer::clrNotification(eEventType event)
 {
-    CxEventDispatcher &Dispatcher = CxEventDispatcher::getInstance();
-    TEvent EventData; EventData.eventType = event;
-    if(Dispatcher.clrNotification(EventData,this)) return true;
-     else return false;
+   CxEventDispatcher *pDispatcher = CxEventDispatcher::getInstance();
+
+   TEvent EventData;
+   EventData.eventType = event;
+
+   if(pDispatcher->clrNotification(EventData,this)) return true;
+
+   return false;
 }
+
+	
