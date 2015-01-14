@@ -1,7 +1,15 @@
-#include "CxIniFileParser.h"
+//------------------------------------------------------------------------------
 #include <stdlib.h>
-#include "Utils.h"
-#include "..\framework\debug\DebugMacros.h"
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <iostream>
+#include <sys/stat.h> 
+#include <fcntl.h>
+//------------------------------------------------------------------------------
+#include "slog.h"
+#include "utils.h"
+#include "CxIniFileParser.h"
 
 //------------------------------------------------------------------------------
 //-----------------------CREATE INI FILE PARSER---------------------------------
@@ -20,16 +28,16 @@ CxIniFileParser::~CxIniFileParser()
 
 }
 
-bool CxIniFileParser::ParseBuffer(char *pBuff, unsigned long dwLen)
+bool CxIniFileParser::ParseBuffer(const char *pBuff, uint32_t dwLen)
 {   
-   for(unsigned long i = 0; i < dwLen; i++)
+   for(uint32_t i = 0; i < dwLen; i++)
    {
      if( true == ProcessData(pBuff[i]) ) return true;
    }
    return false;
 }
 
-bool CxIniFileParser::ProcessData(unsigned char btData)
+bool CxIniFileParser::ProcessData(uint8_t btData)
 {
    switch(stateFSM)
    {
@@ -131,13 +139,13 @@ bool CxIniFileParser::ProcessData(unsigned char btData)
    return false;
 }
 
-void CxIniFileParser::SetEtalonSection( char* section )
+void CxIniFileParser::SetEtalonSection( const char* section )
 {
   mod_memset( etalonSection, 0, SECLENGTH, SECLENGTH );
   mod_memcpy( etalonSection, section, mod_strlen(section, SECLENGTH), SECLENGTH );
 }
 
-void CxIniFileParser::SetEtalonKey( char* key )
+void CxIniFileParser::SetEtalonKey( const char* key )
 {
   mod_memset( etalonKey, 0, KEYLENGTH, KEYLENGTH );  
   mod_memcpy( etalonKey, key, mod_strlen(key, KEYLENGTH), KEYLENGTH );
@@ -158,9 +166,9 @@ bool CxIniFileParser::isItEtalonKey()
 //------------------------------------------------------------------------------
 
 
-bool CxIniFileParser::ReadBool( char *IniFileName, char*section, char*id, bool defoult )
+bool CxIniFileParser::ReadBool( const char *IniFileName, const char*section, const char*id, bool defoult )
 {          
-   unsigned short read_length = true;
+   uint16_t read_length = true;
    bool result = defoult;
 
    int ID = FileOpen( IniFileName, FA_READ );
@@ -189,10 +197,10 @@ bool CxIniFileParser::ReadBool( char *IniFileName, char*section, char*id, bool d
 }
 
 
-long  CxIniFileParser::ReadLong ( char *IniFileName, char*section, char*id, long defoult )
+int32_t CxIniFileParser::ReadInt( const char *IniFileName, const char*section, const char*id, int32_t defoult )
 {
-   unsigned short read_length = true;
-   long result = defoult;
+   uint16_t read_length = true;
+   int32_t  result = defoult;
    
    int ID = FileOpen( IniFileName, FA_READ );
    
@@ -206,7 +214,7 @@ long  CxIniFileParser::ReadLong ( char *IniFileName, char*section, char*id, long
        read_length = FileRead( ID, tmp_ini_buf, INI_BUF_SIZE );
        if( true == ParseBuffer(tmp_ini_buf, read_length) )
        { 
-         result = static_cast<long>( atol(GetValue()) );
+         result = static_cast<int32_t>( atol(GetValue()) );
          break; 
        }     
      }
@@ -218,9 +226,9 @@ long  CxIniFileParser::ReadLong ( char *IniFileName, char*section, char*id, long
 }
 
 
-float CxIniFileParser::ReadFloat( char *IniFileName, char*section, char*id, float defoult )
+float CxIniFileParser::ReadFloat( const char *IniFileName, const char*section, const char*id, float defoult )
 {
-   unsigned short read_length = true;
+   uint16_t read_length = true;
    float result = defoult;
    
    int ID = FileOpen( IniFileName, FA_READ );
@@ -246,9 +254,9 @@ float CxIniFileParser::ReadFloat( char *IniFileName, char*section, char*id, floa
    return result;
 }
 
-char* CxIniFileParser::ReadString( char *IniFileName, char*section, char*id )
+char* CxIniFileParser::ReadString( const char *IniFileName, const char*section, const char*id )
 {
-   unsigned short read_length = true;
+   uint16_t read_length = true;
    char* result = NULL;
    
    int ID = FileOpen( IniFileName, FA_READ );
