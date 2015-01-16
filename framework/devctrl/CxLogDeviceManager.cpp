@@ -41,6 +41,23 @@ void CxLogDeviceManager::delInstance()
 {
    if(CxLogDeviceManager::theInstance != 0)
    {
+      if( logDevCounter == LOGDEV_LIST.count() )
+      {
+         CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
+
+         for( uint8_t itr = 0; itr < logDevCounter; itr++ )
+         {
+            IxLogDevice *pDevice = LOGDEV_LIST[itr].pLogDevice;
+            if( NULL != pDevice )
+            {
+               printDebug("CxLogDeviceManager/%s: try to remove LogDev = %s...", __FUNCTION__, pDevice->getDeviceName());
+               delete pDevice;
+            }
+         }
+      }
+      // clean up list
+	  LOGDEV_LIST.clear();
+	  // remove singleton item
       delete this;
    }
 }

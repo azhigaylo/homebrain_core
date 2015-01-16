@@ -31,15 +31,13 @@ struct TCommand
 };
 //------------------------------------------------------------------------------
 
-// driver idettification request format
-
 class IxDriver
 { 
   public:
 
     ~IxDriver();
     // we hide it because everybody should inherit it !  
-    IxDriver( const char *pcName );	
+    IxDriver( const char *pcName );	  // !!! should be fixed 
 
     void task_run();
 

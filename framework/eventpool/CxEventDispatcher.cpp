@@ -120,7 +120,7 @@ bool CxEventDispatcher::setNotification( TEvent event, pTIxEventConsumer pIxEven
      NotificationPool.add( NotificationUnit );
      sNotificationUnitRecNumb++;
 
-     printDebug("CxEventDispatcher/%s: subscribe on event = %i !!!!", __FUNCTION__, event.eventType);	 
+     printDebug("CxEventDispatcher/%s: subscribe on event = %i ", __FUNCTION__, event.eventType);	 
      return true;      
    }  
    return false;

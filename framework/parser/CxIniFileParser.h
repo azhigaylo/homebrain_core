@@ -4,8 +4,8 @@
 //------------------------------------------------------------------------------
 #include "ptypes.h"
 //------------------------------------------------------------------------------
-#define SECLENGTH       16   // max value for segment
-#define KEYLENGTH       16   // max value for key length
+#define SECLENGTH       20   // max value for segment
+#define KEYLENGTH       20   // max value for key length
 #define VALUELENGTH     40   // max value for paramiter
 #define INI_BUF_SIZE    20   // size of buffer for parsing cfg fule
 //------------------------------------------------------------------------------
@@ -41,17 +41,17 @@ class CxIniFileParser
     bool isItEtalonSection();
     bool isItEtalonKey();
 
-    int8_t section[SECLENGTH];
-    int8_t key[KEYLENGTH];
-    int8_t value[VALUELENGTH];
+    char section[SECLENGTH];
+    char key[KEYLENGTH];
+    char value[VALUELENGTH];
     int8_t index;
 
-    int8_t etalonSection[SECLENGTH];
-    int8_t etalonKey[KEYLENGTH];
+    char etalonSection[SECLENGTH];
+    char etalonKey[KEYLENGTH];
 
     ST_INI_PROCESS stateFSM;              // Current state parser is in
 
-    int8_t tmp_ini_buf[INI_BUF_SIZE];
+    char tmp_ini_buf[INI_BUF_SIZE];
 
 }; typedef CxIniFileParser *pTCxIniFileParser;
 

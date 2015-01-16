@@ -42,6 +42,19 @@ void CxMutex::lock( )
    }  
 }
 
+bool CxMutex::tryLock( )
+{
+   bool result = true;
+
+   if (0 != pthread_mutex_trylock(&mutex))
+   {
+      printError("CxMutex/%s: trylock=%s lock error !!!", __FUNCTION__, mutexName);
+      result = false;
+   }
+
+   return result;
+}
+   
 void CxMutex::unlock( )
 {
    if (0 != pthread_mutex_unlock(&mutex))

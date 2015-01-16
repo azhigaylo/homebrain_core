@@ -36,7 +36,7 @@ class IxRunnable
 
   private:
 
-    void run(); 
+    void run();
 
     static void * thRunnableFunction( void *args );
 

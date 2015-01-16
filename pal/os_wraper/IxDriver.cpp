@@ -194,7 +194,6 @@ void IxDriver::ThreadProcessor( )
 }
 */
 
-
 uint16_t counterr_item = 0;
 
 void IxDriver::ThreadProcessor( )

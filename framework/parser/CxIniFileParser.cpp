@@ -6,6 +6,7 @@
 #include <iostream>
 #include <sys/stat.h> 
 #include <fcntl.h>
+#include <unistd.h>
 //------------------------------------------------------------------------------
 #include "slog.h"
 #include "utils.h"
@@ -14,7 +15,6 @@
 //------------------------------------------------------------------------------
 //-----------------------CREATE INI FILE PARSER---------------------------------
 //------------------------------------------------------------------------------
-
 
 CxIniFileParser::CxIniFileParser():
   stateFSM(ST_LOOK_SECTION_START),
@@ -29,7 +29,7 @@ CxIniFileParser::~CxIniFileParser()
 }
 
 bool CxIniFileParser::ParseBuffer(const char *pBuff, uint32_t dwLen)
-{   
+{
    for(uint32_t i = 0; i < dwLen; i++)
    {
      if( true == ProcessData(pBuff[i]) ) return true;
@@ -45,94 +45,93 @@ bool CxIniFileParser::ProcessData(uint8_t btData)
       case ST_LOOK_SECTION_START :
                 if(btData == '[')
                 {
-                   index = 0;                                                   // reset index
-		   stateFSM = ST_LOOK_SECTION_END;
+                   index = 0;                                               // reset index
+                   stateFSM = ST_LOOK_SECTION_END;
                 }
-		break;
+      break;
 
       // Search for end of section '[' and recieve section name
       case ST_LOOK_SECTION_END :
-      		if(btData != ']')
+                if(btData != ']')
                 {
                    section[index++] = btData;
-		   // Check for command overflow
-		   if(index >= SECLENGTH)
+                   // Check for command overflow
+                   if(index >= SECLENGTH)
                    {
-  		     stateFSM = ST_LOOK_SECTION_START;
+                      stateFSM = ST_LOOK_SECTION_START;
                    }
-		}
+                }
                 else
                 {
-		   section[index] = '\0';	                                // terminate command
-
+                   section[index] = '\0';                                   // terminate command
                    if( false == isItEtalonSection() ) stateFSM = ST_LOOK_SECTION_START;
-		    else { index = 0; stateFSM = ST_LOOK_KEY; }	                // goto get data state
-		}
-		break;
+                   else {index = 0; stateFSM = ST_LOOK_KEY;}                // goto get data state
+                }
+      break;
 
       case ST_LOOK_KEY :
-      		if( btData != '=' )
+                if( btData != '=' )
                 {
                    if( (btData != '\n') && (btData != '\r') )
                    {
-                      if( btData == '[' ){
-                        index = 0;
-                        stateFSM = ST_LOOK_SECTION_END;
-                        break;
+                      if( btData == '[' )
+                      {
+                         index = 0;
+                         stateFSM = ST_LOOK_SECTION_END;
+                         break;
                       }
                       key[index++] = btData;
-		      // Check for command overflow
- 		      if(index >= KEYLENGTH)
+                      // Check for command overflow
+                      if(index >= KEYLENGTH)
                       {
-  		        stateFSM = ST_LOOK_SECTION_START;
+                         stateFSM = ST_LOOK_SECTION_START;
                       }
                    }
-		}
+                }
                 else
                 {
-		   key[index] = '\0';	                                        // terminate command
+                   key[index] = '\0';                                        // terminate command
                    index = 0;
-
                    if( false == isItEtalonKey() ) stateFSM = ST_LOOK_VALUE;
-		    else {stateFSM = ST_LOOK_OUR_VALUE;}		        // goto get data state
-		}
-		break;
+                   else {stateFSM = ST_LOOK_OUR_VALUE;}                      // goto get data state
+                }
+      break;
 
       case ST_LOOK_VALUE :
-      		if( (btData != '\n') && (btData != '\r') )
+                if( (btData != '\n') && (btData != '\r') )
                 {
                    value[index++] = btData;
-		   // Check for command overflow
- 		   if(index >= VALUELENGTH)
+                   // Check for command overflow
+                   if(index >= VALUELENGTH)
                    {
-  		     stateFSM = ST_LOOK_SECTION_START;
+                      stateFSM = ST_LOOK_SECTION_START;
                    }
-		}
+                }
                 else
                 {
-		   value[index] = '\0';	                                        // terminate command
+                   value[index] = '\0';                                      // terminate command
                    index = 0;
-		   stateFSM = ST_LOOK_KEY;		                        // goto get data state
-		}
-		break;
+                   stateFSM = ST_LOOK_KEY;                                   // goto get data state
+                }
+      break;
 
       case ST_LOOK_OUR_VALUE :
-      		if( (btData != '\n') && (btData != '\r') )
+                if( (btData != '\n') && (btData != '\r') )
                 {
                    value[index++] = btData;
-		   // Check for command overflow
- 		   if(index >= VALUELENGTH)
+                   // Check for command overflow
+                   if(index >= VALUELENGTH)
                    {
-  		     stateFSM = ST_LOOK_SECTION_START;
+                      stateFSM = ST_LOOK_SECTION_START;
                    }
-		}
+                }
                 else
                 {
-		   value[index] = '\0';	                                        // terminate command
-		   stateFSM = ST_LOOK_SECTION_START;		                // goto get "[" state
+                   value[index] = '\0';                                     // terminate command
+                   stateFSM = ST_LOOK_SECTION_START;                        // goto get "[" state
                    return true;
-		}
-		break;
+                }
+      break;
 
       default : stateFSM = ST_LOOK_SECTION_START;
    }
@@ -141,116 +140,134 @@ bool CxIniFileParser::ProcessData(uint8_t btData)
 
 void CxIniFileParser::SetEtalonSection( const char* section )
 {
-  mod_memset( etalonSection, 0, SECLENGTH, SECLENGTH );
-  mod_memcpy( etalonSection, section, mod_strlen(section, SECLENGTH), SECLENGTH );
+  memset_m( etalonSection, 0, SECLENGTH, SECLENGTH );
+  memcpy_m( etalonSection, section, strlen_m(section, SECLENGTH), SECLENGTH );
 }
 
 void CxIniFileParser::SetEtalonKey( const char* key )
 {
-  mod_memset( etalonKey, 0, KEYLENGTH, KEYLENGTH );  
-  mod_memcpy( etalonKey, key, mod_strlen(key, KEYLENGTH), KEYLENGTH );
+  memset_m( etalonKey, 0, KEYLENGTH, KEYLENGTH );  
+  memcpy_m( etalonKey, key, strlen_m(key, KEYLENGTH), KEYLENGTH );
 }
 
 bool CxIniFileParser::isItEtalonSection()
 {  
-  if( false == mod_strcmp(section, etalonSection) ) return false;
-  return true;
+  if( 0 == strcmp(section, etalonSection) ) return true;
+  return false;
 }
 
 bool CxIniFileParser::isItEtalonKey()
 {
-  if( false == mod_strcmp(key, etalonKey) ) return false;
-  return true;
+  if( 0 == strcmp(key, etalonKey) ) return true;
+  return false;
 }
 
 //------------------------------------------------------------------------------
 
-
 bool CxIniFileParser::ReadBool( const char *IniFileName, const char*section, const char*id, bool defoult )
-{          
+{
    uint16_t read_length = true;
    bool result = defoult;
 
-   int ID = FileOpen( IniFileName, FA_READ );
+   int ID = open( IniFileName, O_RDONLY );
    
    if( -1 != ID )
    {
-     SetEtalonSection(section);
-     SetEtalonKey(id);
+      SetEtalonSection(section);
+      SetEtalonKey(id);
 
-     while( 0 != read_length )
-     {
-       read_length = FileRead( ID, tmp_ini_buf, INI_BUF_SIZE );       
-              
-       if( true == ParseBuffer(tmp_ini_buf, read_length) )
-       { 
-         result = static_cast<bool>( atoi(GetValue()) );
-         break; 
-       }
+      while( 0 != read_length )
+      {
+         if ( (read_length = read( ID, tmp_ini_buf, INI_BUF_SIZE )) == -1)
+         {
+            printError("CxIniFileParser/%s: read inifile error happened ", __FUNCTION__);
+            break;
+         }
 
-     }
-     
-     FileClose( ID );   
+         if( true == ParseBuffer(tmp_ini_buf, read_length) )
+         {
+            result = static_cast<bool>( atoi(GetValue()) );
+            break; 
+         }
+      }
+      close( ID );   
    }  
-     
+   else
+   {
+      printError("CxIniFileParser/%s: open inifile=%s error!!! ", __FUNCTION__, IniFileName);
+   }
    return result;
 }
-
 
 int32_t CxIniFileParser::ReadInt( const char *IniFileName, const char*section, const char*id, int32_t defoult )
 {
    uint16_t read_length = true;
    int32_t  result = defoult;
-   
-   int ID = FileOpen( IniFileName, FA_READ );
-   
+
+   int ID = open( IniFileName, O_RDONLY );
+
    if( -1 != ID )
    {
-     SetEtalonSection(section);
-     SetEtalonKey(id);
+      SetEtalonSection(section);
+      SetEtalonKey(id);
 
-     while( 0 != read_length )
-     {     
-       read_length = FileRead( ID, tmp_ini_buf, INI_BUF_SIZE );
-       if( true == ParseBuffer(tmp_ini_buf, read_length) )
-       { 
-         result = static_cast<int32_t>( atol(GetValue()) );
-         break; 
-       }     
-     }
-     
-     FileClose( ID );   
-   }  
+      while( 0 != read_length )
+      {
+         if ( (read_length = read( ID, tmp_ini_buf, INI_BUF_SIZE )) == -1)
+         {
+            printError("CxIniFileParser/%s: read inifile error happened ", __FUNCTION__);
+            break;
+         }
+
+         if( true == ParseBuffer(tmp_ini_buf, read_length) )
+         {
+            result = static_cast<int32_t>( atol(GetValue()) );
+            break; 
+         }
+      }
+      close( ID );
+   }
+   else
+   {
+      printError("CxIniFileParser/%s: open inifile=%s error!!! ", __FUNCTION__, IniFileName);
+   }
 
    return result;
 }
-
 
 float CxIniFileParser::ReadFloat( const char *IniFileName, const char*section, const char*id, float defoult )
 {
    uint16_t read_length = true;
    float result = defoult;
    
-   int ID = FileOpen( IniFileName, FA_READ );
+   int ID = open( IniFileName, O_RDONLY );
    
    if( -1 != ID )
    {
-     SetEtalonSection(section);
-     SetEtalonKey(id);
+      SetEtalonSection(section);
+      SetEtalonKey(id);
 
-     while( 0 != read_length )
-     {     
-       read_length = FileRead( ID, tmp_ini_buf, INI_BUF_SIZE );
-       if( true == ParseBuffer(tmp_ini_buf, read_length) )
-       { 
-         result = static_cast<float>( atof(GetValue()) );
-         break; 
-       }   
-     }
+      while( 0 != read_length )
+      { 
+         if ( (read_length = read( ID, tmp_ini_buf, INI_BUF_SIZE )) == -1)
+         {
+            printError("CxIniFileParser/%s: read inifile error happened ", __FUNCTION__);
+            break;
+         }
 
-     FileClose( ID );   
+         if( true == ParseBuffer(tmp_ini_buf, read_length) )
+         { 
+            result = static_cast<float>( atof(GetValue()) );
+            break; 
+         }
+      }
+      close( ID );   
    }  
-   
+   else
+   {
+      printError("CxIniFileParser/%s: open inifile=%s error!!! ", __FUNCTION__, IniFileName);
+   }
+
    return result;
 }
 
@@ -259,26 +276,34 @@ char* CxIniFileParser::ReadString( const char *IniFileName, const char*section, 
    uint16_t read_length = true;
    char* result = NULL;
    
-   int ID = FileOpen( IniFileName, FA_READ );
+   int ID = open( IniFileName, O_RDONLY );
    
    if( -1 != ID )
    {
-     SetEtalonSection(section);
-     SetEtalonKey(id);
+      SetEtalonSection(section);
+      SetEtalonKey(id);
 
-     while( 0 != read_length )
-     {      
-       read_length = FileRead( ID, tmp_ini_buf, INI_BUF_SIZE );
-       if( true == ParseBuffer(tmp_ini_buf, read_length) )
-       { 
-         result = GetValue();
-         break; 
-       }  
-     }
+      while( 0 != read_length )
+      {
+         if ( (read_length = read( ID, tmp_ini_buf, INI_BUF_SIZE )) == -1)
+         {
+            printError("CxIniFileParser/%s: read inifile error happened ", __FUNCTION__);
+            break;
+         }
 
-     FileClose( ID );   
-   }  
-   
+         if( true == ParseBuffer(tmp_ini_buf, read_length) )
+         { 
+            result = GetValue();
+            break; 
+         }
+      }
+      close( ID );   
+   }
+   else
+   {
+      printError("CxIniFileParser/%s: open inifile=%s error!!! ", __FUNCTION__, IniFileName);
+   }
+
    return result;
 }
 

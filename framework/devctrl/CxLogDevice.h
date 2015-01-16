@@ -21,7 +21,7 @@ class CxLogDevice : public IxLogDevice
    
  //protected:   // !!! should be fixed 
 
-   virtual ~CxLogDevice(){}
+   virtual ~CxLogDevice();
    CxLogDevice( const char *deviceName );
    
  private:    

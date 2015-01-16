@@ -9,8 +9,9 @@ void            sleep_mcs( uint64_t delay_in_ms );
 void            sleep_s  ( uint64_t delay_in_s  );
 //-----------------------------Utilities-Routines-------------------------------
 char*           strncpy_m ( char* e_str, char* s_str, int32_t dest_size );
-void*           memset_m  ( void* ptr,   int value,   int32_t num,      int32_t dest_size );
-uint32_t        strlen_m  ( char*string, uint32_t reasonvalue );
+void*           memset_m  ( void* ptr,   int value,   int32_t num, int32_t dest_size );
+uint32_t        strlen_m  ( const char*string, uint32_t reasonvalue );
+void*           memcpy_m  ( void* destination, const void* source, int32_t num, int32_t dest_size );
 
 bool            mod_memcpy  ( char*to, char*from, unsigned short datasize, unsigned short sizeofto );
 

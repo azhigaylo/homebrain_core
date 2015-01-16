@@ -18,7 +18,7 @@ class CxInterface : public IxInterface
    //protected:   // !!! should be fixed 
 
       CxInterface( const char *name );
-      virtual ~CxInterface(){}
+      virtual ~CxInterface();
 
       void registration();
 

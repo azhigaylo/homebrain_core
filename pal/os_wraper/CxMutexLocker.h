@@ -10,7 +10,7 @@
 class CxMutexLocker
 {
 public:
-  
+
    CxMutexLocker( CxMutex *mtx );
    ~CxMutexLocker( );
 

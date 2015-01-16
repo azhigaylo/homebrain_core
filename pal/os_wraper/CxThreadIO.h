@@ -22,7 +22,7 @@ class CxThreadIO : public IxRunnable
 
      ~CxThreadIO();
      // we hide it because everybody should inherit it !  
-     CxThreadIO(  const char *taskName,  const char *drvName );
+     CxThreadIO(  const char *taskName,  const char *drvName );   // !!! should be fixed 
 
      // start all parts of system task
      void Start();
@@ -55,7 +55,7 @@ class CxThreadIO : public IxRunnable
      
      uint16_t  initAttempt;	 
      char     pcDrvName[configMAX_DRIVER_NAME_LEN];
-     char     pcCommThreadName[configMAX_DRIVER_NAME_LEN];
+     char     pcCommThreadName[configMAX_TASK_NAME_LEN];
 
   private:
      // FSM process

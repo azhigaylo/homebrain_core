@@ -198,7 +198,7 @@ void* memset_m( void* ptr, int value, int32_t num, int32_t dest_size )
    return res_ptr;
 }
 
-uint32_t strlen_m( char*string, uint32_t reasonvalue )
+uint32_t strlen_m( const char*string, uint32_t reasonvalue )
 {
   uint32_t len = strlen(string);
   if(len > reasonvalue) len = reasonvalue;
@@ -206,17 +206,26 @@ uint32_t strlen_m( char*string, uint32_t reasonvalue )
   return(len);
 }
 
-
-
-bool mod_memcpy( char*to, char*from, unsigned short datasize, unsigned short sizeofto )
+void* memcpy_m( void* destination, const void* source, int32_t num, int32_t dest_size )
 {
-  if(sizeofto >= datasize) {memcpy(to, from, datasize); return true;}
-  else{
-    //ASSERTION(e_memcpy);
-    memcpy(to, from, sizeofto); 
-    return false;
-  }
+   void *pDest = 0;
+
+   if(num >= dest_size)
+   {
+      pDest = memcpy(destination, source, dest_size);
+   }
+   else
+   {
+      pDest = memcpy(destination, source, num); 
+   }
+   return pDest;
 }
+
+
+
+//--------------------------------------------------------------------------------------
+
+
 
 bool mod_strstr( char*string1, char*string2, unsigned short len1, unsigned short len2 )
 {
@@ -237,13 +246,4 @@ char* mod_strrchr( char* string1, char symbol, unsigned short sStringSize )
   if( tmp_out > (string1 + sStringSize ) ) tmp_out = NULL;
   
   return tmp_out;
-}
-
-
-
-bool mod_strcmp( char *s1, char *s2 )    // true - if equil
-{
-  bool result = false;
-  if( strcmp(s1,s2) == 0 ) result = true;
-  return result;
 }

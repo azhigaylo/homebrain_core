@@ -16,6 +16,11 @@ CxInterface::CxInterface( const char *name ):
    registration();     
 }
 
+CxInterface::~CxInterface()
+{
+   printDebug("CxInterface/%s: Interface = %s removed ", __FUNCTION__, pcInterfaceName);
+}
+
 void CxInterface::registration()
 {
   pCxInterfaceManager pInterfaceManager = CxInterfaceManager::getInstance();

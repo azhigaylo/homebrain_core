@@ -15,7 +15,7 @@ using namespace std;
 //--------------------------------class ----------------------------------------
 
 IxRunnable::IxRunnable( const char *pcName ):
-   thread( 0 )
+    thread( 0 )
    ,start_time(time(NULL))
 {
    strncpy_m( pcTaskName, const_cast<char*>(pcName), configMAX_TASK_NAME_LEN );
@@ -43,7 +43,7 @@ void IxRunnable::task_run( )
 
 uint64_t IxRunnable::get_time()
 {
-   return  difftime(time(NULL), start_time); 
+   return difftime(time(NULL), start_time); 
 }
 
 int32_t IxRunnable::create_thread( )

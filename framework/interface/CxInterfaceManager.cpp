@@ -39,12 +39,27 @@ CxInterfaceManager * CxInterfaceManager::getInstance( )
 
 void CxInterfaceManager::delInstance()
 {
-   if(theInstance != 0)
+   if(CxInterfaceManager::theInstance != 0)
    {
+      CxMutexLocker locker(&CxInterfaceManager::singlInterfaceLock);
+
+      for( uint8_t itr = 0; itr < CONNECTION_LIST.count(); itr++ )
+      {
+         pIxInterface pInterface = CONNECTION_LIST[itr].pInterface;
+
+         if (pInterface != 0)
+         {
+            printDebug("CxLogDeviceManager/%s: try to remove interface = %s...", __FUNCTION__, pInterface->getInterfaceName());
+			delete pInterface;
+         } 
+      }
+      // clean up list
+	  CONNECTION_LIST.clear();
+	  // remove singleton item
       delete this;
    }
 }
-
+               
 bool CxInterfaceManager::set_interface( IxInterface * pNewInterface )
 {
    bool result = false;

@@ -155,6 +155,14 @@ bool CxThreadIO::CheckDrvCommand()
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
+/*
+void CxThreadIO::ThreadProcessor( )
+{
+   workThreadID = 0;
+   printError("IxDriver/%s: thread=%s not implemented, EXIT!!!", __FUNCTION__, pcDrvName);
+   pthread_exit(0);
+}
+*/
 
 #include "CxMutex.h"
 uint16_t counter_item = 0;

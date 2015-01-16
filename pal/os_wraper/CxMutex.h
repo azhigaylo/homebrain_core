@@ -17,6 +17,7 @@ public:
    ~CxMutex( );
 
    void lock( );
+   bool tryLock( );
    void unlock( );
 
 private:

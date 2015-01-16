@@ -19,6 +19,10 @@ CxLogDevice::CxLogDevice( const char *deviceName ):
    registration();
 }
 
+CxLogDevice::~CxLogDevice()
+{
+   printDebug("CxLogDevice/%s: LogDev = %s removed ", __FUNCTION__, pcDeviceName);
+}
 
 void CxLogDevice::registration()
 {
