@@ -1,85 +1,78 @@
 //------------------------------------------------------------------------------
-
 #include "CxLauncher.h"
-
-#include "CxTstThread.h"
-#include "..\vtimer\CxVtimer.h"
-#include "..\eventpool\CxEventDispatcher.h"
-#include "..\debug\DebugMacros.h"
-#include "..\debug\ScopeDeclaration.h"
-
 //------------------------------------------------------------------------------
-
-CxLauncher::CxLauncher( ):
-   IxRunnable        ( "INI_TASK"   )
-  ,LauncherState     ( ST_L_UNKNOWN )
-  ,DriverManager     ( CxDriverManager::getInstance()     )  
-  ,LogDeviceManager  ( CxLogDeviceManager::getInstance()  ) 
-  ,ConnectionManager ( CxConnectionManager::getInstance() )    
-  ,bFfsReady         ( false )
-  ,IniFileParser     ( )
-{
-   setNotification( CxEvent::EVENT_FFS_MOUNTED );
-} 
-
-CxLauncher::~CxLauncher( )
-{
-
-}
-
-CxLauncher &CxLauncher::getInstance( )
-{
-  static CxLauncher theInstance;
-  return theInstance;
-}
-
-void CxLauncher::Start()
-{ 
-  // create thread
-  task_run( );
-  // start RTOS scheduler
-  scheduler_start();
-}
+#include "IxRunnable.h"
+#include "CxSysTimer.h"
+#include "CxQueue.h"
+#include "IxDriver.h"
+#include "CxThreadIO.h"
+#include "CxLogDevice.h"
+#include "CxInterface.h"
+#include "CxStaticPool.h"
+#include "CxInterfaceManager.h"
+#include "CxLogDeviceManager.h"
+#include "IxEventConsumer.h"
+#include "CxIniFileParser.h"
+#include "DebugMacros.h"
+#include "ScopeDeclaration.h"
+#include "CxDebugBase.h"
+//------------------------------------------------------------------------------
+#include "slog.h"
+#include "utils.h"
+//------------------------------------------------------------------------------
+using namespace event_pool;
 
 //------------------------------------------------------------------------------  
 // load all drivers
 void CxLauncher::load_all_drivers()
 {
-  portENTER_CRITICAL();
-  
-    DriverManager.loadAllDrivers();
 
-  portEXIT_CRITICAL();  
 }
 
+//------------------------------------------------------------------------------  
 // start all tasks
 void CxLauncher::start_sys_threads()
 {
-    // thread initialization    
-    portENTER_CRITICAL();
+    // -------------------------------------------------------------------------------------------------------
+    IxDriver *pDriver = new IxDriver( "driver" );
+    pDriver->task_run();
+    // -------------------------------------------------------------------------------------------------------
+    CxThreadIO *pThreadIO = new CxThreadIO( "iothread", "driver" );
+    pThreadIO->Start();
+    // -------------------------------------------------------------------------------------------------------
+    CxLogDevice *pLogDevice_1 = new CxLogDevice("LogDevice_1");
+    CxLogDevice *pLogDevice_2 = new CxLogDevice("LogDevice_2");
+    // -------------------------------------------------------------------------------------------------------
+    CxInterface *pInterface_1 = new CxInterface("Interface_1");
+    CxInterface *pInterface_2 = new CxInterface("Interface_2");	
+    // -------------------------------------------------------------------------------------------------------
+    pCxInterfaceManager pInterfaceManager = CxInterfaceManager::getInstance();
 
-      // timer base start
-      CxTBase &tBase= CxTBase::getInstance();
-      tBase.task_run();
-      
-      // event despatcher start
-      CxEventDispatcher &dispatcher = CxEventDispatcher::getInstance();
-      dispatcher.start();
-      
-      // activate all connection 
-      ConnectionManager.activateAllConnection();
-    
-      // blinker thread
-      CxTstThread &TstThread = CxTstThread::getInstance();   
-      TstThread.Start();
-      
-    portEXIT_CRITICAL();
+    pIxInterface pInterface = pInterfaceManager->get_interface( "Interface_1" );
+    printDebug("HomeBrainVx01/%s: find = %s interface ", __FUNCTION__, pInterface->getInterfaceName() );
+
+    pInterface = pInterfaceManager->get_interface( "Interface_2" );
+    printDebug("HomeBrainVx01/%s: find = %s interface ", __FUNCTION__, pInterface->getInterfaceName() );
+    // -------------------------------------------------------------------------------------------------------
+    pCxLogDeviceManager pLogDeviceManager = CxLogDeviceManager::getInstance();
+  
+    IxLogDevice *pLogDevice = pLogDeviceManager->get_logdev( "LogDevice_1" );
+    printDebug("HomeBrainVx01/%s: find = %s logdev ", __FUNCTION__, pLogDevice->getDeviceName() );
+  
+    pLogDevice = pLogDeviceManager->get_logdev( "LogDevice_2" );
+    printDebug("HomeBrainVx01/%s: find = %s logdev ", __FUNCTION__, pLogDevice->getDeviceName() );
+    // -------------------------------------------------------------------------------------------------------
+    //CxIniFileParser *pIniFileParser = new CxIniFileParser();
+    //char *port_id = pIniFileParser->ReadString( "/home/azhigaylo/.config/home_brain/HBconfig.conf", "port", "port_id" );
+    //printDebug("HomeBrainVx01/%s: port_id = %s", __FUNCTION__, port_id );
+    //char *port_name = pIniFileParser->ReadString( "/home/azhigaylo/.config/home_brain/HBconfig.conf", "port", "port_name" );
+    //printDebug("HomeBrainVx01/%s: port_name = %s", __FUNCTION__, port_name );
+
 }
 
 void CxLauncher::start_all_logdev()
 {
-  portENTER_CRITICAL();
-  
+/*
      // all units
      char bLogDevNumber = 0;
      pCxLogDevice pLogdev = LogDeviceManager.getLogDev( bLogDevNumber );
@@ -110,67 +103,115 @@ void CxLauncher::start_all_logdev()
        }
        pLogdev = LogDeviceManager.getLogDev( ++bLogDevNumber );       
      }  
-     
-  portEXIT_CRITICAL();     
+*/	 
+}
+
+void CxLauncher::close_activities()
+{
+   printDebug("HomeBrainVx01/%s: close_activities...", __FUNCTION__ );
+   
+   pCxInterfaceManager pInterfaceManager = CxInterfaceManager::getInstance();
+   pInterfaceManager->delInstance();
+
+   pCxLogDeviceManager pLogDeviceManager = CxLogDeviceManager::getInstance();
+   pLogDeviceManager->delInstance();
+
+   pTCxStaticPool pStaticPool = CxStaticPool::getInstance();
+   pStaticPool->delInstance();
+
+   pTCxDebugBase pDebugBase = CxDebugBase::getInstance();
+   pDebugBase->delInstance();
 }
 
 //------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+//------------------------------------------------------------------------------
+
+CxLauncher::CxLauncher( const char* cgf_name ):
+   IxRunnable        ( "INI_TASK"   )
+  ,LauncherState     ( ST_L_UNKNOWN )
+  ,pInterfaceManager ( CxInterfaceManager::getInstance() )  
+  ,pLogDeviceManager ( CxLogDeviceManager::getInstance() ) 
+  ,bFfsReady         ( true )
+  ,IniFileParser     ( )
+{
+   strncpy_m ( cgfname, const_cast<char*>(cgf_name), sizeof(cgfname) );  
+   setNotification( event_pool::EVENT_FFS_MOUNTED );
+   
+   // establish handler for SIGTERM signal
+   struct sigaction sa;
+   sa.sa_handler = CxLauncher::sigHandler;
+   sigaction(SIGTERM, &sa, 0);
+} 
+
+CxLauncher::~CxLauncher( )
+{
+   close_activities();
+}
+
+void CxLauncher::Start()
+{ 
+  // create thread
+  task_run( );
+  // start RTOS scheduler
+  scheduler_start();
+}
+
 // FSM process
 void CxLauncher::TaskProcessor()
-{  
-  DBG_SCOPE( CxLauncher, CxLauncher )   
-
-  switch( LauncherState )
-  {    
-      case ST_L_UNKNOWN : 
-      {                   
-        LauncherState = ST_L_CONFIG;                                            // put in next state
-        break;
+{
+   switch( LauncherState )
+   {
+      case ST_L_UNKNOWN :
+      {
+         LauncherState = ST_L_CONFIG;                                            // put in next state
+         break;
       }
-      case ST_L_CONFIG :  
-      { 
-        ScopeRegistration();
-        LauncherState = ST_L_DRIVERS_START;                                     // put in next state
-        break;
+      case ST_L_CONFIG :
+      {
+         ScopeRegistration();
+         LauncherState = ST_L_DRIVERS_START;                                     // put in next state
+         break;
       }
-      case ST_L_DRIVERS_START :          
-      { 
-        DBG_MSG( ("[M] System startup \n\r") );  
-        DBG_MSG( ("[M] Scope list has been loaded \n\r") );           
-        
-        load_all_drivers( );                                                    // load all drivers
-          
-        LauncherState = ST_L_SYS_THREAD_START;                                  // put in next state
-        break;
-      }      
-      case ST_L_SYS_THREAD_START :  
-      { 
-        start_sys_threads();
-        task_sleep( 500 );
-        LauncherState = ST_L_SYS_WAIT_FFS_READY;                                // put in next state
-        break;
-      } 
+      case ST_L_DRIVERS_START :
+      {
+         printDebug("CxLauncher/%s: System startup...", __FUNCTION__);
+         load_all_drivers( );                                                    // load all drivers
+         LauncherState = ST_L_SYS_THREAD_START;                                  // put in next state
+         break;
+      }
+      case ST_L_SYS_THREAD_START :
+      {
+         printDebug("CxLauncher/%s: create all instances of classes...", __FUNCTION__);
+         start_sys_threads();
+         LauncherState = ST_L_SYS_WAIT_FFS_READY;                                // put in next state
+         break;
+      }
       case ST_L_SYS_WAIT_FFS_READY:
       {
-        if( bFfsReady == true )
-        {
-          LauncherState = ST_L_LOG_DEVICE_START;                                // put in next state
-        }
-        break;      
+         if( bFfsReady == true )
+         {
+            LauncherState = ST_L_LOG_DEVICE_START;                                // put in next state
+         }
+         break;
       }
-      case ST_L_LOG_DEVICE_START :  
-      {                 
-        start_all_logdev();       
-        LauncherState = ST_L_SLEEP;                                             // put in next state        
-        break;
-      }	
-      case ST_L_SLEEP :  
-      { 
-        task_suspend( );                                                        // suspend INI_PRC task
-          
-        LauncherState = ST_L_CONFIG;                                            // put in next state
-        break;
-      }	                              
+      case ST_L_LOG_DEVICE_START :
+      {
+         printDebug("CxLauncher/%s: start all interface and logical device...", __FUNCTION__);
+         start_all_logdev();
+         LauncherState = ST_L_SLEEP;                                             // put in next state
+         break;
+      }
+      case ST_L_SLEEP :
+      {
+         DBG_SCOPE( CxTstThread, CxTstThread )
+
+         DBG_MSG( ("CxLauncher/%s: delete launcher task, only event will be processed...",__FUNCTION__) );
+         printDebug("CxLauncher/%s: delete launcher task, only event will be processed...", __FUNCTION__);
+
+         task_delete( );
+         break;
+      }
 
       default : break;
    }
@@ -178,26 +219,28 @@ void CxLauncher::TaskProcessor()
 
 bool CxLauncher::processEvent( pTEvent pEvent )
 {
-  DBG_SCOPE( CxLauncher, CxLauncher )   
-          
-  // value event processing  
-  if( pEvent->eventType == CxEvent::EVENT_FFS_MOUNTED )
-  {        
-    bFfsReady = true;  
-    
-    DBG_MSG( ("[M] CxLauncher-FFS ready\n\r") );
-    return true;
-  }
-  
-  return false;
+   // value event processing  
+   if( pEvent->eventType == event_pool::EVENT_FFS_MOUNTED )
+   {
+      bFfsReady = true;  
+      printDebug("CxLauncher/%s: CxLauncher-FFS ready", __FUNCTION__);
+      return true;
+   }
+
+   return false;
+}
+
+void CxLauncher::sigHandler( int sig )
+{
+   close_activities();
 }
 
 void CxLauncher::scheduler_start()
 {
-   vTaskStartScheduler();
+
 }
 
 void CxLauncher::scheduler_stop()
 {
-   vTaskEndScheduler();
+
 }

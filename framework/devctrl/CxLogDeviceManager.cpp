@@ -56,8 +56,8 @@ void CxLogDeviceManager::delInstance()
          }
       }
       // clean up list
-	  LOGDEV_LIST.clear();
-	  // remove singleton item
+      LOGDEV_LIST.clear();
+      // remove singleton item
       delete this;
    }
 }

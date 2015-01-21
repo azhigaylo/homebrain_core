@@ -1,117 +1,69 @@
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
-#include "CxDebugProcessor.h"
-#include "..\framework\debug\DebugMacros.h"
-
 //------------------------------------------------------------------------------
-CxDebugProcessor &debugProcessor = CxDebugProcessor::getInstance();
+#include <stdarg.h>
+#include <inttypes.h>
+#include <syslog.h>
+#include <cstdio>
+#include <iostream>
+#include <stdio.h>
+#include <string.h>
+//------------------------------------------------------------------------------ 
+using namespace std;
+//------------------------------------------------------------------------------ 
+#include "DebugMacros.h"
+#include "CxMutexLocker.h"
+#include "CxDebugProcessor.h"
+//------------------------------------------------------------------------------
+CxMutex CxDebugProcessor::queueMutex("debugQueueMutex");
 //------------------------------------------------------------------------------
 
 CxDebugProcessor::CxDebugProcessor():
-   IxRunnable     ( "DBG_TASK" )
-  ,CxLogDevice    ( "DEV_DBG"  )   
-  ,IxEventConsumer( ) 
-  ,queueMutex     ( )  
-  ,CyclicQueue    ( configDBGBLOCK_SIZE ) 
-  ,transmitterAreFree ( true )    
-    
-{    
-}
-
-CxDebugProcessor &CxDebugProcessor::getInstance()
+    IxRunnable         ( "DBG_TASK" )
+   ,CyclicQueue        ( configDBGBLOCK_SIZE )
+   ,transmitterAreFree ( true )
 {
-  static CxDebugProcessor theInstance;
-  return theInstance;
+
 }
 
 //------------------------------------------------------------------------------
 
 bool CxDebugProcessor::PutDbgMsgInQueu( const char* pFormat, va_list *dataList )
 {
-  bool result = false;
-  
-  queueMutex.take( );
-         
-    mod_memset( DBGMSG.DbgString, 0, configCONTEINER_SIZE, configCONTEINER_SIZE );
-    DBGMSG.Size = mod_sprintf_new( DBGMSG.DbgString, configCONTEINER_SIZE, pFormat, dataList );
-      
-    if( DBGMSG.Size > 0 ) 
-    {  
+   bool result = false;
+
+   CxMutexLocker locker(&CxDebugProcessor::queueMutex);
+
+   memset_m( DBGMSG.DbgString, 0, configCONTEINER_SIZE, configCONTEINER_SIZE );
+   DBGMSG.Size = vsprintf( DBGMSG.DbgString, pFormat, *dataList );
+
+   if( DBGMSG.Size > 0 )
+   {
       result = CyclicQueue.put( DBGMSG );
-    }  
-    
-  queueMutex.give( );
+   }
 
-  return result;
-}
-
-//------------------------------------------------------------------------------
-
-bool CxDebugProcessor::processEvent( pTEvent pEvent )
-{
-  ECB intsrnalECB;
-  GetCommEvent( PORT, &intsrnalECB );
-  
-  if( pEvent->eventType == intsrnalECB.TxEvent )
-  {
-     transmitterAreFree = true;
-     return true;
-   }   
-   return false;    
+   return result;
 }
 
 //------------------------------------------------------------------------------
 
 void CxDebugProcessor::TaskProcessor()
 {
-  if( (enable_operation == true) && (transmitterAreFree == true) )
-  {      
-    if( PORT != -1 )
-    {
-      queueMutex.take( );      
-      
-      mod_memset( DBGMSG.DbgString, 0, configCONTEINER_SIZE, configCONTEINER_SIZE );
-      
-      if ( true == CyclicQueue.get( DBGMSG ) )
-      {
-        if( -1 == FileWrite( PORT, DBGMSG.DbgString, DBGMSG.Size ) )
-        {
-          // reset port 
-          if( -1 != FileClose( PORT ) ) PORT = -1;                        
-        }
-        else        
-        {
-          if( DBGMSG.Size > 0 ) transmitterAreFree = false;
-        }  
-      }
-      
-      queueMutex.give( );        
-    }  
-    else
-    {
-      //If port has been lost or not opened - try to reconnect one         
-      if( PORT == -1 )
-      {
-         SwitchOn();   
-      }    
-    }           
-  }
+   CxMutexLocker locker(&CxDebugProcessor::queueMutex);
+
+   memset_m( DBGMSG.DbgString, 0, configCONTEINER_SIZE, configCONTEINER_SIZE );
+
+   if ( true == CyclicQueue.get( DBGMSG ) )
+   {
+      setlogmask (LOG_UPTO (LOG_NOTICE));
+	  syslog(LOG_NOTICE, "[M] - %s", DBGMSG.DbgString);
+   }
+
+   sleep_mcs(50);
 }
 
 //------------------------------------------------------------------------------
 
 void CxDebugProcessor::Start()
 {
-  DBG_SCOPE( CxDebugProcessor, CxDebugProcessor )
-
-  // set notification on Tx finished event
-  ECB intsrnalECB;
-  GetCommEvent( PORT, &intsrnalECB );
-  setNotification( intsrnalECB.TxEvent );
-  
-  //
-  DBG_MSG( ("[M] DBG task has been runned \n\r") );  
   // start task
-  task_run( );  
+  task_run( );
 }

@@ -1,7 +1,7 @@
 #include <iostream>
 #include "utils.h"
 #include "slog.h"
-
+#include "DebugMacros.h"
 #include "CxLauncher.h"
 
 using namespace std;
@@ -45,7 +45,7 @@ int main()
 	// all initialization is in the launcher class
 	CxLauncher launcher("/home/azhigaylo/.config/home_brain/HBconfig.conf");
     launcher.Start();
-
+	
     EvenREC eventTST;
 		
 	while(1)

@@ -43,7 +43,6 @@ class CxList
    TIntBlk* pLastIntBlk;      // 
 
    CxStaticPoolAllocator<TIntBlk> CONTAINER;       // container for editor object
-
 };
 
 template <class TElement>

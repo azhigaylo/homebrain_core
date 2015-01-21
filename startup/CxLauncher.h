@@ -2,37 +2,35 @@
 #define _CX_LAUNCHER
 
 //------------------------------------------------------------------------------
-
+#include <signal.h>
+//------------------------------------------------------------------------------
 #include "IxRunnable.h"
-#include "CxDriverManager.h"
-#include "..\eventpool\IxEventConsumer.h"
-#include "..\devctrl\CxLogDeviceManager.h"
-#include "..\connection\CxConnectionManager.h"
-#include "..\parser\CxIniFileParser.h"
-
+#include "IxEventConsumer.h"
+#include "CxIniFileParser.h"
+#include "CxLogDeviceManager.h"
+#include "CxInterfaceManager.h"
+//------------------------------------------------------------------------------
+#define configMAX_NAME_NAME_LEN 200
 //------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------
 /*
-
 serve for:
  1. configuration of ports / units
  2. start system / debugging / devices threads
  3. put thread in sleep
-
 */
 
 class CxLauncher : public IxRunnable, public IxEventConsumer
-{   
+{
   
-  enum TStateDBG
-  {
+   enum TStateDBG
+   {
       dbg_off = 0,    
       dbg_on
-  };        
+   };        
 
-  enum TLauncherState
-  {
+   enum TLauncherState
+   {
       ST_L_UNKNOWN = 0,
       ST_L_CONFIG,
       ST_L_DRIVERS_START,
@@ -40,53 +38,53 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
       ST_L_SYS_WAIT_FFS_READY,
       ST_L_LOG_DEVICE_START,
       ST_L_SLEEP
-  };
+   };
   
-  public:  
+   public:  
 
-     static CxLauncher& getInstance();
-     
-     // start all parts of system task
-     void Start();
+      // start all parts of system task
+      void Start();
 
-  private:       
-    
-     // function's   
-     CxLauncher();       
-     ~CxLauncher();
-     
-     // current state os launcher
-     TLauncherState LauncherState;
-     // driver manager
-     CxDriverManager &DriverManager;
-     // logical device manager
-     CxLogDeviceManager &LogDeviceManager;
-     // connection manager
-     CxConnectionManager &ConnectionManager;
-     // state of the main FFS
-     bool bFfsReady;
-     // ini file parcer object
-     CxIniFileParser IniFileParser;    
-          
-     // load all drivers
-     void load_all_drivers();
-     // start all tasks
-     void start_sys_threads();
-     // start all tasks
-     void start_all_logdev();
-     
-     // FSM process
-     virtual void TaskProcessor( );
+      CxLauncher( const char* cgf_name );
+      ~CxLauncher();
 
-     virtual bool processEvent( pTEvent pEvent );                               // form IxEventConsumer
-         
-     // work with scheduler 
-     void scheduler_start();
-     void scheduler_stop();
-     
+   private:
+      // current state os launcher
+      TLauncherState LauncherState;
+      // interface manager	  
+      const CxInterfaceManager *pInterfaceManager;
+      // logical device manager
+      const CxLogDeviceManager *pLogDeviceManager;
+      // state of the main FFS
+      bool bFfsReady;
+      // ini file parcer object
+      CxIniFileParser IniFileParser;    
+
+      // load all drivers
+      static void load_all_drivers();
+      // start all tasks
+      static void start_sys_threads();
+      // start all tasks
+      static void start_all_logdev();
+      // start all interface
+      static void start_all_interface();
+      // close all activities
+      static void close_activities();
+
+      // FSM process
+      virtual void TaskProcessor( );
+
+      virtual bool processEvent( pTEvent pEvent );    // form IxEventConsumer
+
+      static void sigHandler( int sig );
+
+      // work with scheduler 
+      void scheduler_start();                         // only for RTOS 
+      void scheduler_stop();                          // only for RTOS 
+
+      char cgfname[configMAX_NAME_NAME_LEN];
+
  }; typedef CxLauncher *pCxLauncher;
- 
-//------------------------------------------------------------------------------
 
 #endif // _CX_LAUNCHER
 

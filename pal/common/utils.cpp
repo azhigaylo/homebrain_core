@@ -221,11 +221,7 @@ void* memcpy_m( void* destination, const void* source, int32_t num, int32_t dest
    return pDest;
 }
 
-
-
 //--------------------------------------------------------------------------------------
-
-
 
 bool mod_strstr( char*string1, char*string2, unsigned short len1, unsigned short len2 )
 {

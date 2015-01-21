@@ -2,46 +2,48 @@
 #define _CX_DEBUG_BASE
 
 //------------------------------------------------------------------------------
+#include "ptypes.h"
 #include "utils.h"
-#include "..\staticpool\CxList.h"
+#include "CxList.h"
 #include "DebugConfig.h"
 #include "CxDebugProcessor.h"
-
 //------------------------------------------------------------------------------
 #pragma pack ( 1 )
 struct TScopeListItem
 {
-  unsigned short number;
-  unsigned short hashCode;
+  uint16_t number;
+  uint16_t hashCode;
 }; 
 #pragma pack ( )
 typedef TScopeListItem *pTScopeListItem; 
 //------------------------------------------------------------------------------
 
-
 class CxDebugBase
 {
- public: 
-   
-   static CxDebugBase& getInstance();
+ public:
+
+   static CxDebugBase * getInstance();
+   void delInstance();
 
    void ScopeRegistration( const char* pScopeName );
-   bool IsScopeActive( unsigned short sID );
-   
+   bool IsScopeActive( uint16_t sID );
+
    void dbgMessage( const char* pFormat, va_list *dataList );
-   void dbgError  ( const char* pFormat, va_list *dataList );   
-   
- protected:   
+   void dbgError  ( const char* pFormat, va_list *dataList );
+
+ protected:
    
    CxDebugBase();
    ~CxDebugBase( ){}
 
- private:       
+ private:
 
-   CxList<TScopeListItem> SCOPE_LIST;           // scope in processing  
-   
-   CxDebugProcessor &debugProcessor;
-}; 
+   CxList<TScopeListItem> SCOPE_LIST;           // scope in processing
+   CxDebugProcessor debugProcessor;
+
+   static CxMutex singlDebugLock;
+   static CxDebugBase* theInstance;
+};
 typedef CxDebugBase *pTCxDebugBase;
 
 #endif // _CX_DEBUG_BASE 

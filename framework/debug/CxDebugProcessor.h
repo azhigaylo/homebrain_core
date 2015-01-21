@@ -2,61 +2,58 @@
 #define _CXDEBUG_PROCESSOR
 
 //------------------------------------------------------------------------------ 
-#include <stdarg.h>
-#include "DebugConfig.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include <iostream>
+//------------------------------------------------------------------------------
+#include "slog.h"
+#include "utils.h"
+#include "ptypes.h"
 #include "IxRunnable.h"
-#include "CxMutex.h"
-#include "PSysI.h"
-#include "..\devctrl\CxLogDevice.h"
-#include "..\staticpool\CxCyclicQueue.h"
-#include "..\eventpool\IxEventConsumer.h"
+#include "DebugConfig.h"
+#include "CxCyclicQueue.h"
+//------------------------------------------------------------------------------
 
-//------------------------------------------------------------------------------ 
+#define configCONTEINER_SIZE MAX_TRACE_SIZE                 // in byte
+#define configDBGBLOCK_SIZE  ( 50 )                         // in items
 
-#define configCONTEINER_SIZE MAX_TRACE_SIZE                                     // in byte
-#define configDBGBLOCK_SIZE  ( 50 )                                             // in items
-
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 #pragma pack ( 1 )
 struct TDBGMSG
 {
-  unsigned char Size;
-  unsigned char DbgString[configCONTEINER_SIZE];
+   uint8_t Size;
+   char DbgString[configCONTEINER_SIZE];
 }; 
 #pragma pack ( )
 typedef TDBGMSG *pTDBGMSG; 
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 
-class CxDebugProcessor : public IxRunnable, public CxLogDevice, public IxEventConsumer
+class CxDebugProcessor : public IxRunnable
 {
- public: 
-   
-    static CxDebugProcessor& getInstance( );    
+   public:
+      CxDebugProcessor();
+      ~CxDebugProcessor( ){}
 
-    bool PutDbgMsgInQueu( const char* pFormat, va_list *dataList );
-    
-    virtual void  Start();
-       
- private:   
+      bool PutDbgMsgInQueu( const char* pFormat, va_list *dataList );
 
-    CxDebugProcessor();
-    ~CxDebugProcessor( ){}
-            
-    // internal container DBGMSG protector 
-    CxMutex queueMutex;
-    // cyclic queue with messages
-    CxCyclicQueue<TDBGMSG>CyclicQueue;    
-    // current message    
-    TDBGMSG DBGMSG;
-      
-    // task processor
-    virtual void TaskProcessor( );                                              // from IxRunnable
-    virtual bool processEvent( pTEvent pEvent );   
-    
-    bool transmitterAreFree;
-    
+      virtual void  Start();
+
+   private:
+
+      // internal container DBGMSG protector 
+      static CxMutex queueMutex;
+      // cyclic queue with messages
+      CxCyclicQueue<TDBGMSG>CyclicQueue;    
+      // current message    
+      TDBGMSG DBGMSG;
+
+      // task processor
+      virtual void TaskProcessor( );                        // from IxRunnable
+
+      bool transmitterAreFree;
 }; 
 typedef CxDebugProcessor *pCxDebugProcessor;
 
-#endif /*_CXDEBUG_PROCESSOR*/   
+#endif /*_CXDEBUG_PROCESSOR*/

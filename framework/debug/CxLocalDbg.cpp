@@ -7,36 +7,36 @@
 
 //------------------------------------------------------------------------------
 
-CxLocalDbg::CxLocalDbg( unsigned short sID ):
-   dbgBase( CxDebugBase::getInstance() )
+CxLocalDbg::CxLocalDbg( uint16_t sID ):
+   pDbgBase( CxDebugBase::getInstance() )
   ,scopID( sID )   
 {   
-  ScopIsActive = dbgBase.IsScopeActive( sID );  
+  ScopIsActive = pDbgBase->IsScopeActive( sID );  
 }
 
 //------------------------------------------------------------------------------
 
-void CxLocalDbg::sendMessage( const char* pFormat, ...) // const
+void CxLocalDbg::sendMessage( const char* pFormat, ...)const
 {
-  va_list argPtr;
-  va_start(argPtr, pFormat);
+   va_list argPtr;
+   va_start(argPtr, pFormat);
 
-  if( true == ScopIsActive )
-  {    
-    dbgBase.dbgMessage( pFormat, &argPtr );    
-  }  
-  
-  va_end(argPtr);     
+   if( true == ScopIsActive )
+   {    
+      pDbgBase->dbgMessage( pFormat, &argPtr ); 
+   }  
+
+   va_end(argPtr);
 }
 
 void CxLocalDbg::sendError( const char* pFormat, ...)const
 {
-    va_list argPtr;
-    va_start(argPtr, pFormat);
-         
-    dbgBase.dbgError( pFormat, &argPtr );
-    
-    va_end(argPtr);  
+   va_list argPtr;
+   va_start(argPtr, pFormat);
+
+   pDbgBase->dbgError( pFormat, &argPtr );
+
+   va_end(argPtr);
 }
 
 //------------------------------------------------------------------------------
