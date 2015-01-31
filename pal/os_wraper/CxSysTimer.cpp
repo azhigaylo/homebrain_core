@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <signal.h>
 #include <time.h>
+#include <errno.h>
 //------------------------------------------------------------------------------
 #include "slog.h"
 #include "utils.h"
@@ -43,19 +44,26 @@ CxSysTimer::CxSysTimer( const char *name, uint64_t period, bool cyclic ):
    // init the timer
    its.it_value.tv_sec = period / 1000000000;
    its.it_value.tv_nsec = period % 1000000000;
-   its.it_interval.tv_sec = its.it_value.tv_sec;
-   its.it_interval.tv_nsec = its.it_value.tv_nsec;   
+   if (true == cyclic)
+   {
+      its.it_interval.tv_sec = its.it_value.tv_sec;
+      its.it_interval.tv_nsec = its.it_value.tv_nsec;
+   }
 
    printDebug("CxSysTimer/%s: timer=%s / ID=0x%lx", __FUNCTION__, timerName, (long) timerid);
 }
 
-void CxSysTimer::Start()
+void CxSysTimer::StartTimer()
 {
    if (timerid != 0)
    {
       if (timer_settime(timerid, 0, &its, NULL) == -1)
       {
-         printError("CxSysTimer/%s: timer=%s timer_settime error!!!", __FUNCTION__, timerName);
+         printError("CxSysTimer/%s: timer=%s timer_settime error=%d", __FUNCTION__, timerName, errno);
+      }
+      else
+      {
+         //printDebug("CxSysTimer/%s: timer=%s / ID=0x%lx Started", __FUNCTION__, timerName, (long) timerid);
       }
    }
    else
@@ -63,26 +71,30 @@ void CxSysTimer::Start()
       printError("CxSysTimer/%s: timer=%s timerid = 0 !", __FUNCTION__, timerName);
    }
 } 
-void CxSysTimer::Stop()
+void CxSysTimer::StopTimer()
 {
    struct itimerspec its_stop;
    // set Stop values ( 0 )
-   its_stop.it_value.tv_sec  = 0;
-   its_stop.it_value.tv_nsec = 0;
+   its_stop.it_value.tv_sec     = 0;
+   its_stop.it_value.tv_nsec    = 0;
+   its_stop.it_interval.tv_sec  = 0;
+   its_stop.it_interval.tv_nsec = 0;   
 
    if (timerid != 0)
    {
-      if (timer_settime(timerid, 0, &its, NULL) == -1)
+      if (timer_settime(timerid, 0, &its_stop, NULL) == -1)
       {
-         printError("CxSysTimer/%s: timer=%s timer_settime error!!!", __FUNCTION__, timerName);
+         printError("CxSysTimer/%s: timer=%s timer_settime error=%d!!!", __FUNCTION__, timerName, errno);
+      }
+      else
+      {
+         //printDebug("CxSysTimer/%s: timer=%s / ID=0x%lx Stopped", __FUNCTION__, timerName, (long) timerid);
       }
    }
    else
    {
       printError("CxSysTimer/%s: timer=%s timerid = 0 !", __FUNCTION__, timerName);
    }
-   
-   printDebug("CxSysTimer/%s: timer=%s / ID=0x%lx Stopped", __FUNCTION__, timerName, (long) timerid);
 }
 
 CxSysTimer::~CxSysTimer()

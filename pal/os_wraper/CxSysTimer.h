@@ -21,8 +21,8 @@ class CxSysTimer         // class of virtual timer's
     CxSysTimer( const char *name, uint64_t period, bool cyclic );
     ~CxSysTimer();
 
-    void Start();        // start timer
-    void Stop();         // stop timer
+    void StartTimer();        // start timer
+    void StopTimer();         // stop timer
 
   protected:
 

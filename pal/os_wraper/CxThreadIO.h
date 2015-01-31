@@ -32,7 +32,7 @@ class CxThreadIO : public IxRunnable
      // we hide it because everybody should inherit it !  
      //CxThreadIO(  const char *taskName,  const char *drvName );
 
-     virtual void CommandProcessor( TCommand &Command ){} //  = 0;
+     virtual void CommandProcessor( uint16_t ComID, void *data ); //  = 0;
      virtual void ThreadProcessor ( ); // = 0;
 
      int32_t create_comm_thread( );
@@ -48,7 +48,7 @@ class CxThreadIO : public IxRunnable
      uint16_t threadID;
      uint16_t drvID;
 
-    pthread_t commThreadID;
+     pthread_t commThreadID;
 
      CxQueue  inQueue;
      CxQueue  outQueue;

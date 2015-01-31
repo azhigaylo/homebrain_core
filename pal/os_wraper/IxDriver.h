@@ -18,16 +18,16 @@
 #define response                4
 
 // common command ID
-#define DIReq                   1
-#define DIRes                   2
+#define CM_DIReq                1
+#define CM_DIRes                2
 //------------------------------------------------------------------------------
 struct TCommand
 {
   uint16_t SenderID;  
   uint16_t ConsumerID;  
-  uint16_t  ComType;
-  uint16_t  ComID;
-  void *Container;
+  uint16_t ComType;
+  uint16_t ComID;
+  void     *Container;
 };
 //------------------------------------------------------------------------------
 
@@ -36,8 +36,6 @@ class IxDriver
   public:
 
     ~IxDriver();
-    // we hide it because everybody should inherit it !  
-    IxDriver( const char *pcName );	  // !!! should be fixed 
 
     void task_run();
 
@@ -46,19 +44,17 @@ class IxDriver
 
   protected:  
 
-    virtual void CommandProcessor( TCommand &Command ){} // = 0;
+    virtual void CommandProcessor( uint16_t ComID, void *data ) = 0;
     virtual void ThreadProcessor ( );
+	void sendMsg( uint16_t ComID, void *data );   
 
     // we hide it because everybody should inherit it !  
-    //IxDriver( const char *pcName );
+    IxDriver( const char *pcName );
 
     uint16_t DrvID;                       // this is CRC of drivers name
     uint16_t ConsumerID;                  // consumer ID which is connected currently to this driver.
 
   private:
-
-    // we hide it because everybody should inherit it !  
-    //IxDriver( const char *pcName );
 
     int32_t create_thread( );
     int32_t create_comm_thread( );

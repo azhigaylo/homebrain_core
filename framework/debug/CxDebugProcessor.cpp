@@ -29,7 +29,6 @@ CxDebugProcessor::CxDebugProcessor():
 bool CxDebugProcessor::PutDbgMsgInQueu( const char* pFormat, va_list *dataList )
 {
    bool result = false;
-
    CxMutexLocker locker(&CxDebugProcessor::queueMutex);
 
    memset_m( DBGMSG.DbgString, 0, configCONTEINER_SIZE, configCONTEINER_SIZE );
@@ -48,7 +47,6 @@ bool CxDebugProcessor::PutDbgMsgInQueu( const char* pFormat, va_list *dataList )
 void CxDebugProcessor::TaskProcessor()
 {
    CxMutexLocker locker(&CxDebugProcessor::queueMutex);
-
    memset_m( DBGMSG.DbgString, 0, configCONTEINER_SIZE, configCONTEINER_SIZE );
 
    if ( true == CyclicQueue.get( DBGMSG ) )

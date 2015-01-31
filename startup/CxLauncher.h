@@ -60,14 +60,17 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
       // ini file parcer object
       CxIniFileParser IniFileParser;    
 
+      // load all debug scopes
+      void load_debug();
       // load all drivers
-      static void load_all_drivers();
+      void load_all_drivers();
       // start all tasks
-      static void start_sys_threads();
+      void start_sys_threads();
       // start all tasks
-      static void start_all_logdev();
+      void start_all_logdev();
       // start all interface
-      static void start_all_interface();
+      void start_all_interface();
+
       // close all activities
       static void close_activities();
 

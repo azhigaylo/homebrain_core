@@ -1,12 +1,14 @@
 #ifndef _CX_DATA_PROVIDER
 #define _CX_DATA_PROVIDER
 
-#include "..\eventpool\IxEventProducer.h"
+//------------------------------------------------------------------------------
+#include "ptypes.h"
+#include "CxMutex.h"
+#include "IxEventProducer.h"
 
 //------------------------------------------------------------------------------
-#define d_point_total 10
-#define a_point_total 10 
-#define t_point_total 2
+#define d_point_total 100
+#define a_point_total 100
 //------------------------------------------------------------------------------
 
 //---------points status----------
@@ -20,71 +22,53 @@
 
 struct TDPOINT
 {
-  char number;
-  char status;
-  unsigned short value;
+   uint8_t  number;
+   int8_t   status;
+   uint16_t value;
 }; typedef TDPOINT *pTDPOINT; 
 
 struct TAPOINT
 {
-  char number;
-  char status;
-  float value;
+   uint8_t number;
+   int8_t  status;
+   float   value;
 }; typedef TAPOINT *pTAPOINT;
-
-struct TTEXTPOINT
-{    
-  char number;
-  char status;
-  char text[11];
-}; typedef TTEXTPOINT *pTTEXTPOINT; 
 
 #pragma pack ( )
 
 //------------------------------------------------------------------------------
 
-class CxDataProvider: public IxEventProducer 
+class CxDataProvider: public IxEventProducer
 {
-  public:                     
+   public:
+      // function's
+      CxDataProvider();
+      ~CxDataProvider();
 
-     static CxDataProvider& getInstance();
-     
-     TDPOINT & getDPoint( unsigned char number );
-     void setDPoint( unsigned char number, unsigned short value );
-     void incDPoint( unsigned char number );
-     void decDPoint( unsigned char number );
-     void setDStatus( unsigned char number, char status );
-     
-     TAPOINT & getAPoint( unsigned char number );
-     void setAPoint( unsigned char number, float value );
-     void setAStatus( unsigned char number, char status );
+      TDPOINT & getDPoint( uint8_t number );
+      void setDPoint( uint8_t number, uint16_t value );
+      void incDPoint( uint8_t number );
+      void decDPoint( uint8_t number );
+      void setDStatus( uint8_t number, int8_t status );
 
-     
-     TTEXTPOINT & getTPoint( unsigned char number );
-     void pushChar( unsigned char number, char symbol );
-     char popChar( unsigned char number );
-     void putString( unsigned char number, char* text );
-     void setTStatus( unsigned char number, char status );
+      TAPOINT & getAPoint( uint8_t number );
+      void setAPoint( uint8_t number, float value );
+      void setAStatus( uint8_t number, int8_t status );
 
-     
-  protected:    
+   protected:
 
-     void resetDStatus( unsigned char number, char status );    
-     void resetAStatus( unsigned char number, char status );
-     void resetTStatus( unsigned char number, char status );
-     
-     // function's   
-     CxDataProvider();
-     ~CxDataProvider();
-     
-  private:    
-    
-    TDPOINT DPOINT[d_point_total];
-    TAPOINT APOINT[a_point_total];
-    TTEXTPOINT TEXTPOINT[t_point_total];
-     
+      void resetDStatus( uint8_t number, int8_t status );
+      void resetAStatus( uint8_t number, int8_t status );
+
+   private:
+
+      static TDPOINT DPOINT[d_point_total];
+      static TAPOINT APOINT[a_point_total];
+      static CxMutex digitalDataProviderMutex;
+      static CxMutex analogDataProviderMutex;
+
  }; typedef CxDataProvider *pTCxDataProvider;
- 
+
 //------------------------------------------------------------------------------
 
 #endif // _CX_DATA_PROVIDER

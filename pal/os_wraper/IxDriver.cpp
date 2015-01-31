@@ -157,9 +157,9 @@ void IxDriver::CommProcessor( )
    {
       if (Command.ConsumerID == DrvID)
       {
-         printDebug("IxDriver/%s: ConsumerID=%d, SenderID=%d,ComType=%d, ComID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID, Command.ComType, Command.ComID);
+         //printDebug("IxDriver/%s: ConsumerID=%d, SenderID=%d,ComType=%d, ComID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID, Command.ComType, Command.ComID);
          // command is mine
-         if ((Command.ComType == identification_request) && (Command.ComID == DIReq))
+         if ((Command.ComType == identification_request) && (Command.ComID == CM_DIReq))
          {
             // remember current consumer
             ConsumerID = Command.SenderID;
@@ -168,7 +168,7 @@ void IxDriver::CommProcessor( )
             Command.ConsumerID = Command.SenderID;  
             Command.SenderID   = DrvID;               
             Command.ComType    = identification_response;
-            Command.ComID      = DIRes;
+            Command.ComID      = CM_DIRes;
 
             outQueue.send( reinterpret_cast<const void*>(&Command), sizeof(TCommand) );
 
@@ -176,7 +176,15 @@ void IxDriver::CommProcessor( )
          }
          else
          {
-            CommandProcessor( Command );
+            // we should check was client registred or not
+            if (0 != ConsumerID)
+            {
+               CommandProcessor( Command.ComID, Command.Container );
+            }
+            else
+            {
+               printWarning("IxDriver/%s: unexpected msg ConsumerID=%d, SenderID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID);
+            }
          }  
       }
    }
@@ -185,29 +193,29 @@ void IxDriver::CommProcessor( )
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-/*
+
 void IxDriver::ThreadProcessor( )
 {
    workThreadID = 0;
    printError("IxDriver/%s: thread=%s not implemented, EXIT!!!", __FUNCTION__, pcDrvName);
    pthread_exit(0);
 }
-*/
 
-uint16_t counterr_item = 0;
-
-void IxDriver::ThreadProcessor( )
+void IxDriver::sendMsg( uint16_t ComID, void *data )
 {
-   counterr_item++;
-   
    TCommand Command = { 0, 0, 0, 0, NULL };
-   // set up resonce for top level driver
-   Command.ConsumerID = 11857;  
-   Command.SenderID   = 1895;               
-   Command.ComType    = 13;
-   Command.ComID      = counterr_item;
 
-   outQueue.send(reinterpret_cast<const void*>(&Command), sizeof(TCommand)); 
+   // we should check was client registred or not
+   if (0 != ConsumerID)
+   {
+      // set up resonce for top level driver
+      Command.ConsumerID = ConsumerID;
+      Command.SenderID   = DrvID;
+      Command.ComType    = identification_response;
+      Command.ComID      = ComID;
+      Command.Container  = data;
 
-   sleep_s(3);
+      outQueue.send( reinterpret_cast<const void*>(&Command), sizeof(TCommand) );
+   }
 }
+

@@ -8,6 +8,7 @@
 #include "slog.h"
 #include "utils.h"
 #include "CxThreadIO.h"
+#include "CxSerialDriver.h"
 //------------------------------------------------------------------------------
 
 CxThreadIO::CxThreadIO(  const char *taskName,  const char *drvName ):
@@ -122,7 +123,7 @@ void CxThreadIO::TaskProcessor()
 
 void CxThreadIO::DriverIdentificationRequest()
 {
-   TCommand Command = { threadID, drvID, identification_request, DIReq, NULL };
+   TCommand Command = { threadID, drvID, identification_request, CM_DIReq, NULL };
    outQueue.send(reinterpret_cast<const void*>(&Command), sizeof(TCommand));
 }
 
@@ -133,18 +134,18 @@ bool CxThreadIO::CheckDrvCommand()
 
    if (-1 != inQueue.receive(reinterpret_cast<void*>(&Command), sizeof(TCommand)))
    {
-      printDebug("CxThreadIO/%s: ConsumerID=%d, SenderID=%d,ComType=%d, ComID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID, Command.ComType, Command.ComID);
+      //printDebug("CxThreadIO/%s: ConsumerID=%d, SenderID=%d,ComType=%d, ComID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID, Command.ComType, Command.ComID);
 
       if( Command.ConsumerID == threadID && Command.SenderID == drvID )
       {
          // command is mine
-         if( (Command.ComType == identification_response) && (Command.ComID == DIRes) )
+         if( (Command.ComType == identification_response) && (Command.ComID == CM_DIRes) )
          {
             initAttempt++;
          }
          else
          {
-            CommandProcessor( Command );
+            CommandProcessor( Command.ComID, Command.Container );
          }
       }
    }
@@ -165,20 +166,44 @@ void CxThreadIO::ThreadProcessor( )
 */
 
 #include "CxMutex.h"
-uint16_t counter_item = 0;
+uint16_t counter_item = 2;
 
 void CxThreadIO::ThreadProcessor( )
 {
-   counter_item++;
+
+   TSerialBlock serialBlock;
+   serialBlock.msgSize   = 5;
+   serialBlock.msgNumber = counter_item++;
    
    TCommand Command = { 0, 0, 0, 0, NULL };
    // set up resonce for top level driver
    Command.ConsumerID = 1895;  
    Command.SenderID   = 11857;               
-   Command.ComType    = 12;
-   Command.ComID      = counter_item;
+   Command.ComType    = 3;
+   Command.ComID      = CM_OUT_DATA;
+   Command.Container = &serialBlock;
 
    outQueue.send(reinterpret_cast<const void*>(&Command), sizeof(TCommand)); 
 
-   sleep_s(1);
+   sleep_mcs(200000);
+}
+
+void CxThreadIO::CommandProcessor( uint16_t ComID, void *data )
+{
+   TSerialBlock *pSerialBlock = (TSerialBlock *)data;
+
+   switch (ComID)
+   {
+      case CM_INP_DATA :
+      {
+         printDebug("CxThreadIO/%s: rd size=%i, package=%i ", __FUNCTION__, pSerialBlock->msgSize, pSerialBlock->msgNumber);
+         break;
+      }
+      case CM_TIMEOUT :
+      {
+         printDebug("CxThreadIO/%s: timeout for package=%i ", __FUNCTION__, pSerialBlock->msgSize, pSerialBlock->msgNumber);
+         break;
+      }
+      default : printDebug("CxThreadIO/%s: unexpected cmd ", __FUNCTION__);
+   }
 }

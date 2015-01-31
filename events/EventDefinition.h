@@ -18,15 +18,13 @@ namespace event_pool
       EVENT_UART1_Tx,
       EVENT_UART2_Tx,
       // DATA Conteiner
-      EVENT_DP_NEW_VALUE,       
-      EVENT_AP_NEW_VALUE,       
-      EVENT_TP_NEW_VALUE, 
-      EVENT_DP_NEW_STATUS,       
-      EVENT_AP_NEW_STATUS,       
-      EVENT_TP_NEW_STATUS,  
+      EVENT_DP_NEW_VALUE,
+      EVENT_AP_NEW_VALUE,
+      EVENT_DP_NEW_STATUS,
+      EVENT_AP_NEW_STATUS,
       // FFS mounted
-      EVENT_FFS_MOUNTED,  
-      EVENT_FFS_UNMOUNTED,  
+      EVENT_FFS_MOUNTED,
+      EVENT_FFS_UNMOUNTED,
       EVENT_SS
    };
 }

@@ -1,111 +1,73 @@
 //------------------------------------------------------------------------------
-#include "CxLauncher.h"
-//------------------------------------------------------------------------------
-#include "IxRunnable.h"
-#include "CxSysTimer.h"
-#include "CxQueue.h"
-#include "IxDriver.h"
 #include "CxThreadIO.h"
-#include "CxLogDevice.h"
-#include "CxInterface.h"
-#include "CxStaticPool.h"
-#include "CxInterfaceManager.h"
-#include "CxLogDeviceManager.h"
-#include "IxEventConsumer.h"
-#include "CxIniFileParser.h"
+#include "CxSerialDriver.h"
 #include "DebugMacros.h"
 #include "ScopeDeclaration.h"
-#include "CxDebugBase.h"
-//------------------------------------------------------------------------------
-#include "slog.h"
-#include "utils.h"
+
+#include "CxLauncher.h"
 //------------------------------------------------------------------------------
 using namespace event_pool;
+/*	
+//------------------------------------------------------------------------------
+CxLogDevice *pLogDevice_1 = new CxLogDevice("LogDevice_1");
+CxLogDevice *pLogDevice_2 = new CxLogDevice("LogDevice_2");
+//------------------------------------------------------------------------------
+CxInterface *pInterface_1 = new CxInterface("Interface_1");
+CxInterface *pInterface_2 = new CxInterface("Interface_2");	
+//------------------------------------------------------------------------------
+pCxInterfaceManager pInterfaceManager = CxInterfaceManager::getInstance();
 
-//------------------------------------------------------------------------------  
+pIxInterface pInterface = pInterfaceManager->get_interface( "Interface_1" );
+printDebug("HomeBrainVx01/%s: find = %s interface ", __FUNCTION__, pInterface->getInterfaceName() );
+
+pInterface = pInterfaceManager->get_interface( "Interface_2" );
+printDebug("HomeBrainVx01/%s: find = %s interface ", __FUNCTION__, pInterface->getInterfaceName() );
+//------------------------------------------------------------------------------
+pCxLogDeviceManager pLogDeviceManager = CxLogDeviceManager::getInstance();
+
+IxLogDevice *pLogDevice = pLogDeviceManager->get_logdev( "LogDevice_1" );
+printDebug("HomeBrainVx01/%s: find = %s logdev ", __FUNCTION__, pLogDevice->getDeviceName() );
+
+pLogDevice = pLogDeviceManager->get_logdev( "LogDevice_2" );
+printDebug("HomeBrainVx01/%s: find = %s logdev ", __FUNCTION__, pLogDevice->getDeviceName() );
+//------------------------------------------------------------------------------
+*/	
+
+// load all drivers
+void CxLauncher::load_debug()
+{
+   bool dbgState = IniFileParser.ReadBool( "/home/azhigaylo/.config/home_brain/HBconfig.conf", "DEBUG", "state", false );
+
+   if (true == dbgState)
+   {
+      ScopeRegistration();
+   }
+}
+
 // load all drivers
 void CxLauncher::load_all_drivers()
 {
 
 }
 
-//------------------------------------------------------------------------------  
 // start all tasks
 void CxLauncher::start_sys_threads()
-{
-    // -------------------------------------------------------------------------------------------------------
-    IxDriver *pDriver = new IxDriver( "driver" );
-    pDriver->task_run();
-    // -------------------------------------------------------------------------------------------------------
-    CxThreadIO *pThreadIO = new CxThreadIO( "iothread", "driver" );
-    pThreadIO->Start();
-    // -------------------------------------------------------------------------------------------------------
-    CxLogDevice *pLogDevice_1 = new CxLogDevice("LogDevice_1");
-    CxLogDevice *pLogDevice_2 = new CxLogDevice("LogDevice_2");
-    // -------------------------------------------------------------------------------------------------------
-    CxInterface *pInterface_1 = new CxInterface("Interface_1");
-    CxInterface *pInterface_2 = new CxInterface("Interface_2");	
-    // -------------------------------------------------------------------------------------------------------
-    pCxInterfaceManager pInterfaceManager = CxInterfaceManager::getInstance();
+{   
+   DCB dcb = {9600, 0, 8, 1};
+   
+   CxSerialDriver *pDriver = new CxSerialDriver( "driver", "/dev/ttyUSB0", &dcb );
+   pDriver->task_run();
 
-    pIxInterface pInterface = pInterfaceManager->get_interface( "Interface_1" );
-    printDebug("HomeBrainVx01/%s: find = %s interface ", __FUNCTION__, pInterface->getInterfaceName() );
-
-    pInterface = pInterfaceManager->get_interface( "Interface_2" );
-    printDebug("HomeBrainVx01/%s: find = %s interface ", __FUNCTION__, pInterface->getInterfaceName() );
-    // -------------------------------------------------------------------------------------------------------
-    pCxLogDeviceManager pLogDeviceManager = CxLogDeviceManager::getInstance();
-  
-    IxLogDevice *pLogDevice = pLogDeviceManager->get_logdev( "LogDevice_1" );
-    printDebug("HomeBrainVx01/%s: find = %s logdev ", __FUNCTION__, pLogDevice->getDeviceName() );
-  
-    pLogDevice = pLogDeviceManager->get_logdev( "LogDevice_2" );
-    printDebug("HomeBrainVx01/%s: find = %s logdev ", __FUNCTION__, pLogDevice->getDeviceName() );
-    // -------------------------------------------------------------------------------------------------------
-    //CxIniFileParser *pIniFileParser = new CxIniFileParser();
-    //char *port_id = pIniFileParser->ReadString( "/home/azhigaylo/.config/home_brain/HBconfig.conf", "port", "port_id" );
-    //printDebug("HomeBrainVx01/%s: port_id = %s", __FUNCTION__, port_id );
-    //char *port_name = pIniFileParser->ReadString( "/home/azhigaylo/.config/home_brain/HBconfig.conf", "port", "port_name" );
-    //printDebug("HomeBrainVx01/%s: port_name = %s", __FUNCTION__, port_name );
-
+   CxThreadIO *pThreadIO = new CxThreadIO( "iothread", "driver" );
+   pThreadIO->Start();
 }
 
 void CxLauncher::start_all_logdev()
 {
-/*
-     // all units
-     char bLogDevNumber = 0;
-     pCxLogDevice pLogdev = LogDeviceManager.getLogDev( bLogDevNumber );
-   
-     while( NULL != pLogdev )
-     {
-       char* devName = pLogdev->GetDeviceName( );
-       
-       if( pLogdev != NULL )
-       {
-         // read device availability
-         bool enable = IniFileParser.ReadBool( "/sys/config/config.ini", devName, "enable", 0 ); 
-         
-         // if everythings ok - make configuration
-         if( enable != false )
-         {   
-            // get port name          
-            char *port_name = IniFileParser.ReadString( "/sys/config/config.ini", devName, "port" );
-            // set port properties
-            unsigned long port_speed = static_cast<unsigned long>( IniFileParser.ReadLong("/sys/config/config.ini", port_name, "speed", 0) ); 
-            char port_parity = static_cast<char>( IniFileParser.ReadLong("/sys/config/config.ini", port_name, "parity", 0) );
-            port_name = IniFileParser.ReadString( "/sys/config/config.ini", devName, "port" );
-            // configuration of debug unit          
-            pLogdev->SetCommunicationPort( port_name, port_speed, port_parity );
-            pLogdev->SwitchOn(); 
-            pLogdev->Start();
-         }         
-       }
-       pLogdev = LogDeviceManager.getLogDev( ++bLogDevNumber );       
-     }  
-*/	 
+ 
 }
 
+// close all tasks
 void CxLauncher::close_activities()
 {
    printDebug("HomeBrainVx01/%s: close_activities...", __FUNCTION__ );
@@ -169,7 +131,7 @@ void CxLauncher::TaskProcessor()
       }
       case ST_L_CONFIG :
       {
-         ScopeRegistration();
+         load_debug();
          LauncherState = ST_L_DRIVERS_START;                                     // put in next state
          break;
       }
@@ -204,9 +166,6 @@ void CxLauncher::TaskProcessor()
       }
       case ST_L_SLEEP :
       {
-         DBG_SCOPE( CxTstThread, CxTstThread )
-
-         DBG_MSG( ("CxLauncher/%s: delete launcher task, only event will be processed...",__FUNCTION__) );
          printDebug("CxLauncher/%s: delete launcher task, only event will be processed...", __FUNCTION__);
 
          task_delete( );
