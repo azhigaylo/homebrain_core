@@ -170,14 +170,13 @@ uint16_t counter_item = 2;
 
 void CxThreadIO::ThreadProcessor( )
 {
-
    TSerialBlock serialBlock;
    serialBlock.msgSize   = 5;
    serialBlock.msgNumber = counter_item++;
    
    TCommand Command = { 0, 0, 0, 0, NULL };
    // set up resonce for top level driver
-   Command.ConsumerID = 1895;  
+   Command.ConsumerID = 8771;  
    Command.SenderID   = 11857;               
    Command.ComType    = 3;
    Command.ComID      = CM_OUT_DATA;
@@ -185,7 +184,7 @@ void CxThreadIO::ThreadProcessor( )
 
    outQueue.send(reinterpret_cast<const void*>(&Command), sizeof(TCommand)); 
 
-   sleep_mcs(200000);
+   sleep_mcs(1000000);
 }
 
 void CxThreadIO::CommandProcessor( uint16_t ComID, void *data )

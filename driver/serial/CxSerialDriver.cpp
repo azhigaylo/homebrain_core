@@ -13,7 +13,7 @@
 
 CxSerialDriver::CxSerialDriver( const char *drvName, const char *ttyPath, DCB *pDCB ):
     IxDriver       ( drvName )
-   ,CxSysTimer     ( "timeoutTimer", 1000000000, false)          // time in nunosecond
+   ,CxSysTimer     ( "timeoutTimer", 500000000, false)          // time in nunosecond
    ,internalDCB    ( *pDCB   )
    ,fdTTY          ( 0 )
    ,timeout        ( 0 )

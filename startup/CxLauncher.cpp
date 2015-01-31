@@ -47,24 +47,42 @@ void CxLauncher::load_debug()
 // load all drivers
 void CxLauncher::load_all_drivers()
 {
+   // start serial driver SERIAL_1
+   bool portState = IniFileParser.ReadBool( cgfname, "SERIAL_1", "state", false );
+
+   if (true == portState)
+   {
+      char serialName[50];
+      char serialPath[50];   
+      DCB dcb = {9600, 0, 8, 1};
+
+      char* name = IniFileParser.ReadString( cgfname, "SERIAL_1", "name" );
+      strncpy_m(serialName, name, 50 ); 
+      char* path = IniFileParser.ReadString( cgfname, "SERIAL_1", "path" );
+      strncpy_m(serialPath, path, 50 ); 
+      dcb.BaudRate = IniFileParser.ReadInt( cgfname, "SERIAL_1", "baudrate", 9600 );
+      dcb.Parity   = IniFileParser.ReadInt( cgfname, "SERIAL_1", "parity", 0 );
+
+      printDebug("CxLauncher/%s: SERIAL_1 name = %s", __FUNCTION__, serialName);
+      printDebug("CxLauncher/%s: SERIAL_1 path = %s", __FUNCTION__, serialPath);
+      printDebug("CxLauncher/%s: SERIAL_1 baudrate = %d", __FUNCTION__, dcb.BaudRate);
+
+      CxSerialDriver *pDriver = new CxSerialDriver( serialName, serialPath, &dcb );
+      pDriver->task_run();
+   }
 
 }
 
 // start all tasks
 void CxLauncher::start_sys_threads()
-{   
-   DCB dcb = {9600, 0, 8, 1};
-   
-   CxSerialDriver *pDriver = new CxSerialDriver( "driver", "/dev/ttyUSB0", &dcb );
-   pDriver->task_run();
+{
 
-   CxThreadIO *pThreadIO = new CxThreadIO( "iothread", "driver" );
-   pThreadIO->Start();
 }
 
 void CxLauncher::start_all_logdev()
 {
- 
+   CxThreadIO *pThreadIO = new CxThreadIO( "iothread", "serial_1" );
+   pThreadIO->Start();
 }
 
 // close all tasks

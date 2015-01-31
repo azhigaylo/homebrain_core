@@ -24,10 +24,10 @@
 
 struct DCB
 {
-  uint32_t BaudRate;                                   // current baud rate
-  uint8_t Parity;                                      // 0-4=no,odd,even,mark,space
-  uint8_t ByteSize;                                    // number of bits/byte (5-8)
-  uint8_t StopBits;                                    // 1,2
+  uint32_t BaudRate;                                    // current baud rate
+  uint8_t  Parity;                                      // 0-4=no,odd,even,mark,space
+  uint8_t  ByteSize;                                    // number of bits/byte (5-8)
+  uint8_t  StopBits;                                    // 1,2
 }; 
 
 struct TSerialBlock
