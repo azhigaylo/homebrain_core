@@ -157,7 +157,7 @@ void IxDriver::CommProcessor( )
    {
       if (Command.ConsumerID == DrvID)
       {
-         //printDebug("IxDriver/%s: ConsumerID=%d, SenderID=%d,ComType=%d, ComID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID, Command.ComType, Command.ComID);
+         // printDebug("IxDriver/%s: ConsumerID=%d, SenderID=%d,ComType=%d, ComID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID, Command.ComType, Command.ComID);
          // command is mine
          if ((Command.ComType == identification_request) && (Command.ComID == CM_DIReq))
          {
@@ -183,7 +183,7 @@ void IxDriver::CommProcessor( )
             }
             else
             {
-               printWarning("IxDriver/%s: unexpected msg ConsumerID=%d, SenderID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID);
+               printWarning("IxDriver/%s: unexpected msg ComID=%d, ConsumerID=%d, SenderID=%d ", __FUNCTION__, Command.ComID, Command.ConsumerID, Command.SenderID);
             }
          }  
       }
@@ -211,7 +211,7 @@ void IxDriver::sendMsg( uint16_t ComID, void *data )
       // set up resonce for top level driver
       Command.ConsumerID = ConsumerID;
       Command.SenderID   = DrvID;
-      Command.ComType    = identification_response;
+      Command.ComType    = response;
       Command.ComID      = ComID;
       Command.Container  = data;
 

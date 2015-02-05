@@ -15,9 +15,11 @@ class CxLogDevice : public IxLogDevice
 
    virtual const char *getDeviceName();
 
-   virtual void open(){}   // !!! should be fixed 
-   virtual void close(){}  // !!! should be fixed  
-   virtual void start(){}  // !!! should be fixed 
+   virtual void open(){}    // !!! should be fixed 
+   virtual void close(){}   // !!! should be fixed  
+   virtual void start(){}   // !!! should be fixed
+
+   virtual void Process(){} // logical device processor
    
  //protected:   // !!! should be fixed 
 

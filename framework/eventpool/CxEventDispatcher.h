@@ -34,7 +34,8 @@ class CxEventDispatcher : public IxRunnable
     bool NotificationPoolIsEmpty( );
     unsigned short GetNotificationRecNumb( )const;
 
-	bool setEvent( TEvent Event );
+    eEventType getVirtualEvent();
+    bool setEvent( TEvent Event );
     TEvent getEvent( );
 
     friend bool IxEventConsumer::setNotification( eEventType event );
@@ -46,6 +47,7 @@ class CxEventDispatcher : public IxRunnable
     CxVector<TNotificationUnit> NotificationPool;
     unsigned short sNotificationUnitRecNumb;  // number of element in notification pool
     CxQueue EventPool;
+    eEventType lastFreeEventId;
    
     bool setNotification( TEvent event, pTIxEventConsumer pIxEventConsumer );
     bool clrNotification( TEvent event, pTIxEventConsumer pIxEventConsumer );

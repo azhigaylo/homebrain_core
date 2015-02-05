@@ -1,37 +1,15 @@
 //------------------------------------------------------------------------------
-#include "CxThreadIO.h"
-#include "CxSerialDriver.h"
 #include "DebugMacros.h"
 #include "ScopeDeclaration.h"
+
+#include "CxSerialDriver.h"
+#include "CxModBusMaster.h"
+#include "CxLogDev_MA16.h"
 
 #include "CxLauncher.h"
 //------------------------------------------------------------------------------
 using namespace event_pool;
-/*	
 //------------------------------------------------------------------------------
-CxLogDevice *pLogDevice_1 = new CxLogDevice("LogDevice_1");
-CxLogDevice *pLogDevice_2 = new CxLogDevice("LogDevice_2");
-//------------------------------------------------------------------------------
-CxInterface *pInterface_1 = new CxInterface("Interface_1");
-CxInterface *pInterface_2 = new CxInterface("Interface_2");	
-//------------------------------------------------------------------------------
-pCxInterfaceManager pInterfaceManager = CxInterfaceManager::getInstance();
-
-pIxInterface pInterface = pInterfaceManager->get_interface( "Interface_1" );
-printDebug("HomeBrainVx01/%s: find = %s interface ", __FUNCTION__, pInterface->getInterfaceName() );
-
-pInterface = pInterfaceManager->get_interface( "Interface_2" );
-printDebug("HomeBrainVx01/%s: find = %s interface ", __FUNCTION__, pInterface->getInterfaceName() );
-//------------------------------------------------------------------------------
-pCxLogDeviceManager pLogDeviceManager = CxLogDeviceManager::getInstance();
-
-IxLogDevice *pLogDevice = pLogDeviceManager->get_logdev( "LogDevice_1" );
-printDebug("HomeBrainVx01/%s: find = %s logdev ", __FUNCTION__, pLogDevice->getDeviceName() );
-
-pLogDevice = pLogDeviceManager->get_logdev( "LogDevice_2" );
-printDebug("HomeBrainVx01/%s: find = %s logdev ", __FUNCTION__, pLogDevice->getDeviceName() );
-//------------------------------------------------------------------------------
-*/	
 
 // load all drivers
 void CxLauncher::load_debug()
@@ -81,8 +59,10 @@ void CxLauncher::start_sys_threads()
 
 void CxLauncher::start_all_logdev()
 {
-   CxThreadIO *pThreadIO = new CxThreadIO( "iothread", "serial_1" );
-   pThreadIO->Start();
+   CxModBusMaster *pModBusMaster = new CxModBusMaster( "mbus_master", "serial_1" );
+   pModBusMaster->open();
+
+   CxLogDev_MA16 *pLogDev_MA16 = new CxLogDev_MA16( "LogDev_MA16", "mbus_master", 1);
 }
 
 // close all tasks
@@ -184,9 +164,8 @@ void CxLauncher::TaskProcessor()
       }
       case ST_L_SLEEP :
       {
-         printDebug("CxLauncher/%s: delete launcher task, only event will be processed...", __FUNCTION__);
-
-         task_delete( );
+          printDebug("CxLauncher/%s: delete launcher task, only event will be processed...", __FUNCTION__);
+          task_delete( );
          break;
       }
 

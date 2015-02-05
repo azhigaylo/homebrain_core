@@ -12,10 +12,10 @@ class CxInterface : public IxInterface
 
       const char *getInterfaceName();
 
-      virtual int32_t open  ( ){}   // !!! should be fixed 
-      virtual int32_t close ( ){}   // !!! should be fixed 
+      virtual int32_t open  ( ){}
+      virtual int32_t close ( ){}
 
-   //protected:   // !!! should be fixed 
+   protected:
 
       CxInterface( const char *name );
       virtual ~CxInterface();

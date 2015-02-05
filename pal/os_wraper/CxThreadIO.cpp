@@ -41,6 +41,29 @@ void CxThreadIO::Start()
   task_run( ); 
 }
 
+void CxThreadIO::sendMsg( uint16_t ComID, void *data )
+{
+   TCommand Command = { 0, 0, 0, 0, NULL };
+
+   // we should check was client registred or not
+   if (threadIOState == ST_IO_NORMAL_WORK)
+   {
+      // set up resonce for top level driver
+      Command.ConsumerID = drvID;
+      Command.SenderID   = threadID;
+      Command.ComType    = request;
+      Command.ComID      = ComID;
+      Command.Container  = data;
+
+      outQueue.send( reinterpret_cast<const void*>(&Command), sizeof(TCommand) );
+   }
+   else
+   {
+      printWarning("CxThreadIO/%s: ComID=%d skipped", __FUNCTION__, ComID);
+   }
+}
+
+
 //------------------------------------------------------------------------------
 
 int32_t CxThreadIO::create_comm_thread( )
@@ -134,7 +157,7 @@ bool CxThreadIO::CheckDrvCommand()
 
    if (-1 != inQueue.receive(reinterpret_cast<void*>(&Command), sizeof(TCommand)))
    {
-      //printDebug("CxThreadIO/%s: ConsumerID=%d, SenderID=%d,ComType=%d, ComID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID, Command.ComType, Command.ComID);
+      // printDebug("CxThreadIO/%s: ConsumerID=%d, SenderID=%d,ComType=%d, ComID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID, Command.ComType, Command.ComID);
 
       if( Command.ConsumerID == threadID && Command.SenderID == drvID )
       {
@@ -156,53 +179,9 @@ bool CxThreadIO::CheckDrvCommand()
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
-/*
+
 void CxThreadIO::ThreadProcessor( )
 {
-   workThreadID = 0;
-   printError("IxDriver/%s: thread=%s not implemented, EXIT!!!", __FUNCTION__, pcDrvName);
+   printError("CxThreadIO/%s: thread=%s not implemented, EXIT!!!", __FUNCTION__, pcDrvName);
    pthread_exit(0);
-}
-*/
-
-#include "CxMutex.h"
-uint16_t counter_item = 2;
-
-void CxThreadIO::ThreadProcessor( )
-{
-   TSerialBlock serialBlock;
-   serialBlock.msgSize   = 5;
-   serialBlock.msgNumber = counter_item++;
-   
-   TCommand Command = { 0, 0, 0, 0, NULL };
-   // set up resonce for top level driver
-   Command.ConsumerID = 8771;  
-   Command.SenderID   = 11857;               
-   Command.ComType    = 3;
-   Command.ComID      = CM_OUT_DATA;
-   Command.Container = &serialBlock;
-
-   outQueue.send(reinterpret_cast<const void*>(&Command), sizeof(TCommand)); 
-
-   sleep_mcs(1000000);
-}
-
-void CxThreadIO::CommandProcessor( uint16_t ComID, void *data )
-{
-   TSerialBlock *pSerialBlock = (TSerialBlock *)data;
-
-   switch (ComID)
-   {
-      case CM_INP_DATA :
-      {
-         printDebug("CxThreadIO/%s: rd size=%i, package=%i ", __FUNCTION__, pSerialBlock->msgSize, pSerialBlock->msgNumber);
-         break;
-      }
-      case CM_TIMEOUT :
-      {
-         printDebug("CxThreadIO/%s: timeout for package=%i ", __FUNCTION__, pSerialBlock->msgSize, pSerialBlock->msgNumber);
-         break;
-      }
-      default : printDebug("CxThreadIO/%s: unexpected cmd ", __FUNCTION__);
-   }
 }

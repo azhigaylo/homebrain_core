@@ -21,6 +21,7 @@ CxEventDispatcher::CxEventDispatcher():
    ,NotificationPool( configNOTIFICATION_POOL_SIZE )
    ,sNotificationUnitRecNumb( 0 )
    ,EventPool( "event_queue", configEVENT_POOL_SIZE, sizeof(TEvent), true )
+   ,lastFreeEventId( event_pool::EVENT_LAST_EVENT )
 {    
    task_run( );
 }
@@ -63,6 +64,15 @@ unsigned short CxEventDispatcher::GetNotificationRecNumb()const
    return( sNotificationUnitRecNumb );
 }
 
+eEventType CxEventDispatcher::getVirtualEvent()
+{
+   CxMutexLocker locker(&CxEventDispatcher::singlEventLock);
+
+   // hot fix
+   lastFreeEventId = (eEventType)((static_cast<int>(lastFreeEventId)) + 1);
+
+   return lastFreeEventId;
+}
 
 bool CxEventDispatcher::setEvent( TEvent Event )
 {

@@ -12,11 +12,6 @@ namespace event_pool
       EVENT_DUMMY = 0,
       EVENT_POWER_ON,
       EVENT_POWER_OFF,
-      // UART
-      EVENT_UART1_Rx,
-      EVENT_UART2_Rx,
-      EVENT_UART1_Tx,
-      EVENT_UART2_Tx,
       // DATA Conteiner
       EVENT_DP_NEW_VALUE,
       EVENT_AP_NEW_VALUE,
@@ -25,7 +20,7 @@ namespace event_pool
       // FFS mounted
       EVENT_FFS_MOUNTED,
       EVENT_FFS_UNMOUNTED,
-      EVENT_SS
+      EVENT_LAST_EVENT
    };
 }
 

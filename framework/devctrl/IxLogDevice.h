@@ -14,7 +14,9 @@ class IxLogDevice
    virtual void close() = 0;      
    virtual const char *getDeviceName() = 0; 
    virtual void start() = 0;
-   
+
+   virtual void Process() = 0;
+
 }; typedef IxLogDevice *pIxLogDevice;
 
 #endif /*_IX_LOGDEVICE*/   
