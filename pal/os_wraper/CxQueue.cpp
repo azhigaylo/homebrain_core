@@ -63,6 +63,11 @@ bool CxQueue::send( const void *pItemToQueue, int32_t msg_size )
    if( xQueue != -1 )
    {  
      result = (0 == mq_send( xQueue, reinterpret_cast<const char*>(pItemToQueue), msg_size, MSG_PRIO));
+
+     if(false == result )
+     {
+         printError("CxQueue/%s: queue=%s msg_size=%d send error=%d(%s)!!!", __FUNCTION__, queueName, msg_size, errno, strerror(errno));
+     }
    }  
    return result;
 }

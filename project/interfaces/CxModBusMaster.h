@@ -7,6 +7,7 @@
 
 #include "ptypes.h"
 #include "utils.h"
+#include "MBusDB.h"
 #include "CxThreadIO.h"
 #include "CxInterface.h"
 #include "CxSerialDriver.h"
@@ -23,30 +24,24 @@ class CxModBusMaster : public CxThreadIO, public CxInterface, public IxEventProd
       virtual int32_t open  ( );
       virtual int32_t close ( );
 
-      bool SetBackEvent( eEventType event );
-      void Unblock();
-
-      bool GetRegister( uint16_t reg_start, uint16_t reg_count );  // if ModBusMaster if T_IO_BLOCKED -> false
+      uint16_t GetRegister( uint8_t address, uint16_t reg_start, uint16_t reg_count, uint16_t *pResponce );  // if ModBusMaster if T_IO_BLOCKED -> false
+      bool SetRegister( uint8_t address, uint16_t reg_numb, uint16_t reg_value );
 
    protected :
-   
-      enum TBusMasterState
-      {
-         ST_MM_FREE = 0,
-         ST_IO_WAITFOR_RQ,
-         ST_IO_WAITFOR_RESP,
-         ST_IO_BLOCKED,
-         ST_IO_WAITFOR_UNBLOCK
-      };
 
       virtual void CommandProcessor( uint16_t ComID, void *data );
 
    private :
 
-      eEventType      backEvent;
-      TBusMasterState busMasterState;
-      TSerialBlock    commbuf;
-      uint32_t        msgIdInProcessing;   // message ID which is processing
+      uint16_t          counter_item;
+      uint16_t          sizeResponce; 
+
+      TSerialBlock      commbuf;
+      TMREQ             mbReadRequest;
+      TMWRREG           mbWriteRequest;
+      TMRESP            mbResponce;
+
+      pthread_barrier_t our_barrier;
 
       CxModBusMaster( const CxModBusMaster & );
       CxModBusMaster & operator=( const CxModBusMaster & );

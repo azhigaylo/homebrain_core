@@ -32,13 +32,13 @@ void CxLauncher::load_all_drivers()
    {
       char serialName[50];
       char serialPath[50];   
-      DCB dcb = {9600, 0, 8, 1};
+      DCB dcb = {115200, 0, 8, 1};
 
       char* name = IniFileParser.ReadString( cgfname, "SERIAL_1", "name" );
       strncpy_m(serialName, name, 50 ); 
       char* path = IniFileParser.ReadString( cgfname, "SERIAL_1", "path" );
       strncpy_m(serialPath, path, 50 ); 
-      dcb.BaudRate = IniFileParser.ReadInt( cgfname, "SERIAL_1", "baudrate", 9600 );
+      dcb.BaudRate = IniFileParser.ReadInt( cgfname, "SERIAL_1", "baudrate", 115200 );
       dcb.Parity   = IniFileParser.ReadInt( cgfname, "SERIAL_1", "parity", 0 );
 
       printDebug("CxLauncher/%s: SERIAL_1 name = %s", __FUNCTION__, serialName);
@@ -57,12 +57,23 @@ void CxLauncher::start_sys_threads()
 
 }
 
+#include "USODefinition.h"
+
+TAioChannel AI1_CH[4] = {
+ {  0, ATYPE_AI_5mA,  0x0004, 0x0014, 0x00, 0x0032, 0, 0, 0, 0, 1, 5},    //
+ {  1, ATYPE_AI_5mA,  0x0004, 0x0014, 0x00, 0x0032, 0, 0, 0, 0, 2, 6},    // 
+ {  2, ATYPE_AI_5mA,  0x0004, 0x0014, 0x00, 0x0032, 0, 0, 0, 0, 3, 7},    // 
+ {  3, ATYPE_AI_5mA,  0x0004, 0x0014, 0x00, 0x0032, 0, 0, 0, 0, 4, 8},    //  
+}; 
+
 void CxLauncher::start_all_logdev()
 {
    CxModBusMaster *pModBusMaster = new CxModBusMaster( "mbus_master", "serial_1" );
    pModBusMaster->open();
 
-   CxLogDev_MA16 *pLogDev_MA16 = new CxLogDev_MA16( "LogDev_MA16", "mbus_master", 1);
+   TContAI_USO contAI_USO = { 1, 1, 4, AI1_CH};
+ 
+   CxLogDev_MA *pLogDev_MA = new CxLogDev_MA( "LogDev_MA", "mbus_master", contAI_USO);
 }
 
 // close all tasks

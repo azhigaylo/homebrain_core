@@ -81,7 +81,7 @@ bool CxEventDispatcher::setEvent( TEvent Event )
 
 TEvent CxEventDispatcher::getEvent()
 {
-   TEvent Event = { event_pool::EVENT_DUMMY, NULL };
+   TEvent Event = { event_pool::EVENT_DUMMY, 0, NULL };
 
    EventPool.receive( &Event, sizeof(TEvent) );
 

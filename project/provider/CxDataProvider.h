@@ -9,14 +9,17 @@
 //------------------------------------------------------------------------------
 #define d_point_total 100
 #define a_point_total 100
-//------------------------------------------------------------------------------
 
 //---------points status----------
-#define STATUS_UNKNOWN            0x00,      // "UNKNOWN" - linck with device - error
-#define STATUS_RELIABLE           0x01,      // "OK"
-#define STATUS_ALARM              0x02,      // "ALARM"
-#define STATUS_BEFORE_CRASH       0x04,      // "BEFORE CRASH"
-#define STATUS_CRASH              0x08       // "CRASH"
+#define STATUS_UNKNOWN           0  // "UNKNOWN" - link with host - error
+#define STATUS_RELIABLE          1  // "OK"
+#define STATUS_ALARM             2  // "ALARM"
+#define STATUS_BEFORE_CRASH      4  // "BEFORE CRASH"
+#define STATUS_CRASH             8  // "CRASH"
+#define STATUS_SETNEW            16 // set new value of point 
+#define STATUS_PROCESSED         32 // processed of new value of point flag
+
+//------------------------------------------------------------------------------
 
 #pragma pack ( 1 )
 
@@ -45,20 +48,22 @@ class CxDataProvider: public IxEventProducer
       CxDataProvider();
       ~CxDataProvider();
 
+   protected:
+
       TDPOINT & getDPoint( uint8_t number );
       void setDPoint( uint8_t number, uint16_t value );
       void incDPoint( uint8_t number );
       void decDPoint( uint8_t number );
       void setDStatus( uint8_t number, int8_t status );
+      int8_t getDStatus( uint8_t number );
 
       TAPOINT & getAPoint( uint8_t number );
       void setAPoint( uint8_t number, float value );
       void setAStatus( uint8_t number, int8_t status );
+      int8_t getAStatus( uint8_t number );
 
-   protected:
-
-      void resetDStatus( uint8_t number, int8_t status );
-      void resetAStatus( uint8_t number, int8_t status );
+      void  resetDStatus( uint8_t number, int8_t status );
+      void  resetAStatus( uint8_t number, int8_t status );
 
    private:
 

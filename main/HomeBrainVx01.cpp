@@ -17,14 +17,14 @@ int main()
    CxLauncher launcher("/home/azhigaylo/.config/home_brain/HBconfig.conf");
    launcher.Start();
 
+   sleep_mcs(500000);
+      
    while(1)
    {
       pCxLogDeviceManager pLogDeviceManager = CxLogDeviceManager::getInstance();
-      IxLogDevice *pLogDevice = pLogDeviceManager->get_logdev( "LogDev_MA16" );
+      IxLogDevice *pLogDevice = pLogDeviceManager->get_logdev( "LogDev_MA" );
 
       if (pLogDevice){ pLogDevice->Process();}
-        else printDebug("CxLogDev_MA16/%s: ahtung pLogDevice=%i!!!!!", __FUNCTION__, pLogDevice);   
-
-      sleep_mcs(200000);
+        else printDebug("CxLogDev_MA/%s: ahtung pLogDevice=%i!!!!!", __FUNCTION__, pLogDevice);   
    }
 }

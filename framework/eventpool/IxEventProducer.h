@@ -16,7 +16,7 @@ class IxEventProducer
       IxEventProducer();
       virtual ~IxEventProducer();
 
-      virtual bool sendEvent( eEventType event, void* eventContainer );
+      virtual bool sendEvent( eEventType event, uint16_t containerSize, void *eventContainer );
 
    private:
 };

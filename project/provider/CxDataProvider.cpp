@@ -49,7 +49,7 @@ void CxDataProvider::setDPoint( uint8_t number, uint16_t value )
   CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
 
   DPOINT[number].value = value;
-  sendEvent( event_pool::EVENT_DP_NEW_VALUE, reinterpret_cast<void*>(&DPOINT[number]) );
+  //sendEvent( event_pool::EVENT_DP_NEW_VALUE, sizeof(TDPOINT), reinterpret_cast<void*>(&DPOINT[number]) );
 }
 
 void CxDataProvider::incDPoint( uint8_t number )
@@ -57,7 +57,7 @@ void CxDataProvider::incDPoint( uint8_t number )
   CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
 
   DPOINT[number].value++;
-  sendEvent( event_pool::EVENT_DP_NEW_VALUE, reinterpret_cast<void*>(&DPOINT[number]) );
+  //sendEvent( event_pool::EVENT_DP_NEW_VALUE, sizeof(TDPOINT), reinterpret_cast<void*>(&DPOINT[number]) );
 }
 
 void CxDataProvider::decDPoint( uint8_t number )
@@ -65,7 +65,7 @@ void CxDataProvider::decDPoint( uint8_t number )
   CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
 
   DPOINT[number].value--;
-  sendEvent( event_pool::EVENT_DP_NEW_VALUE, reinterpret_cast<void*>(&DPOINT[number]) );
+  //sendEvent( event_pool::EVENT_DP_NEW_VALUE, sizeof(TDPOINT), reinterpret_cast<void*>(&DPOINT[number]) );
 }
      
 void CxDataProvider::setDStatus( uint8_t number, int8_t status )
@@ -73,15 +73,22 @@ void CxDataProvider::setDStatus( uint8_t number, int8_t status )
   CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
 
   DPOINT[number].status |= status;
-  sendEvent( event_pool::EVENT_DP_NEW_STATUS, reinterpret_cast<void*>(&DPOINT[number]) );
+  //sendEvent( event_pool::EVENT_DP_NEW_STATUS, sizeof(TDPOINT), reinterpret_cast<void*>(&DPOINT[number]) );
 }
 
+int8_t CxDataProvider::getDStatus( uint8_t number )
+{
+  CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
+
+  return DPOINT[number].status;
+}
+      
 void CxDataProvider::resetDStatus( uint8_t number, int8_t status )
 {
   CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
 
   DPOINT[number].status &= ~status;
-  sendEvent( event_pool::EVENT_DP_NEW_STATUS, reinterpret_cast<void*>(&DPOINT[number]) );
+  //sendEvent( event_pool::EVENT_DP_NEW_STATUS, sizeof(TDPOINT), reinterpret_cast<void*>(&DPOINT[number]) );
 }
 
 //--------------------------------A point data provider-------------------------
@@ -98,7 +105,7 @@ void CxDataProvider::setAPoint( uint8_t number, float value )
   CxMutexLocker locker(&CxDataProvider::analogDataProviderMutex);
 
   APOINT[number].value   = value;
-  sendEvent( event_pool::EVENT_AP_NEW_VALUE, reinterpret_cast<void*>(&APOINT[number]) );
+  //sendEvent( event_pool::EVENT_AP_NEW_VALUE, sizeof(TAPOINT), reinterpret_cast<void*>(&APOINT[number]) );
 }
 
 void CxDataProvider::setAStatus( uint8_t number, int8_t status )
@@ -106,13 +113,20 @@ void CxDataProvider::setAStatus( uint8_t number, int8_t status )
   CxMutexLocker locker(&CxDataProvider::analogDataProviderMutex);
 
   APOINT[number].status |= status;
-  sendEvent( event_pool::EVENT_AP_NEW_STATUS, reinterpret_cast<void*>(&APOINT[number]) );
+  //sendEvent( event_pool::EVENT_AP_NEW_STATUS, sizeof(TAPOINT), reinterpret_cast<void*>(&APOINT[number]) );
 }
 
+int8_t CxDataProvider::getAStatus( uint8_t number )
+{
+  CxMutexLocker locker(&CxDataProvider::analogDataProviderMutex);
+
+  return APOINT[number].status;
+}
+      
 void CxDataProvider::resetAStatus( uint8_t number, int8_t status )
 {
   CxMutexLocker locker(&CxDataProvider::analogDataProviderMutex);
 
   APOINT[number].status &= ~status;
-  sendEvent( event_pool::EVENT_AP_NEW_STATUS, reinterpret_cast<void*>(&APOINT[number]) );
+  //sendEvent( event_pool::EVENT_AP_NEW_STATUS, sizeof(TAPOINT), reinterpret_cast<void*>(&APOINT[number]) );
 }

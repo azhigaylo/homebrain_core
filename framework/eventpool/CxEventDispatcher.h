@@ -10,7 +10,7 @@
 #include "IxEventConsumer.h"
 #include "IxEventProducer.h"
 //------------------------------------------------------------------------------
-#define configEVENT_POOL_SIZE         (10)      // in event
+#define configEVENT_POOL_SIZE         (30)      // in event
 #define configNOTIFICATION_POOL_SIZE  (50)      // in notification unit
 //------------------------------------------------------------------------------ 
 
@@ -40,7 +40,7 @@ class CxEventDispatcher : public IxRunnable
 
     friend bool IxEventConsumer::setNotification( eEventType event );
     friend bool IxEventConsumer::clrNotification( eEventType event ); 
-    friend bool IxEventProducer::sendEvent( eEventType event, void* );
+    friend bool IxEventProducer::sendEvent( eEventType event, uint16_t containerSize, void* );
 
  private:
 
