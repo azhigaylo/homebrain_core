@@ -24,8 +24,9 @@ class CxModBusMaster : public CxThreadIO, public CxInterface, public IxEventProd
       virtual int32_t open  ( );
       virtual int32_t close ( );
 
-      uint16_t GetRegister( uint8_t address, uint16_t reg_start, uint16_t reg_count, uint16_t *pResponce );  // if ModBusMaster if T_IO_BLOCKED -> false
+      uint16_t GetRegister( uint8_t address, uint16_t reg_start, uint16_t reg_count, uint16_t *pResponce );
       bool SetRegister( uint8_t address, uint16_t reg_numb, uint16_t reg_value );
+      bool SetRegisterBlock( uint8_t address, uint16_t reg_start, uint16_t reg_count, const uint16_t *pOutput );
 
    protected :
 
@@ -39,9 +40,18 @@ class CxModBusMaster : public CxThreadIO, public CxInterface, public IxEventProd
       TSerialBlock      commbuf;
       TMREQ             mbReadRequest;
       TMWRREG           mbWriteRequest;
+      TMBWrBlkReg       mbWrBlkReg;
       TMRESP            mbResponce;
 
+      // synchronization block
       pthread_barrier_t our_barrier;
+
+      pthread_mutex_t cond_mutex; 
+      pthread_cond_t  cond_var; 
+      uint16_t        cond_var_flag; // if flag > 0 - we can go further
+      
+      void sleep_till_resp();
+      void waikeup_by_serial();
 
       CxModBusMaster( const CxModBusMaster & );
       CxModBusMaster & operator=( const CxModBusMaster & );

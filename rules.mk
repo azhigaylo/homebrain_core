@@ -2,7 +2,7 @@
 OBJDIR      := $(patsubst %/,%,$(BUILDDIR)/$(OBJDIR_NAME))
 BINDIR      := $(patsubst %/,%,$(BUILDDIR)/$(BINDIR_NAME))
 
-INC_DIRS    := $(patsubst ./%,%,$(addprefix $(patsubst %/,%,$(ROOT))/, $(SOURCE_SUBDIRS)))
+INC_DIRS    := $(patsubst ./%,%,$(addprefix $(patsubst %/,%,$(ROOT))/, $(SOURCE_SUBDIRS), $(INC_SUBDIRS)))
 SOURCE_DIRS := $(patsubst %/,%,$(ROOT)) $(INC_DIRS)
 C_SOURCES   := $(patsubst ./%, %, $(wildcard $(addsuffix /*.c, $(SOURCE_DIRS))))
 CPP_SOURCES := $(patsubst ./%, %, $(wildcard $(addsuffix /*.cpp, $(SOURCE_DIRS))))

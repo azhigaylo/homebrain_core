@@ -20,6 +20,7 @@ namespace event_pool
       // FFS mounted
       EVENT_FFS_MOUNTED,
       EVENT_FFS_UNMOUNTED,
+      EVENT_DATA_CONNECTED,
       EVENT_LAST_EVENT
    };
 }

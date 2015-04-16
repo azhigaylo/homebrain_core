@@ -35,7 +35,7 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
       ST_L_CONFIG,
       ST_L_DRIVERS_START,
       ST_L_SYS_THREAD_START,
-      ST_L_SYS_WAIT_FFS_READY,
+      ST_L_SYS_WAIT_CONNECTION,
       ST_L_LOG_DEVICE_START,
       ST_L_SLEEP
    };
@@ -55,17 +55,18 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
       const CxInterfaceManager *pInterfaceManager;
       // logical device manager
       const CxLogDeviceManager *pLogDeviceManager;
-      // state of the main FFS
-      bool bFfsReady;
+      // state of the connection to data server
+      bool bDataConnectReady;
       // ini file parcer object
-      CxIniFileParser IniFileParser;    
+      CxIniFileParser IniFileParser;
+
+      void load_driver( const char *sDrvName );
+      void start_sys_interface( const char *sIntName );
 
       // load all debug scopes
       void load_debug();
       // load all drivers
       void load_all_drivers();
-      // start all tasks
-      void start_sys_threads();
       // start all tasks
       void start_all_logdev();
       // start all interface
@@ -90,4 +91,3 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
  }; typedef CxLauncher *pCxLauncher;
 
 #endif // _CX_LAUNCHER
-

@@ -40,7 +40,24 @@ struct TMWRREG
    uint16_t REG; 
    uint16_t CRC;
 }; typedef TMWRREG *pTMWRREG;
-               
+
+struct TMBWrBlkRegHeader
+{
+   uint8_t  address;
+   uint8_t  command;
+   uint8_t  start_reg_hi; 
+   uint8_t  start_reg_low; 
+   uint8_t  numb_reg_hi;
+   uint8_t  numb_reg_low;
+   uint8_t  NumbB;
+}; 
+  
+struct TMBWrBlkReg
+{
+   TMBWrBlkRegHeader Header;
+   uint16_t OutputBuf[200];
+}; 
+      
 struct TMRESPHeader
 {
    uint8_t address; 

@@ -8,8 +8,8 @@
 #include "ptypes.h"
 #include "utils.h"
 #include "CxLogDevice.h"
-#include "CxDataProvider.h"
 #include "CxModBusMaster.h"
+#include "CxDataProvider.h"
 //------------------------------------------------------------------------------
 
 struct TAioChannel
@@ -38,7 +38,7 @@ struct TContAI_USO
 
 //------------------------------------------------------------------------------
 
-class CxLogDev_MA : public CxLogDevice, public CxDataProvider, public CxSysTimer
+class CxLogDev_MA : public CxLogDevice, public CxSysTimer
 {
    public:
 
@@ -64,6 +64,7 @@ class CxLogDev_MA : public CxLogDevice, public CxDataProvider, public CxSysTimer
    
       TContAI_USO    dev_settings;       // USO settings address and so on 
       uint8_t        commError;          // communication error with USO
+      CxDataProvider &dataProvider;      // reference on the data provider
       CxModBusMaster *pModBusMaster;     // pointer to the interface
 
       bool CheckAndSetOutput();

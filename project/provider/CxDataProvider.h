@@ -5,6 +5,7 @@
 #include "ptypes.h"
 #include "CxMutex.h"
 #include "IxEventProducer.h"
+#include "CxDataConnection.h"
 
 //------------------------------------------------------------------------------
 #define d_point_total 100
@@ -41,36 +42,44 @@ struct TAPOINT
 
 //------------------------------------------------------------------------------
 
-class CxDataProvider: public IxEventProducer
+class CxDataProvider
 {
+     // function's
+     CxDataProvider();
+     ~CxDataProvider();
+      
    public:
-      // function's
-      CxDataProvider();
-      ~CxDataProvider();
+      static CxDataProvider &getInstance();
+      
+      TDPOINT & getDPoint( uint16_t number );
+      void setDPoint( uint16_t number, uint16_t value );
+      void incDPoint( uint16_t number );
+      void decDPoint( uint16_t number );
+      void setDStatus( uint16_t number, int8_t status );
+      int8_t getDStatus( uint16_t number );
+      void setSilenceDPoint( uint16_t number, uint16_t value );
+      void setSilenceDStatus( uint16_t number, int8_t status );      
 
-   protected:
-
-      TDPOINT & getDPoint( uint8_t number );
-      void setDPoint( uint8_t number, uint16_t value );
-      void incDPoint( uint8_t number );
-      void decDPoint( uint8_t number );
-      void setDStatus( uint8_t number, int8_t status );
-      int8_t getDStatus( uint8_t number );
-
-      TAPOINT & getAPoint( uint8_t number );
-      void setAPoint( uint8_t number, float value );
-      void setAStatus( uint8_t number, int8_t status );
-      int8_t getAStatus( uint8_t number );
-
-      void  resetDStatus( uint8_t number, int8_t status );
-      void  resetAStatus( uint8_t number, int8_t status );
+      TAPOINT & getAPoint( uint16_t number );
+      void setAPoint( uint16_t number, float value );
+      void setAStatus( uint16_t number, int8_t status );
+      int8_t getAStatus( uint16_t number );
 
    private:
 
-      static TDPOINT DPOINT[d_point_total];
-      static TAPOINT APOINT[a_point_total];
+      TAPOINT APOINT[a_point_total];
+      TDPOINT DPOINT[d_point_total];
+
       static CxMutex digitalDataProviderMutex;
       static CxMutex analogDataProviderMutex;
+      
+      CxDataConnection *getInterface();
+      void sendExternalDpoint( uint16_t number );
+      void sendExternalApoint( uint16_t number );
+      void subscribeOnExternalDpoint( uint16_t number );
+      void subscribeOnExternalApoint( uint16_t number );      
+      
+      CxDataConnection *pDataConnection;     // pointer to the interface   
 
  }; typedef CxDataProvider *pTCxDataProvider;
 

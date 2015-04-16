@@ -16,6 +16,7 @@ CxModBusMaster::CxModBusMaster( const char *interfaceName, const char *drvName )
    ,IxEventProducer( )
    ,counter_item   ( 2 )
    ,sizeResponce   ( 0 )
+   ,cond_var_flag  ( 0 )
 {
    memset_m( &commbuf, 0, sizeof commbuf, sizeof commbuf );
 }
@@ -34,8 +35,8 @@ uint16_t CxModBusMaster::GetRegister( uint8_t address, uint16_t reg_start, uint1
 {
    uint16_t reg_num = 0;
 
-   pthread_barrier_init(&our_barrier,NULL,2);      
-         
+   //pthread_barrier_init(&our_barrier,NULL,2);
+
    commbuf.msgSize   = sizeof(TMREQ);
    commbuf.msgNumber = counter_item++;
 
@@ -48,16 +49,16 @@ uint16_t CxModBusMaster::GetRegister( uint8_t address, uint16_t reg_start, uint1
    mbReadRequest.numb_reg_low  = LOW(reg_count); 
    mbReadRequest.CRC           = CRC16_T(reinterpret_cast<char*>(&mbReadRequest), sizeof(mbReadRequest)-sizeof(mbReadRequest.CRC));
    
-   //printDebug("CxModBusMaster/%s: MB send %d %d %d %d %d %d %d", __FUNCTION__, mbReadRequest.address, mbReadRequest.command, mbReadRequest.start_reg_hi,
-   //                                                mbReadRequest.start_reg_low, mbReadRequest.numb_reg_hi, mbReadRequest.numb_reg_low, mbReadRequest.numb_b);
-
+   //printDebug("CxModBusMaster/%s: MB send %d %d %d %d %d %d", __FUNCTION__, mbReadRequest.address, mbReadRequest.command, mbReadRequest.start_reg_hi,
+   //                                                mbReadRequest.start_reg_low, mbReadRequest.numb_reg_hi, mbReadRequest.numb_reg_low );
    //printDebug("CxModBusMaster/%s: MB CRC=%i / size=%i", __FUNCTION__, mbReadRequest.CRC, sizeof(mbReadRequest)-sizeof(mbReadRequest.CRC) );
 
    memcpy_m( commbuf.buffer, &mbReadRequest, sizeof mbReadRequest, sizeof commbuf.buffer );
 
+   // send message to serial driver    
    sendMsg( CM_OUT_DATA, &commbuf );
-   
-   pthread_barrier_wait(&our_barrier);
+
+   sleep_till_resp();
 
    if ( 0 != sizeResponce)
    {
@@ -75,29 +76,29 @@ bool CxModBusMaster::SetRegister( uint8_t address, uint16_t reg_numb, uint16_t r
 {
    bool result = false;
 
-   pthread_barrier_init(&our_barrier,NULL,2);      
+   //pthread_barrier_init(&our_barrier,NULL,2);      
 
    commbuf.msgSize   = sizeof(TMWRREG);
    commbuf.msgNumber = counter_item++;
 
    // set MB request
    mbWriteRequest.address       = address; 
-   mbWriteRequest.command       = CMD_MB_WREG; 
+   mbWriteRequest.command       = CMD_MB_WARRREG; 
    mbWriteRequest.start_reg_hi  = HIGH(reg_numb); 
    mbWriteRequest.start_reg_low = LOW(reg_numb); 
    mbWriteRequest.REG           = reg_value; 
    mbWriteRequest.CRC           = CRC16_T(reinterpret_cast<char*>(&mbWriteRequest), sizeof(mbWriteRequest)-sizeof(mbWriteRequest.CRC));
    
-   //printDebug("CxModBusMaster/%s: MB send %d %d %d %d %d %d %d", __FUNCTION__, mbReadRequest.address, mbReadRequest.command, mbReadRequest.start_reg_hi,
-   //                                                 mbReadRequest.start_reg_low, mbReadRequest.numb_reg_hi, mbReadRequest.numb_reg_low, mbReadRequest.numb_b);
-
+   //printDebug("CxModBusMaster/%s: MB send %d %d %d %d %d %d", __FUNCTION__, mbReadRequest.address, mbReadRequest.command, mbReadRequest.start_reg_hi,
+   //                                                                         mbReadRequest.start_reg_low, mbReadRequest.numb_reg_hi, mbReadRequest.numb_reg_low);
    //printDebug("CxModBusMaster/%s: MB CRC=%i / size=%i", __FUNCTION__, mbReadRequest.CRC, sizeof(mbReadRequest)-sizeof(mbReadRequest.CRC) );
 
    memcpy_m( commbuf.buffer, &mbWriteRequest, sizeof mbWriteRequest, sizeof commbuf.buffer );
 
+   // send message to serial driver    
    sendMsg( CM_OUT_DATA, &commbuf );
-   
-   pthread_barrier_wait(&our_barrier);
+
+   sleep_till_resp();
 
    if ( 0 != sizeResponce)
    {
@@ -107,6 +108,70 @@ bool CxModBusMaster::SetRegister( uint8_t address, uint16_t reg_numb, uint16_t r
    return result; 
 }
 
+bool CxModBusMaster::SetRegisterBlock( uint8_t address, uint16_t reg_start, uint16_t reg_count, const uint16_t *pOutput )
+{
+   bool result = false;
+
+   //pthread_barrier_init(&our_barrier,NULL,2);      
+
+   // set MB request
+   mbWrBlkReg.Header.address       = address; 
+   mbWrBlkReg.Header.command       = CMD_MB_WREG; 
+   mbWrBlkReg.Header.start_reg_hi  = HIGH(reg_start); 
+   mbWrBlkReg.Header.start_reg_low = LOW(reg_start); 
+   mbWrBlkReg.Header.numb_reg_hi   = HIGH(reg_count); 
+   mbWrBlkReg.Header.numb_reg_low  = LOW(reg_count); 
+   mbWrBlkReg.Header.NumbB         = reg_count*sizeof(uint16_t);
+   // copy buffer
+   memcpy_m( mbWrBlkReg.OutputBuf, pOutput, mbWrBlkReg.Header.NumbB, sizeof(mbWrBlkReg.OutputBuf) );
+   //setup CRC
+   mbWrBlkReg.OutputBuf[reg_count] = CRC16_T(reinterpret_cast<char*>(&mbWrBlkReg), sizeof(mbWrBlkReg.Header) + mbWrBlkReg.Header.NumbB);
+   
+   // copy to communication buffer
+   commbuf.msgSize   = sizeof(mbWrBlkReg.Header) + mbWrBlkReg.Header.NumbB + sizeof(uint16_t);   // sizeof(uint16_t) - CRC size
+   commbuf.msgNumber = counter_item++;
+
+   memcpy_m( commbuf.buffer, &mbWrBlkReg, commbuf.msgSize, sizeof commbuf.buffer );
+
+   // send message to serial driver      
+   sendMsg( CM_OUT_DATA, &commbuf );
+
+   sleep_till_resp();
+
+   if ( 0 != sizeResponce)
+   {
+      result = true;
+   }
+   
+   return result; 
+}
+
+//------------------------------------------------------------------------------
+
+void CxModBusMaster::sleep_till_resp()
+{
+  pthread_mutex_lock(&cond_mutex); 
+  
+  cond_var_flag = 0; 
+  while (cond_var_flag == 0)
+  {  
+     pthread_cond_wait(&cond_var, &cond_mutex); 
+  }
+
+  pthread_mutex_unlock(&cond_mutex); 
+}
+
+void CxModBusMaster::waikeup_by_serial()
+{
+  pthread_mutex_lock(&cond_mutex); 
+
+  cond_var_flag++;
+
+  pthread_cond_signal(&cond_var); 
+
+  pthread_mutex_unlock(&cond_mutex); 
+}
+      
 //------------------------------------------------------------------------------
 
 void CxModBusMaster::CommandProcessor( uint16_t ComID, void *data )
@@ -126,7 +191,6 @@ void CxModBusMaster::CommandProcessor( uint16_t ComID, void *data )
             //                                                                                                 pSerialBlock->buffer[4],  pSerialBlock->buffer[5],  pSerialBlock->buffer[6],  pSerialBlock->buffer[7],
             //                                                                                                 pSerialBlock->buffer[8],  pSerialBlock->buffer[9],  pSerialBlock->buffer[10], pSerialBlock->buffer[11],
             //                                                                                                 pSerialBlock->buffer[12], pSerialBlock->buffer[13]);
-
             //printDebug("CxModBusMaster/%s: MB CRC=%i / size=%i", __FUNCTION__, CRC16_T(reinterpret_cast<char*>(pSerialBlock->buffer), pSerialBlock->msgSize-2), pSerialBlock->msgSize-2 );
 
             if (0 == CRC16_T(reinterpret_cast<char*>(pSerialBlock->buffer), pSerialBlock->msgSize))
@@ -141,7 +205,7 @@ void CxModBusMaster::CommandProcessor( uint16_t ComID, void *data )
                }
                else
                {
-                  printDebug("CxModBusMaster/%s: MB addr or comm mismatch!", __FUNCTION__ );
+                  printDebug("CxModBusMaster/%s: MB addr or comm mismatch", __FUNCTION__ );
                }
             }
             else
@@ -163,6 +227,7 @@ void CxModBusMaster::CommandProcessor( uint16_t ComID, void *data )
       printWarning("CxModBusMaster/%s: cmd was skipped !", __FUNCTION__);	  
    }
 
-   pthread_barrier_wait(&our_barrier);
+   waikeup_by_serial();
 }
 
+      

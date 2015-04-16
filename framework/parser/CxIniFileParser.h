@@ -4,10 +4,10 @@
 //------------------------------------------------------------------------------
 #include "ptypes.h"
 //------------------------------------------------------------------------------
-#define SECLENGTH       20   // max value for segment
-#define KEYLENGTH       20   // max value for key length
-#define VALUELENGTH     40   // max value for paramiter
-#define INI_BUF_SIZE    20   // size of buffer for parsing cfg fule
+#define SECLENGTH       50   // max value for segment
+#define KEYLENGTH       50   // max value for key length
+#define VALUELENGTH     100  // max value for paramiter
+#define INI_BUF_SIZE    50   // size of buffer for parsing cfg fule
 //------------------------------------------------------------------------------
 enum ST_INI_PROCESS 
 {

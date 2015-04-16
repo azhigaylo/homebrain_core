@@ -10,7 +10,7 @@
 #include "IxEventConsumer.h"
 #include "IxEventProducer.h"
 //------------------------------------------------------------------------------
-#define configEVENT_POOL_SIZE         (30)      // in event
+#define configEVENT_POOL_SIZE         (10)      // in event
 #define configNOTIFICATION_POOL_SIZE  (50)      // in notification unit
 //------------------------------------------------------------------------------ 
 

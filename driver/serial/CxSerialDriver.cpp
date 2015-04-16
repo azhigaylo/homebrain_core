@@ -150,7 +150,8 @@ void CxSerialDriver::CommandProcessor( uint16_t ComID, void *data )
                }
                else
                {
-                  // printDebug("CxSerialDriver/%s: wr to tty=%d, size=%i, package=%i ", __FUNCTION__, fdTTY, txBuffer.msgSize, txBuffer.msgNumber);
+                  //printDebug("CxSerialDriver/%s: wr to tty=%d, size=%i, package=%i ", __FUNCTION__, fdTTY, txBuffer.msgSize, txBuffer.msgNumber);
+
                   // start timeout timer
                   startTimer();
                }
@@ -172,15 +173,14 @@ void CxSerialDriver::ThreadProcessor( )
    {
       uint16_t rxLenght = read( fdTTY, rxBuffer.buffer, sizeof(rxBuffer.buffer) );
 
-      //printDebug("CxSerialDriver/%s: MB receive %d %d %d %d %d %d %d %d %d %d %d %d %d", __FUNCTION__, rxBuffer.buffer[0],  rxBuffer.buffer[1],  rxBuffer.buffer[2],  rxBuffer.buffer[3],
+      //printDebug("CxSerialDriver/%s: tty rec %d byte: %d %d %d %d %d %d %d %d %d %d %d %d %d", __FUNCTION__, rxLenght, rxBuffer.buffer[0],  rxBuffer.buffer[1],  rxBuffer.buffer[2],  rxBuffer.buffer[3],
       //                                                                                                 rxBuffer.buffer[4],  rxBuffer.buffer[5],  rxBuffer.buffer[6],  rxBuffer.buffer[7],
       //                                                                                                 rxBuffer.buffer[8],  rxBuffer.buffer[9],  rxBuffer.buffer[10], rxBuffer.buffer[11],
       //                                                                                                 rxBuffer.buffer[12], rxBuffer.buffer[13]);
+      CxMutexLocker locker( &singlSerialLock );
 
       // stop timeout timer
       stopTimer();
-
-      CxMutexLocker locker( &singlSerialLock );
 
       rxBuffer.msgSize = rxLenght;
 
@@ -192,9 +192,13 @@ void CxSerialDriver::ThreadProcessor( )
 
 void CxSerialDriver::sigHandler()
 {
+   //printDebug("CxSerialDriver/%s: timer timeout 1", __FUNCTION__);
+   
    CxMutexLocker locker( &singlSerialLock );
    
    rxBuffer.msgSize = 0;
+   
+   //printDebug("CxSerialDriver/%s: timer timeout 2", __FUNCTION__);
    
    sendMsg( CM_TIMEOUT, &rxBuffer );
 }

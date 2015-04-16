@@ -19,10 +19,10 @@
 
 CxLogDev_MA::CxLogDev_MA( const char *logDevName, const char *usedInterface, TContAI_USO usoSettings ):
     CxLogDevice    ( logDevName )
-   ,CxDataProvider ( )
    ,CxSysTimer     ( "logDev_MA_Timer", 5000000000, false)  // time in nanosecond
    ,dev_settings   ( usoSettings )
    ,commError      ( 0 )
+   ,dataProvider   ( CxDataProvider::getInstance() )
    ,pModBusMaster  ( 0 )
 {
    pCxInterfaceManager pInterfaceManager = CxInterfaceManager::getInstance();
@@ -30,8 +30,6 @@ CxLogDev_MA::CxLogDev_MA( const char *logDevName, const char *usedInterface, TCo
    pModBusMaster = dynamic_cast<CxModBusMaster*>(pInterface);
 
    printDebug("CxLogDev_MA/%s: pModBusMaster=%i", __FUNCTION__, pModBusMaster);
-
-   setUsoStatus( USO_Status_NoReply );
 }
 
 void CxLogDev_MA::Process()
@@ -93,13 +91,13 @@ bool CxLogDev_MA::CheckAndSetOutput()
             {
                case CT_ANALOG_OUT :
                {
-                  if (STATUS_SETNEW == getAStatus(pCurCh->ValPointNumb))
+                  if (STATUS_SETNEW == dataProvider.getAStatus(pCurCh->ValPointNumb))
                   {
-                    TAPOINT & a_point = getAPoint( pCurCh->ValPointNumb );
+                    TAPOINT & a_point = dataProvider.getAPoint( pCurCh->ValPointNumb );
                     
                     if (true == pModBusMaster->SetRegister( dev_settings.address, i, a_point.value ))
                     {
-                       setAStatus( pCurCh->ValPointNumb, STATUS_PROCESSED );
+                       dataProvider.setAStatus( pCurCh->ValPointNumb, STATUS_PROCESSED );
                        result = true;
                     }
                   }
@@ -107,13 +105,13 @@ bool CxLogDev_MA::CheckAndSetOutput()
                }
                case CT_DISCRET_OUT : 
                {
-                  if (STATUS_SETNEW == getDStatus(pCurCh->ValPointNumb))
+                  if (STATUS_SETNEW == dataProvider.getDStatus(pCurCh->ValPointNumb))
                   {
-                    TDPOINT & d_point = getDPoint( pCurCh->ValPointNumb );
+                    TDPOINT & d_point = dataProvider.getDPoint( pCurCh->ValPointNumb );
 
                     if (true == pModBusMaster->SetRegister( dev_settings.address, i, d_point.value ))
                     {
-                       setDStatus( pCurCh->ValPointNumb, STATUS_PROCESSED );
+                       dataProvider.setDStatus( pCurCh->ValPointNumb, STATUS_PROCESSED );
                        result = true;
                     }
                   }
@@ -147,7 +145,7 @@ bool CxLogDev_MA::ReadRegisters()
          if ((CT_ANALOG_IN == GetChannelType(pCurCh))||(CT_DISCRET_IN == GetChannelType(pCurCh)))
          {
             pCurCh->Code = ConvertMBint( mbResponce[i]);
-            printDebug("CxLogDev_MA/%s: %i ch_code = %i", __FUNCTION__, i, pCurCh->Code );                     
+            //printDebug("CxLogDev_MA/%s: %i ch_code = %i", __FUNCTION__, i, pCurCh->Code );                     
          }
       }
 
@@ -203,8 +201,8 @@ CxLogDev_MA::TChType CxLogDev_MA::GetChannelType( const TAioChannel *pCurCh )
 
 void CxLogDev_MA::setUsoStatus( uint16_t status )
 {
-   setDStatus(dev_settings.usoPoint, STATUS_RELIABLE);
-   setDPoint(dev_settings.usoPoint, status);
+   dataProvider.setDStatus(dev_settings.usoPoint, STATUS_RELIABLE);
+   dataProvider.setDPoint(dev_settings.usoPoint, status);
 
    // set error status for USO
    if ((status == USO_Status_NoReply) && (0 != dev_settings.channelsPtr))
@@ -222,17 +220,17 @@ void CxLogDev_MA::setUsoStatus( uint16_t status )
                case CT_ANALOG_IN  :
                case CT_ANALOG_OUT :
                {
-                  setAStatus( pCurCh->ValPointNumb, STATUS_UNKNOWN );
+                  dataProvider.setAStatus( pCurCh->ValPointNumb, STATUS_UNKNOWN );
                   if (0 != pCurCh->MidPointNumb)
                   {
-                     setAStatus( pCurCh->MidPointNumb, STATUS_UNKNOWN );
+                     dataProvider.setAStatus( pCurCh->MidPointNumb, STATUS_UNKNOWN );
                   }
                   break;
                }
                case CT_DISCRET_IN  :
                case CT_DISCRET_OUT :
                {
-                  setDPoint(pCurCh->ValPointNumb, STATUS_UNKNOWN);
+                  dataProvider.setDPoint(pCurCh->ValPointNumb, STATUS_UNKNOWN);
                   break;
                }
                default : break;
@@ -280,14 +278,14 @@ void CxLogDev_MA::ConvAiToVal()
             {
                if (pCurCh->ChanelStatus == A_PARAM_RELIABLE)
                {
-                  setAStatus( pCurCh->MidPointNumb, STATUS_RELIABLE );
+                  dataProvider.setAStatus( pCurCh->MidPointNumb, STATUS_RELIABLE );
                }
                else
                {
-                  setAStatus( pCurCh->MidPointNumb, STATUS_ALARM );
+                  dataProvider.setAStatus( pCurCh->MidPointNumb, STATUS_ALARM );
                }
 
-               setAPoint( pCurCh->MidPointNumb, pCurCh->MidValue );
+               dataProvider.setAPoint( pCurCh->MidPointNumb, pCurCh->MidValue );
             }
          }
          pCurCh++;
@@ -336,28 +334,28 @@ void CxLogDev_MA::ConvAiToParam()
                {
                   if (pCurCh->ChanelStatus == A_PARAM_RELIABLE)
                   {
-                     setAStatus( pCurCh->ValPointNumb, STATUS_RELIABLE );
+                     dataProvider.setAStatus( pCurCh->ValPointNumb, STATUS_RELIABLE );
                   }
                   else
                   {
-                     setAStatus( pCurCh->ValPointNumb, STATUS_ALARM );
+                     dataProvider.setAStatus( pCurCh->ValPointNumb, STATUS_ALARM );
                   }
                   
-                  setAPoint( pCurCh->ValPointNumb, pCurCh->PhisValue );
+                  dataProvider.setAPoint( pCurCh->ValPointNumb, pCurCh->PhisValue );
                   break;
                }
                case CT_DISCRET_IN  :
                {
                   if ((pCurCh->Code) & 0x0001)
                   {
-                     setDPoint(pCurCh->ValPointNumb, 0x01);
+                     dataProvider.setDPoint(pCurCh->ValPointNumb, 0x01);
                   }
                   else 
                   {
-                     setDPoint(pCurCh->ValPointNumb, 0x00);
+                     dataProvider.setDPoint(pCurCh->ValPointNumb, 0x00);
                   }
 
-                  setDStatus(pCurCh->ValPointNumb, STATUS_RELIABLE);
+                  dataProvider.setDStatus(pCurCh->ValPointNumb, STATUS_RELIABLE);
                   break;
                }
                default : break;

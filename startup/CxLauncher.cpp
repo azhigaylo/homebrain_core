@@ -4,7 +4,10 @@
 
 #include "CxSerialDriver.h"
 #include "CxModBusMaster.h"
+#include "CxModBusSlave.h"
 #include "CxLogDev_MA16.h"
+#include "CxLogDev_ExtMod.h"
+#include "CxDataConnection.h"
 
 #include "CxLauncher.h"
 //------------------------------------------------------------------------------
@@ -14,7 +17,7 @@ using namespace event_pool;
 // load all drivers
 void CxLauncher::load_debug()
 {
-   bool dbgState = IniFileParser.ReadBool( "/home/azhigaylo/.config/home_brain/HBconfig.conf", "DEBUG", "state", false );
+   bool dbgState = IniFileParser.ReadBool( cgfname, "DEBUG", "state", false );
 
    if (true == dbgState)
    {
@@ -22,11 +25,12 @@ void CxLauncher::load_debug()
    }
 }
 
-// load all drivers
-void CxLauncher::load_all_drivers()
+//------------------------------------------------------------------------------
+
+void CxLauncher::load_driver( const char *sDrvName )
 {
    // start serial driver SERIAL_1
-   bool portState = IniFileParser.ReadBool( cgfname, "SERIAL_1", "state", false );
+   bool portState = IniFileParser.ReadBool( cgfname, sDrvName, "state", false );
 
    if (true == portState)
    {
@@ -34,53 +38,148 @@ void CxLauncher::load_all_drivers()
       char serialPath[50];   
       DCB dcb = {115200, 0, 8, 1};
 
-      char* name = IniFileParser.ReadString( cgfname, "SERIAL_1", "name" );
-      strncpy_m(serialName, name, 50 ); 
-      char* path = IniFileParser.ReadString( cgfname, "SERIAL_1", "path" );
-      strncpy_m(serialPath, path, 50 ); 
-      dcb.BaudRate = IniFileParser.ReadInt( cgfname, "SERIAL_1", "baudrate", 115200 );
-      dcb.Parity   = IniFileParser.ReadInt( cgfname, "SERIAL_1", "parity", 0 );
+      char* name = IniFileParser.ReadString( cgfname, sDrvName, "name" );
+      strncpy_m(serialName, name, 50 );
+      char* path = IniFileParser.ReadString( cgfname, sDrvName, "path" );
+      strncpy_m(serialPath, path, 50 );
+      dcb.BaudRate = IniFileParser.ReadInt( cgfname, sDrvName, "baudrate", 115200 );
+      dcb.Parity   = IniFileParser.ReadInt( cgfname, sDrvName, "parity", 0 );
 
-      printDebug("CxLauncher/%s: SERIAL_1 name = %s", __FUNCTION__, serialName);
-      printDebug("CxLauncher/%s: SERIAL_1 path = %s", __FUNCTION__, serialPath);
-      printDebug("CxLauncher/%s: SERIAL_1 baudrate = %d", __FUNCTION__, dcb.BaudRate);
+      printDebug("CxLauncher/%s: %s name = %s", __FUNCTION__, sDrvName, serialName);
+      printDebug("CxLauncher/%s: %s path = %s", __FUNCTION__, sDrvName, serialPath);
+      printDebug("CxLauncher/%s: %s baudrate = %d", __FUNCTION__, sDrvName, dcb.BaudRate);
 
       CxSerialDriver *pDriver = new CxSerialDriver( serialName, serialPath, &dcb );
       pDriver->task_run();
    }
 
 }
+// load all drivers
+void CxLauncher::load_all_drivers()
+{
+   char* sDrivers = IniFileParser.ReadString( cgfname, "DRIVER", "list" );
+
+   if (0 != sDrivers)
+   {
+      sDrivers = strdup(sDrivers);
+      char* sDriverItem = strsep(&sDrivers, " ");
+
+      do
+      {
+         load_driver( sDriverItem );
+         printDebug("CxLauncher/%s: sDriverItem = %s", __FUNCTION__, sDriverItem);
+         sDriverItem = strsep(&sDrivers, " ");
+      }
+      while( NULL != sDriverItem );
+      
+      free(sDrivers);
+   }
+}
+
+//------------------------------------------------------------------------------
+
+void CxLauncher::start_sys_interface( const char *sIntName )
+{
+   if ( NULL != sIntName )
+   {
+      bool intState = IniFileParser.ReadBool( cgfname, const_cast<char*>(sIntName), "state", false );
+
+      if (true == intState)
+      {
+         char* sType = IniFileParser.ReadString( cgfname, const_cast<char*>(sIntName), "type" );
+         sType = strdup(sType);
+
+         char* sName = IniFileParser.ReadString( cgfname, const_cast<char*>(sIntName), "name" );
+         sName = strdup(sName);
+
+         char* sDriver = IniFileParser.ReadString( cgfname, const_cast<char*>(sIntName), "driver" );
+         sDriver = strdup(sDriver);
+
+         printDebug("CxLauncher/%s: %s =  %s/%s/%s", __FUNCTION__, sIntName, sType, sName, sDriver);
+
+         // MB_MASTER interfaces
+         if( 0 == strcmp(sType, "mb_master"))
+         {
+           CxModBusMaster *pModBusMaster = new CxModBusMaster( sName, sDriver );
+           pModBusMaster->open();
+         }
+
+         // MB_SLAVE interfaces
+         if( 0 == strcmp(sType, "mb_slave"))
+         {
+            CxModBusSlave *pModBusSlave = new CxModBusSlave( sName, sDriver );
+            pModBusSlave->open();
+         }
+
+         // DATA_CNCT interfaces
+         if( 0 == strcmp(sType, "dtaconnect"))
+         {
+           CxDataConnection *pDataConnection = new CxDataConnection(sName, sDriver );
+           pDataConnection->open();
+         }
+
+         free(sType);
+         free(sName);
+         free(sDriver);
+      }
+   }
+}
 
 // start all tasks
-void CxLauncher::start_sys_threads()
+void CxLauncher::start_all_interface()
 {
+   char* sInterfaces = IniFileParser.ReadString( cgfname, "INTERFACE", "list" );
 
+   if (0 != sInterfaces)
+   {
+      sInterfaces = strdup(sInterfaces);
+      char* sInterfaceItem = strsep(&sInterfaces, " ");
+
+      do
+      {
+         start_sys_interface( sInterfaceItem );
+         sInterfaceItem = strsep(&sInterfaces, " ");
+      }
+      while( NULL != sInterfaceItem );
+      
+      free(sInterfaces);
+   }
 }
+
+//------------------------------------------------------------------------------
 
 #include "USODefinition.h"
 
-TAioChannel AI1_CH[4] = {
- {  0, ATYPE_AI_5mA,  0x0004, 0x0014, 0x00, 0x0032, 0, 0, 0, 0, 1, 5},    //
- {  1, ATYPE_AI_5mA,  0x0004, 0x0014, 0x00, 0x0032, 0, 0, 0, 0, 2, 6},    // 
- {  2, ATYPE_AI_5mA,  0x0004, 0x0014, 0x00, 0x0032, 0, 0, 0, 0, 3, 7},    // 
- {  3, ATYPE_AI_5mA,  0x0004, 0x0014, 0x00, 0x0032, 0, 0, 0, 0, 4, 8},    //  
+TAioChannel AI1_CH[4] = 
+{
+   { 0, ATYPE_AI_5mA,  0x0004, 0x0014, 0x00, 0x0032, 0, 0, 0, 0, 1, 5},    //
+   { 1, ATYPE_AI_5mA,  0x0004, 0x0014, 0x00, 0x0032, 0, 0, 0, 0, 2, 6},    // 
+   { 2, ATYPE_AI_5mA,  0x0004, 0x0014, 0x00, 0x0032, 0, 0, 0, 0, 3, 7},    // 
+   { 3, ATYPE_AI_5mA,  0x0004, 0x0014, 0x00, 0x0032, 0, 0, 0, 0, 4, 8}     //  
+}; 
+
+TLinkedReg EXT1_CH[2] = 
+{
+   { 5, WordToApoint,  9 },    //
+   { 6, WordToApoint,  10 }    //
 }; 
 
 void CxLauncher::start_all_logdev()
 {
-   CxModBusMaster *pModBusMaster = new CxModBusMaster( "mbus_master", "serial_1" );
-   pModBusMaster->open();
-
-   TContAI_USO contAI_USO = { 1, 1, 4, AI1_CH};
- 
+   TContAI_USO contAI_USO = { 1, 11, 4, AI1_CH };
    CxLogDev_MA *pLogDev_MA = new CxLogDev_MA( "LogDev_MA", "mbus_master", contAI_USO);
+   
+   TContExtMod_USO contExtMod_USO = { 1, 12, 2, EXT1_CH };
+   CxLogDev_ExtMod *pLogDev_ExtM = new CxLogDev_ExtMod( "LogDev_EXTM", "mbus_master", contExtMod_USO);
 }
+
+//------------------------------------------------------------------------------
 
 // close all tasks
 void CxLauncher::close_activities()
 {
    printDebug("HomeBrainVx01/%s: close_activities...", __FUNCTION__ );
-   
+
    pCxInterfaceManager pInterfaceManager = CxInterfaceManager::getInstance();
    pInterfaceManager->delInstance();
 
@@ -103,17 +202,19 @@ CxLauncher::CxLauncher( const char* cgf_name ):
   ,LauncherState     ( ST_L_UNKNOWN )
   ,pInterfaceManager ( CxInterfaceManager::getInstance() )  
   ,pLogDeviceManager ( CxLogDeviceManager::getInstance() ) 
-  ,bFfsReady         ( true )
+  ,bDataConnectReady ( false )
   ,IniFileParser     ( )
 {
    strncpy_m ( cgfname, const_cast<char*>(cgf_name), sizeof(cgfname) );  
-   setNotification( event_pool::EVENT_FFS_MOUNTED );
-   
+
+   // set notification for data server
+   setNotification( event_pool::EVENT_DATA_CONNECTED );
+
    // establish handler for SIGTERM signal
    struct sigaction sa;
    sa.sa_handler = CxLauncher::sigHandler;
    sigaction(SIGTERM, &sa, 0);
-} 
+}
 
 CxLauncher::~CxLauncher( )
 {
@@ -122,10 +223,10 @@ CxLauncher::~CxLauncher( )
 
 void CxLauncher::Start()
 { 
-  // create thread
-  task_run( );
-  // start RTOS scheduler
-  scheduler_start();
+   // create thread
+   task_run( );
+   // start RTOS scheduler
+   scheduler_start();
 }
 
 // FSM process
@@ -154,13 +255,13 @@ void CxLauncher::TaskProcessor()
       case ST_L_SYS_THREAD_START :
       {
          printDebug("CxLauncher/%s: create all instances of classes...", __FUNCTION__);
-         start_sys_threads();
-         LauncherState = ST_L_SYS_WAIT_FFS_READY;                                // put in next state
+         start_all_interface();
+         LauncherState = ST_L_SYS_WAIT_CONNECTION;                                // put in next state
          break;
       }
-      case ST_L_SYS_WAIT_FFS_READY:
+      case ST_L_SYS_WAIT_CONNECTION:
       {
-         if( bFfsReady == true )
+         if( bDataConnectReady == true )
          {
             LauncherState = ST_L_LOG_DEVICE_START;                                // put in next state
          }
@@ -175,8 +276,8 @@ void CxLauncher::TaskProcessor()
       }
       case ST_L_SLEEP :
       {
-          printDebug("CxLauncher/%s: delete launcher task, only event will be processed...", __FUNCTION__);
-          task_delete( );
+         printDebug("CxLauncher/%s: delete launcher task, only event will be processed...", __FUNCTION__);
+         task_delete( );
          break;
       }
 
@@ -187,10 +288,10 @@ void CxLauncher::TaskProcessor()
 bool CxLauncher::processEvent( pTEvent pEvent )
 {
    // value event processing  
-   if( pEvent->eventType == event_pool::EVENT_FFS_MOUNTED )
+   if( pEvent->eventType == event_pool::EVENT_DATA_CONNECTED )
    {
-      bFfsReady = true;  
-      printDebug("CxLauncher/%s: CxLauncher-FFS ready", __FUNCTION__);
+      printDebug("CxLauncher/%s: CxLauncher DataConnectReady received", __FUNCTION__);
+      bDataConnectReady = true;  
       return true;
    }
 

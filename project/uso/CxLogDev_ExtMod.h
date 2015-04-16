@@ -1,5 +1,5 @@
-#ifndef _CX_LOGDEV_MA
-#define _CX_LOGDEV_MA
+#ifndef _CX_LOGDEV_EXT_MOD
+#define _CX_LOGDEV_EXT_MOD
 
 //------------------------------------------------------------------------------
 #include <unistd.h>
@@ -8,8 +8,8 @@
 #include "ptypes.h"
 #include "utils.h"
 #include "CxLogDevice.h"
-#include "CxDataProvider.h"
 #include "CxModBusMaster.h"
+#include "CxDataProvider.h"
 //------------------------------------------------------------------------------
 
 // link record processor
@@ -30,7 +30,7 @@ struct TContExtMod_USO
 
 //------------------------------------------------------------------------------
 
-class CxLogDev_ExtMod : public CxLogDevice, public CxDataProvider, public CxSysTimer
+class CxLogDev_ExtMod : public CxLogDevice, public CxSysTimer
 {
    public:
 
@@ -47,10 +47,21 @@ class CxLogDev_ExtMod : public CxLogDevice, public CxDataProvider, public CxSysT
 
       TContExtMod_USO  dev_settings;       // USO settings address and so on 
       uint8_t          commError;          // communication error with USO
+      CxDataProvider   &dataProvider;      // reference on the data provider
       CxModBusMaster   *pModBusMaster;     // pointer to the interface
 
-      bool ReadRegisters();
-      bool WriteRegisters();
+      bool ReadWriteRegisters();
+      
+      bool getWordToApoint ( const TLinkedReg* pLinkedReg );
+      bool getLongToApoint ( const TLinkedReg* pLinkedReg );
+      bool getFloatToApoint( const TLinkedReg* pLinkedReg );
+      bool getHRegToDpoint ( const TLinkedReg* pLinkedReg );
+      bool getLRegToDpoint ( const TLinkedReg* pLinkedReg );
+
+      bool setApointToWord ( const TLinkedReg* pLinkedReg );
+      bool setApointToLong ( const TLinkedReg* pLinkedReg );
+      bool setApointToFloat( const TLinkedReg* pLinkedReg );
+      bool setDpointToReg  ( const TLinkedReg* pLinkedReg );
 
       void setExtModStatus( uint16_t status );
 
@@ -60,5 +71,5 @@ class CxLogDev_ExtMod : public CxLogDevice, public CxDataProvider, public CxSysT
 
 //------------------------------------------------------------------------------
 
-#endif // _CX_LOGDEV_MA
+#endif // _CX_LOGDEV_EXT_MOD
 

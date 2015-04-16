@@ -158,6 +158,7 @@ void IxDriver::CommProcessor( )
       if (Command.ConsumerID == DrvID)
       {
          // printDebug("IxDriver/%s: ConsumerID=%d, SenderID=%d,ComType=%d, ComID=%d ", __FUNCTION__, Command.ConsumerID, Command.SenderID, Command.ComType, Command.ComID);
+
          // command is mine
          if ((Command.ComType == identification_request) && (Command.ComID == CM_DIReq))
          {
