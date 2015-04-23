@@ -30,6 +30,8 @@ class CxLogDeviceManager
    bool set_logdev( IxLogDevice * pLogDev );
    IxLogDevice *get_logdev( const char *name );
 
+   void process_all( );
+      
  private:
 
    CxLogDeviceManager( ); 

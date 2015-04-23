@@ -92,6 +92,8 @@ void IxDriver::task_delete( )
 {  
    if (workThreadID != 0)
    {
+      pthread_join(workThreadID, NULL);
+
       pthread_cancel(workThreadID);
 
       printDebug("IxDriver/%s: thread=%s deleted", __FUNCTION__, pcDrvName);

@@ -32,6 +32,15 @@ CxLogDev_ExtMod::CxLogDev_ExtMod( const char *logDevName, const char *usedInterf
    printDebug("CxLogDev_ExtMod/%s: pModBusMaster=%i", __FUNCTION__, pModBusMaster);
 }
 
+CxLogDev_ExtMod::~CxLogDev_ExtMod()
+{
+   if ( 0 != dev_settings.pLinkedReg)
+   {
+      // delete table which was created in CxUsoCfgLoader::OpenExtModuleConfig( ... )
+      delete [] dev_settings.pLinkedReg;
+   }
+}
+
 void CxLogDev_ExtMod::Process()
 {
    if (0 != pModBusMaster)
@@ -137,6 +146,10 @@ bool CxLogDev_ExtMod::ReadWriteRegisters()
 
          if (true != result) break;
       }
+   }
+   else
+   {
+      printWarning("CxLogDev_ExtMod/%s: pLinkedReg=0 !!!", __FUNCTION__ );
    }
 
    return result;

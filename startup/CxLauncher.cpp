@@ -5,9 +5,9 @@
 #include "CxSerialDriver.h"
 #include "CxModBusMaster.h"
 #include "CxModBusSlave.h"
-#include "CxLogDev_MA16.h"
-#include "CxLogDev_ExtMod.h"
 #include "CxDataConnection.h"
+#include "CxEventDispatcher.h"
+#include "CxLogDeviceManager.h"
 
 #include "CxLauncher.h"
 //------------------------------------------------------------------------------
@@ -71,7 +71,7 @@ void CxLauncher::load_all_drivers()
          sDriverItem = strsep(&sDrivers, " ");
       }
       while( NULL != sDriverItem );
-      
+
       free(sDrivers);
    }
 }
@@ -100,21 +100,21 @@ void CxLauncher::start_sys_interface( const char *sIntName )
          // MB_MASTER interfaces
          if( 0 == strcmp(sType, "mb_master"))
          {
-           CxModBusMaster *pModBusMaster = new CxModBusMaster( sName, sDriver );
+           CxModBusMaster *pModBusMaster = new CxModBusMaster( sName, sDriver );        // this item will be deleted in CxInterfaceManager::delInstance()
            pModBusMaster->open();
          }
 
          // MB_SLAVE interfaces
          if( 0 == strcmp(sType, "mb_slave"))
          {
-            CxModBusSlave *pModBusSlave = new CxModBusSlave( sName, sDriver );
+            CxModBusSlave *pModBusSlave = new CxModBusSlave( sName, sDriver );          // this item will be deleted in CxInterfaceManager::delInstance()
             pModBusSlave->open();
          }
 
          // DATA_CNCT interfaces
          if( 0 == strcmp(sType, "dtaconnect"))
          {
-           CxDataConnection *pDataConnection = new CxDataConnection(sName, sDriver );
+           CxDataConnection *pDataConnection = new CxDataConnection(sName, sDriver );   // this item will be deleted in CxInterfaceManager::delInstance()
            pDataConnection->open();
          }
 
@@ -141,36 +141,25 @@ void CxLauncher::start_all_interface()
          sInterfaceItem = strsep(&sInterfaces, " ");
       }
       while( NULL != sInterfaceItem );
-      
+
       free(sInterfaces);
    }
 }
 
 //------------------------------------------------------------------------------
 
-#include "USODefinition.h"
-
-TAioChannel AI1_CH[4] = 
-{
-   { 0, ATYPE_AI_5mA,  0x0004, 0x0014, 0x00, 0x0032, 0, 0, 0, 0, 1, 5},    //
-   { 1, ATYPE_AI_5mA,  0x0004, 0x0014, 0x00, 0x0032, 0, 0, 0, 0, 2, 6},    // 
-   { 2, ATYPE_AI_5mA,  0x0004, 0x0014, 0x00, 0x0032, 0, 0, 0, 0, 3, 7},    // 
-   { 3, ATYPE_AI_5mA,  0x0004, 0x0014, 0x00, 0x0032, 0, 0, 0, 0, 4, 8}     //  
-}; 
-
-TLinkedReg EXT1_CH[2] = 
-{
-   { 5, WordToApoint,  9 },    //
-   { 6, WordToApoint,  10 }    //
-}; 
-
 void CxLauncher::start_all_logdev()
 {
-   TContAI_USO contAI_USO = { 1, 11, 4, AI1_CH };
-   CxLogDev_MA *pLogDev_MA = new CxLogDev_MA( "LogDev_MA", "mbus_master", contAI_USO);
-   
-   TContExtMod_USO contExtMod_USO = { 1, 12, 2, EXT1_CH };
-   CxLogDev_ExtMod *pLogDev_ExtM = new CxLogDev_ExtMod( "LogDev_EXTM", "mbus_master", contExtMod_USO);
+   char* sConfigPath = IniFileParser.ReadString( cgfname, "USOCONFIG", "path" );
+
+   if (0 != sConfigPath)
+   {
+      sConfigPath = strdup(sConfigPath);
+
+      UsoCfgLoader.Load(sConfigPath);
+
+      free(sConfigPath);
+   }
 }
 
 //------------------------------------------------------------------------------
@@ -180,17 +169,25 @@ void CxLauncher::close_activities()
 {
    printDebug("HomeBrainVx01/%s: close_activities...", __FUNCTION__ );
 
+   // delete my own task
+   task_delete( );
+
+   // here will be deleted not only InterfaceManager, will be deleted all interfaces
    pCxInterfaceManager pInterfaceManager = CxInterfaceManager::getInstance();
    pInterfaceManager->delInstance();
 
+   // here will be deleted not only LogDeviceManager, will be deleted all logical devices
    pCxLogDeviceManager pLogDeviceManager = CxLogDeviceManager::getInstance();
    pLogDeviceManager->delInstance();
 
-   pTCxStaticPool pStaticPool = CxStaticPool::getInstance();
-   pStaticPool->delInstance();
+   pTCxEventDispatcher pEventDispatcher = CxEventDispatcher::getInstance();
+   pEventDispatcher->delInstance();
 
    pTCxDebugBase pDebugBase = CxDebugBase::getInstance();
    pDebugBase->delInstance();
+
+   pTCxStaticPool pStaticPool = CxStaticPool::getInstance();
+   pStaticPool->delInstance();
 }
 
 //------------------------------------------------------------------------------
@@ -209,11 +206,6 @@ CxLauncher::CxLauncher( const char* cgf_name ):
 
    // set notification for data server
    setNotification( event_pool::EVENT_DATA_CONNECTED );
-
-   // establish handler for SIGTERM signal
-   struct sigaction sa;
-   sa.sa_handler = CxLauncher::sigHandler;
-   sigaction(SIGTERM, &sa, 0);
 }
 
 CxLauncher::~CxLauncher( )
@@ -228,7 +220,7 @@ void CxLauncher::Start()
    // start RTOS scheduler
    scheduler_start();
 }
-
+     
 // FSM process
 void CxLauncher::TaskProcessor()
 {
@@ -265,19 +257,25 @@ void CxLauncher::TaskProcessor()
          {
             LauncherState = ST_L_LOG_DEVICE_START;                                // put in next state
          }
+         else
+         {
+            sleep_mcs(10);
+         }
          break;
       }
       case ST_L_LOG_DEVICE_START :
       {
          printDebug("CxLauncher/%s: start all interface and logical device...", __FUNCTION__);
          start_all_logdev();
-         LauncherState = ST_L_SLEEP;                                             // put in next state
+         LauncherState = ST_L_NORMAL_WORK;                                             // put in next state
          break;
       }
-      case ST_L_SLEEP :
+      case ST_L_NORMAL_WORK :
       {
-         printDebug("CxLauncher/%s: delete launcher task, only event will be processed...", __FUNCTION__);
-         task_delete( );
+         pCxLogDeviceManager pLogDeviceManager = CxLogDeviceManager::getInstance();
+
+         pLogDeviceManager->process_all( );
+
          break;
       }
 
@@ -296,19 +294,4 @@ bool CxLauncher::processEvent( pTEvent pEvent )
    }
 
    return false;
-}
-
-void CxLauncher::sigHandler( int sig )
-{
-   close_activities();
-}
-
-void CxLauncher::scheduler_start()
-{
-
-}
-
-void CxLauncher::scheduler_stop()
-{
-
 }

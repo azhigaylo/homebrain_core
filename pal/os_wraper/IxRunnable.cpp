@@ -26,19 +26,29 @@ IxRunnable::~IxRunnable( )
    task_delete();
 }
 
+void IxRunnable::task_run( )
+{
+   create_thread();
+}
+
+void IxRunnable::task_join( )
+{
+   if (thread != 0)
+   {
+      pthread_join(thread, NULL);
+   }
+}
+
 void IxRunnable::task_delete( )
 {  
    if (thread != 0)
    {
       pthread_cancel(thread);
+      
+      pthread_join(thread, NULL);
 
       printDebug("IxRunnable/%s: thread=%s deleted", __FUNCTION__, pcTaskName);
    }
-}
-
-void IxRunnable::task_run( )
-{
-   create_thread();
 }
 
 uint64_t IxRunnable::get_time()

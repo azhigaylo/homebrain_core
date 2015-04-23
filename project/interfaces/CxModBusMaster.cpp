@@ -35,8 +35,6 @@ uint16_t CxModBusMaster::GetRegister( uint8_t address, uint16_t reg_start, uint1
 {
    uint16_t reg_num = 0;
 
-   //pthread_barrier_init(&our_barrier,NULL,2);
-
    commbuf.msgSize   = sizeof(TMREQ);
    commbuf.msgNumber = counter_item++;
 
@@ -205,18 +203,18 @@ void CxModBusMaster::CommandProcessor( uint16_t ComID, void *data )
                }
                else
                {
-                  printDebug("CxModBusMaster/%s: MB addr or comm mismatch", __FUNCTION__ );
+                  printWarning("CxModBusMaster/%s: MB addr or comm mismatch", __FUNCTION__ );
                }
             }
             else
             {
-               printDebug("CxModBusMaster/%s: MB CRC mismatch!", __FUNCTION__ );
+               printWarning("CxModBusMaster/%s: MB CRC mismatch!", __FUNCTION__ );
             }
             break;
          }
          case CM_TIMEOUT :
          {
-            printDebug("CxModBusMaster/%s: MB timeout addr=%i / comm=%i / package=%i  ", __FUNCTION__, mbResponce.Header.address, mbResponce.Header.command, pSerialBlock->msgNumber);
+            printWarning("CxModBusMaster/%s: MB timeout addr=%i / comm=%i / package=%i  ", __FUNCTION__, mbResponce.Header.address, mbResponce.Header.command, pSerialBlock->msgNumber);
             break;
          }
          default : printWarning("CxModBusMaster/%s: unexpected cmd ", __FUNCTION__);

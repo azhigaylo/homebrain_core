@@ -49,8 +49,21 @@ CxQueue::~CxQueue()
 {
    if (xQueue != -1)
    {
-      mq_close(xQueue);
-      mq_unlink(queueName);
+      if (-1 != mq_close(xQueue))
+      {
+         if (-1 != mq_unlink(queueName))
+         {
+            printDebug("CxQueue/%s: queue=%s removed", __FUNCTION__, queueName);
+         }
+         else
+         {
+            printWarning("CxQueue/%s: Unable mq_close for queue=%s: %s", __FUNCTION__, queueName, strerror(errno));
+         }
+      }
+      else
+      {
+         printWarning("CxQueue/%s: Unable mq_close for queue=%s: %s", __FUNCTION__, queueName, strerror(errno));
+      }
    }
 }
 

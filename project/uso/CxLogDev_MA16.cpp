@@ -17,7 +17,7 @@
 
 //------------------------------------------------------------------------------
 
-CxLogDev_MA::CxLogDev_MA( const char *logDevName, const char *usedInterface, TContAI_USO usoSettings ):
+CxLogDev_MA::CxLogDev_MA( const char *logDevName, const char *usedInterface, TAI_USO usoSettings ):
     CxLogDevice    ( logDevName )
    ,CxSysTimer     ( "logDev_MA_Timer", 5000000000, false)  // time in nanosecond
    ,dev_settings   ( usoSettings )
@@ -31,7 +31,16 @@ CxLogDev_MA::CxLogDev_MA( const char *logDevName, const char *usedInterface, TCo
 
    printDebug("CxLogDev_MA/%s: pModBusMaster=%i", __FUNCTION__, pModBusMaster);
 }
+CxLogDev_MA::~CxLogDev_MA()
+{
+   if ( 0 != dev_settings.channelsPtr)
+   {
+      // delete table which was created in CxUsoCfgLoader::OpenAnalModuleConfig( ... )
+      delete [] dev_settings.channelsPtr;
+   }
 
+}
+      
 void CxLogDev_MA::Process()
 {
    if (0 != pModBusMaster)
@@ -304,8 +313,8 @@ void CxLogDev_MA::ConvAiToParam()
       {
          switch (pCurCh->Type)
          {
-            //case ATYPE_AI_20mA     : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/(pCurCh->MaxMid - pCurCh->MinMid))*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;  break;}
-            //case ATYPE_AI_20mA_Z   : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/(pCurCh->MaxMid - pCurCh->MinMid))*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;  break;}
+            case ATYPE_AI_20mA     : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/(pCurCh->MaxMid - pCurCh->MinMid))*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;  break;}
+            case ATYPE_AI_20mA_Z   : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/(pCurCh->MaxMid - pCurCh->MinMid))*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;  break;}
             case ATYPE_AI_5mA      : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/5)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;    break;}
             case ATYPE_AI_pm10V    : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/20)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal*2; break;}
             case ATYPE_AI_01V      : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/0.1)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;  break;}

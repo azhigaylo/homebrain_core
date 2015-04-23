@@ -2,6 +2,13 @@
 #define _SLOG_H_
 
 /**
+ * set debug level
+ * @param debug level
+ */
+ 
+void setDbgLevel(int lvl);
+
+/**
  * print error
  * @param *fmt format string
  */

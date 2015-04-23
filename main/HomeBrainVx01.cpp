@@ -10,12 +10,27 @@ using namespace std;
 using namespace event_pool;
 
 //------------------------------------------------------------------------------
-#include "CxLogDeviceManager.h"
+CxLauncher *pLauncher = 0;
+//------------------------------------------------------------------------------
+
+void mainSigHandler( int sig )
+{
+   if (0 != pLauncher)
+   {
+      delete pLauncher;
+      pLauncher = 0;
+   }
+}
 
 int main(int argc, char* argv[])
 {
+   // establish handler for SIGTERM signal
+   struct sigaction sa;
+   sa.sa_handler = mainSigHandler;
+   sigaction( SIGINT, &sa, 0);
+
    int c = 0;
-   int delay = 100;
+   int debug = 0;
    char *sCfg = "/home/azhigaylo/.config/home_brain/HBconfig.conf";
    
    while (-1 != (c = getopt(argc, argv, "c:d:")))
@@ -30,8 +45,8 @@ int main(int argc, char* argv[])
          }
          case 'd':
          {
-            delay = atoi(optarg);
-
+            debug = atoi(optarg);
+            setDbgLevel(debug);
             break;
          }
          default:
@@ -41,24 +56,19 @@ int main(int argc, char* argv[])
       }
    }
 
-   printDebug("MAIN/%s: started with cfg = %s", __FUNCTION__, sCfg);
-   CxLauncher launcher(sCfg);
-   launcher.Start();
+   printWarning("MAIN/%s: started with debug level = %i", __FUNCTION__, debug);
+   printWarning("MAIN/%s: started with cfg = %s", __FUNCTION__, sCfg);
 
-   printDebug("MAIN/%s: started with delay = %i", __FUNCTION__, delay);
-   sleep_mcs(delay);   // 500000
+   pLauncher = new CxLauncher(sCfg);
+   pLauncher->Start();
 
-   while(1)
+   pLauncher->task_join();
+
+   if (0 != pLauncher)
    {
-      pCxLogDeviceManager pLogDeviceManager = CxLogDeviceManager::getInstance();
-
-      IxLogDevice *pLogDevice_MA = pLogDeviceManager->get_logdev( "LogDev_MA" );
-      IxLogDevice *pLogDevice_EXTM = pLogDeviceManager->get_logdev( "LogDev_EXTM" );
-
-      if (pLogDevice_MA){ pLogDevice_MA->Process();}
-      //  else printDebug("MAIN/%s: ahtung pLogDevice_MA=%i!!!!!", __FUNCTION__, pLogDevice_MA);
-
-      if (pLogDevice_EXTM){ pLogDevice_EXTM->Process();}
-      //  else printDebug("MAIN/%s: ahtung pLogDevice_EXTM=%i!!!!!", __FUNCTION__, pLogDevice_EXTM);   
+      delete pLauncher;
+      pLauncher = 0;
    }
+
+   return EXIT_SUCCESS;
 }

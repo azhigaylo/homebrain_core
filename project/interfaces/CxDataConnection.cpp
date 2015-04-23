@@ -71,7 +71,7 @@ CxDataConnection::CxDataConnection( const char *pInterfaceName, const char *strS
 
    if ((rv = getaddrinfo(strServer_ip, strServer_port, &hints, &servinfo)) != 0) 
    {
-      printDebug("CxDataConnection/%s: getaddrinfo error=%s", __FUNCTION__, gai_strerror(rv));
+      printWarning("CxDataConnection/%s: getaddrinfo error=%s", __FUNCTION__, gai_strerror(rv));
    }
    else
    {
@@ -113,12 +113,12 @@ bool CxDataConnection::connectSocket()
 
    if(mSocket < 0 || servinfo == 0)
    {
-      printDebug("CxDataConnection/%s: socket error", __FUNCTION__);
+      printError("CxDataConnection/%s: socket error", __FUNCTION__);
    }
 
    if(0 != connect(mSocket,  servinfo->ai_addr, servinfo->ai_addrlen) < 0)
    {
-      printDebug("CxDataConnection/%s: socket connection error", __FUNCTION__);
+      printError("CxDataConnection/%s: socket connection error", __FUNCTION__);
    }
    else
    {
@@ -146,7 +146,7 @@ void CxDataConnection::disconnectSocket()
 
       if (0 != shutdown(mSocket, SHUT_RDWR))
       {
-         printDebug("CxDataConnection/%s: Unable to shutdown socket: %s", __FUNCTION__, strerror(errno));
+         printError("CxDataConnection/%s: Unable to shutdown socket: %s", __FUNCTION__, strerror(errno));
          // Do not break - the socket needs to be closed
       } else
       {
@@ -155,7 +155,7 @@ void CxDataConnection::disconnectSocket()
 
       if (0 != ::close(mSocket))
       {
-         printDebug("CxDataConnection/%s: Unable to close socket: %s", __FUNCTION__, strerror(errno));
+         printError("CxDataConnection/%s: Unable to close socket: %s", __FUNCTION__, strerror(errno));
          break;
       }
    } while (0);
@@ -242,7 +242,7 @@ void CxDataConnection::TaskProcessor()
       
       if (0 >= size)
       {
-         printDebug("CxDataConnection/%s: Unable to receive data: %s, trying to reconnect...", __FUNCTION__, strerror(errno));
+         printWarning("CxDataConnection/%s: Unable to receive data: %s, trying to reconnect...", __FUNCTION__, strerror(errno));
          setReconnectFlag();
       }
       else
@@ -252,7 +252,7 @@ void CxDataConnection::TaskProcessor()
 
          if (0 >= size)
          {
-            printDebug("CxDataConnection/%s: Unable to receive data: %s, trying to reconnect...", __FUNCTION__, strerror(errno)); 
+            printWarning("CxDataConnection/%s: Unable to receive data: %s, trying to reconnect...", __FUNCTION__, strerror(errno)); 
             setReconnectFlag();
             return;
          }
@@ -261,7 +261,7 @@ void CxDataConnection::TaskProcessor()
 
          if (0 != CRC16_T(reinterpret_cast<char*>(&qByteArray.tradeUnit), size - sizeof(qByteArray.byteArrayBody)))
          {
-            printDebug("CxDataConnection/%s: NOK CRC", __FUNCTION__);
+            printWarning("CxDataConnection/%s: NOK CRC", __FUNCTION__);
          }
          else
          {
@@ -282,7 +282,7 @@ void CxDataConnection::TaskProcessor()
                      case DtStringVector :
                      default :
                      {
-                        printDebug("CxDataConnection/%s: this dataType doesn't supported ", __FUNCTION__);
+                        printWarning("CxDataConnection/%s: this dataType doesn't supported ", __FUNCTION__);
                         break;
                      }
                   }
@@ -293,7 +293,7 @@ void CxDataConnection::TaskProcessor()
                case TtServiceInfo:
                default :
                {
-                  printDebug("CxDataConnection/%s: unresolved tcp package", __FUNCTION__);
+                  printWarning("CxDataConnection/%s: unresolved tcp package", __FUNCTION__);
                   break;
                }
             }
@@ -332,7 +332,7 @@ bool CxDataConnection::setNotification(uint32_t number, uint32_t type)
 
       if (-1 == rc or static_cast<size_t>(rc) != sendSize)
       {
-         printDebug("CxDataConnection/%s: Unable to send: %s, trying to reconnect...", __FUNCTION__, strerror(errno)); 
+         printError("CxDataConnection/%s: Unable to send: %s, trying to reconnect...", __FUNCTION__, strerror(errno)); 
          setReconnectFlag();
          ret = false;
       }
@@ -380,7 +380,7 @@ bool CxDataConnection::setApoint(uint32_t number, uint32_t status, float value)
 
    if (-1 == rc or static_cast<size_t>(rc) != sendSize)
    {
-      printDebug("CxDataConnection/%s: Unable to send: %s, trying to reconnect...", __FUNCTION__, strerror(errno)); 
+      printError("CxDataConnection/%s: Unable to send: %s, trying to reconnect...", __FUNCTION__, strerror(errno)); 
       setReconnectFlag();
       ret = false;
    }
@@ -423,7 +423,7 @@ bool CxDataConnection::setDpoint(uint32_t number, uint32_t status, uint32_t valu
 
    if (-1 == rc or static_cast<size_t>(rc) != sendSize)
    {
-      printDebug("CxDataConnection/%s: Unable to send: %s, trying to reconnect...", __FUNCTION__, strerror(errno));
+      printError("CxDataConnection/%s: Unable to send: %s, trying to reconnect...", __FUNCTION__, strerror(errno));
       setReconnectFlag();
       ret = false;
    }
@@ -480,7 +480,7 @@ bool CxDataConnection::setString(const char* const pString)
 
    if (-1 == rc or static_cast<size_t>(rc) != sendSize)
    {
-      printDebug("CxDataConnection/%s: Unable to send: %s, trying to reconnect...", __FUNCTION__, strerror(errno));
+      printError("CxDataConnection/%s: Unable to send: %s, trying to reconnect...", __FUNCTION__, strerror(errno));
       setReconnectFlag();
       ret = false;
    }

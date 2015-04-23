@@ -24,7 +24,7 @@ class CxInterfaceManager
    public:
 
       static CxInterfaceManager * getInstance();
-	  void delInstance();
+      void delInstance();
 
       bool set_interface( IxInterface * pNewInterface );
       IxInterface *get_interface( const char *name );

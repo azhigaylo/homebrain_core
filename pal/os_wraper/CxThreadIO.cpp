@@ -103,6 +103,8 @@ void CxThreadIO::comm_task_delete( )
    {
       pthread_cancel(commThreadID);
 
+      pthread_join(thread, NULL);
+
       printDebug("CxThreadIO/%s: thread=%s deleted", __FUNCTION__, pcCommThreadName);
    }
 }

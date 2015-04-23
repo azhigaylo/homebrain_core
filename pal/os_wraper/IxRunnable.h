@@ -16,8 +16,9 @@ class IxRunnable
 
     ~IxRunnable();
 
-    void task_delete();
     void task_run();
+    void task_join();
+    void task_delete();
 
   protected:
 

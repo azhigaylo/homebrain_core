@@ -24,7 +24,7 @@ CxSysTimer::CxSysTimer( const char *name, uint64_t period, bool cyclic ):
    strncpy_m( timerName, const_cast<char*>(name), configMAX_TIMER_NAME_LEN );
 
    // establish handler for timer signal
-   sa.sa_flags = SA_SIGINFO;
+   sa.sa_flags = SA_SIGINFO | SA_RESTART;
    sa.sa_sigaction = CxSysTimer::commonHandler;
    sigemptyset(&sa.sa_mask);
    if (sigaction(timer_sigID, &sa, NULL) == -1)

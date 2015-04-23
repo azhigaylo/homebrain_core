@@ -4,11 +4,17 @@
 #include <syslog.h>
 #include <cstdio>
 #include <iostream>
+
 //------------------------------------------------------------------------------ 
 using namespace std;
 //------------------------------------------------------------------------------ 
 
-int32_t optv = 5;
+int32_t optv = 0;
+
+void setDbgLevel(int lvl)
+{
+   optv = lvl;
+}
 
 void printError(const char * const fmt,...)
 {

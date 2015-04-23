@@ -51,7 +51,7 @@ CxDataConnection *CxDataProvider::getInterface()
       pIxInterface pInterface = pInterfaceManager->get_interface( "dataInterface" );
       pDataConnection = dynamic_cast<CxDataConnection*>(pInterface);
 
-      printDebug("CxLogDev_MA/%s: pDataConnection=%i", __FUNCTION__, pDataConnection);
+      printDebug("CxDataConnection/%s: pDataConnection=%i", __FUNCTION__, pDataConnection);
    }
    
    return pDataConnection;

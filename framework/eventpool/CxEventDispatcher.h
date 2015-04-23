@@ -62,6 +62,6 @@ class CxEventDispatcher : public IxRunnable
     ~CxEventDispatcher( ){}
 
 };
-typedef CxEventDispatcher *pCxEventDispatcher;
+typedef CxEventDispatcher *pTCxEventDispatcher;
 
 #endif /*_CX_EVENT_PROCESSOR*/   

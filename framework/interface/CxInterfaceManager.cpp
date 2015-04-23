@@ -49,13 +49,13 @@ void CxInterfaceManager::delInstance()
 
          if (pInterface != 0)
          {
-            printDebug("CxLogDeviceManager/%s: try to remove interface = %s...", __FUNCTION__, pInterface->getInterfaceName());
-			delete pInterface;
+            printDebug("CxInterfaceManager/%s: try to remove interface = %s...", __FUNCTION__, pInterface->getInterfaceName());
+            delete pInterface;
          } 
       }
       // clean up list
-	  CONNECTION_LIST.clear();
-	  // remove singleton item
+      CONNECTION_LIST.clear();
+      // remove singleton item
       delete this;
    }
 }

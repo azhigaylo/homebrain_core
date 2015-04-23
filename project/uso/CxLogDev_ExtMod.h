@@ -12,22 +12,23 @@
 #include "CxDataProvider.h"
 //------------------------------------------------------------------------------
 
-// link record processor
-struct TLinkedReg
-{
-  uint16_t strtReg;
-  uint8_t  opType;
-  uint16_t NPoint;
-};
+#pragma pack(push, 1)
+   // link record processor
+   struct TLinkedReg
+   {
+     uint16_t strtReg;
+     uint8_t  opType;
+     uint16_t NPoint;
+   };
 
-struct TContExtMod_USO
-{
-  uint8_t  address;
-  uint16_t usoPoint;
-  uint16_t recNumb;
-  TLinkedReg *pLinkedReg;  // array of the TLinkedReg
-};
-
+   struct TContExtMod_USO
+   {
+     uint8_t  address;
+     uint16_t usoPoint;
+     uint16_t recNumb;
+     TLinkedReg *pLinkedReg;  // array of the TLinkedReg
+   };
+#pragma pack(pop)
 //------------------------------------------------------------------------------
 
 class CxLogDev_ExtMod : public CxLogDevice, public CxSysTimer
@@ -35,7 +36,7 @@ class CxLogDev_ExtMod : public CxLogDevice, public CxSysTimer
    public:
 
       CxLogDev_ExtMod( const char *logDevName, const char *usedInterface, TContExtMod_USO modSettings );
-      ~CxLogDev_ExtMod(){}
+      virtual ~CxLogDev_ExtMod();
       
       virtual void Process();
 

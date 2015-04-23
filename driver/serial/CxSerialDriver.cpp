@@ -192,13 +192,9 @@ void CxSerialDriver::ThreadProcessor( )
 
 void CxSerialDriver::sigHandler()
 {
-   //printDebug("CxSerialDriver/%s: timer timeout 1", __FUNCTION__);
-   
    CxMutexLocker locker( &singlSerialLock );
    
    rxBuffer.msgSize = 0;
-   
-   //printDebug("CxSerialDriver/%s: timer timeout 2", __FUNCTION__);
    
    sendMsg( CM_TIMEOUT, &rxBuffer );
 }
