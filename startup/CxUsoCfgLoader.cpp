@@ -16,8 +16,6 @@
 #include "CxUsoCfgLoader.h"
 
 //------------------------------------------------------------------------------
-//-----------------------CREATE INI FILE PARSER---------------------------------
-//------------------------------------------------------------------------------
 
 CxUsoCfgLoader::CxUsoCfgLoader( ):
     sUsoCgf_path ( 0 )
@@ -49,7 +47,6 @@ void CxUsoCfgLoader::Load( const char* cfg_path )
 void CxUsoCfgLoader::OpenExtModuleConfig( const char* cfg_path )
 {
    const char *sExtModName = "/ExtMod.lnk";
-   const char *sDummyName  = "LogDev_EXTM_";
 
    // allocate memory for name str
    char *sExtModConfig = (char*)malloc(strlen_m(const_cast<char*>(cfg_path),200) + strlen_m(const_cast<char*>(sExtModName),50));
@@ -96,14 +93,18 @@ void CxUsoCfgLoader::OpenExtModuleConfig( const char* cfg_path )
                   {
                      // make a name
                      char *sCfgName = (char*)malloc(100);
-                     sprintf( sCfgName, "%s%d", sDummyName, modNum);
+                     sprintf( sCfgName, "LogDev_EXTM_%d", modNum);
+                     
+                     char *sInterfaceName = (char*)malloc(100);
+                     sprintf( sInterfaceName, "mbus_master_%d", CMODHEADER.PortN);                     
 
                      // create logical device
                      TContExtMod_USO contExtMod_USO = { CMODHEADER.Adress, CMODHEADER.EMODpoint, CMODHEADER.RRecNumb + CMODHEADER.WRecNumb, pLinkedReg };
 
-                     new CxLogDev_ExtMod( sCfgName, "mbus_master", contExtMod_USO);             // this item will be deleted in CxLogDeviceManager::delInstance()
+                     new CxLogDev_ExtMod( sCfgName, sInterfaceName, contExtMod_USO);             // this item will be deleted in CxLogDeviceManager::delInstance()
 
                      free(sCfgName);
+                     free(sInterfaceName);
                   }
                   else
                   {
@@ -188,12 +189,16 @@ void CxUsoCfgLoader::OpenAnalModuleConfig( const char* cfg_path )
                      char *sCfgName = (char*)malloc(100);
                      sprintf( sCfgName, "%s%d", sDummyName, modNum);
 
+                     char *sInterfaceName = (char*)malloc(100);
+                     sprintf( sInterfaceName, "mbus_master_%d", CommonC.ContAI_USO.PortN);                     
+
                      // create logical device
                      TAI_USO contAI_USO = { CommonC.ContAI_USO.Adress, CommonC.ContAI_USO.USOpoint, CommonC.ContAI_USO.ChanN, pAioChannel };
 
-                     new CxLogDev_MA( sCfgName, "mbus_master", contAI_USO);   // this item will be deleted in CxLogDeviceManager::delInstance()
+                     new CxLogDev_MA( sCfgName, sInterfaceName, contAI_USO);   // this item will be deleted in CxLogDeviceManager::delInstance()
                      
                      free(sCfgName);
+                     free(sInterfaceName);
                   }
                   else
                   {

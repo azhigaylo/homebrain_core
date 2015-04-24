@@ -12,10 +12,12 @@
 #include "CxLogDeviceManager.h"
 //------------------------------------------------------------------------------
 
-CxLogDevice::CxLogDevice( const char *deviceName ):
+CxLogDevice::CxLogDevice( const char *deviceName, const char *interfaceName ):
   IxLogDevice( )
 {
    strncpy_m( pcDeviceName, const_cast<char*>(deviceName), sizeof(pcDeviceName) );
+   strncpy_m( pcInterfaceName, const_cast<char*>(interfaceName), sizeof(pcInterfaceName) );
+
    registration();
 }
 
@@ -35,3 +37,9 @@ const char *CxLogDevice::getDeviceName()
 {
    return pcDeviceName;
 }
+
+const char *CxLogDevice::getInterfaceName()
+{
+   return pcInterfaceName;
+}
+   

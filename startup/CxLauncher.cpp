@@ -100,8 +100,11 @@ void CxLauncher::start_sys_interface( const char *sIntName )
          // MB_MASTER interfaces
          if( 0 == strcmp(sType, "mb_master"))
          {
-           CxModBusMaster *pModBusMaster = new CxModBusMaster( sName, sDriver );        // this item will be deleted in CxInterfaceManager::delInstance()
-           pModBusMaster->open();
+            CxModBusMaster *pModBusMaster = new CxModBusMaster( sName, sDriver );        // this item will be deleted in CxInterfaceManager::delInstance()
+            pModBusMaster->open();
+
+            CxUsoProcessor *pUsoProcessor = new CxUsoProcessor( sName );
+            ProcessorList.add( pUsoProcessor );
          }
 
          // MB_SLAVE interfaces
@@ -114,8 +117,8 @@ void CxLauncher::start_sys_interface( const char *sIntName )
          // DATA_CNCT interfaces
          if( 0 == strcmp(sType, "dtaconnect"))
          {
-           CxDataConnection *pDataConnection = new CxDataConnection(sName, sDriver );   // this item will be deleted in CxInterfaceManager::delInstance()
-           pDataConnection->open();
+            CxDataConnection *pDataConnection = new CxDataConnection(sName, sDriver );   // this item will be deleted in CxInterfaceManager::delInstance()
+            pDataConnection->open();
          }
 
          free(sType);
@@ -164,6 +167,47 @@ void CxLauncher::start_all_logdev()
 
 //------------------------------------------------------------------------------
 
+// start uso processors
+void CxLauncher::startUsoProcessors()
+{
+   pCxLogDeviceManager pLogDeviceManager = CxLogDeviceManager::getInstance();
+         
+   for( uint8_t itr = 0; itr < ProcessorList.count(); itr++ )
+   {
+      CxUsoProcessor *pPrc = ProcessorList[itr];
+
+      for (uint8_t indx = 0; ; indx++)
+      {
+         IxLogDevice *pLogDevice = pLogDeviceManager->get_logdev_by_number( indx );
+
+         if ((pLogDevice != 0) && (0 != pPrc))
+         {
+            if( 0 == strcmp( pPrc->get_interfacename(), pLogDevice->getInterfaceName() ) )
+            {
+               pPrc->set_logdev( pLogDevice );
+            }
+         }
+         else
+         {
+            break;
+         }
+      }
+   }
+
+   // start all tasks
+   for( uint8_t itr = 0; itr < ProcessorList.count(); itr++ )
+   {
+      CxUsoProcessor *pPrc = ProcessorList[itr];
+
+      if( NULL != pPrc )
+      {
+         pPrc->task_run();
+      }
+   }
+}
+      
+//------------------------------------------------------------------------------
+
 // close all tasks
 void CxLauncher::close_activities()
 {
@@ -171,7 +215,17 @@ void CxLauncher::close_activities()
 
    // delete my own task
    task_delete( );
+   
+   // close uso processors
+   for( uint8_t itr = 0; itr < ProcessorList.count(); itr++ )
+   {
+      CxUsoProcessor *pPrc= ProcessorList[itr];
 
+      if( NULL != pPrc )
+      {
+         delete pPrc;
+      }
+   }
    // here will be deleted not only InterfaceManager, will be deleted all interfaces
    pCxInterfaceManager pInterfaceManager = CxInterfaceManager::getInstance();
    pInterfaceManager->delInstance();
@@ -201,6 +255,7 @@ CxLauncher::CxLauncher( const char* cgf_name ):
   ,pLogDeviceManager ( CxLogDeviceManager::getInstance() ) 
   ,bDataConnectReady ( false )
   ,IniFileParser     ( )
+  ,ProcessorList     ( 5 )
 {
    strncpy_m ( cgfname, const_cast<char*>(cgf_name), sizeof(cgfname) );  
 
@@ -267,15 +322,14 @@ void CxLauncher::TaskProcessor()
       {
          printDebug("CxLauncher/%s: start all interface and logical device...", __FUNCTION__);
          start_all_logdev();
+         startUsoProcessors();
+
          LauncherState = ST_L_NORMAL_WORK;                                             // put in next state
          break;
       }
       case ST_L_NORMAL_WORK :
       {
-         pCxLogDeviceManager pLogDeviceManager = CxLogDeviceManager::getInstance();
-
-         pLogDeviceManager->process_all( );
-
+         sleep_mcs(100);
          break;
       }
 

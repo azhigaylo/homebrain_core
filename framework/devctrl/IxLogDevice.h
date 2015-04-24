@@ -13,6 +13,7 @@ class IxLogDevice
    virtual void open()  = 0;
    virtual void close() = 0;      
    virtual const char *getDeviceName() = 0; 
+   virtual const char *getInterfaceName() = 0; 
    virtual void start() = 0;
 
    virtual void Process() = 0;

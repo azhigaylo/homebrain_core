@@ -18,7 +18,7 @@
 //------------------------------------------------------------------------------
 
 CxLogDev_ExtMod::CxLogDev_ExtMod( const char *logDevName, const char *usedInterface, TContExtMod_USO modSettings ):
-    CxLogDevice    ( logDevName )
+    CxLogDevice    ( logDevName, usedInterface )
    ,CxSysTimer     ( "logDev_EM_Timer", 5000000000, false)  // time in nanosecond
    ,dev_settings   ( modSettings )
    ,commError      ( 0 )

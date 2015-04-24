@@ -8,7 +8,7 @@
 #include "CxVector.h"
 #include "IxLogDevice.h"
 //------------------------------------------------------------------------------
-#define logDevListSize 20
+#define logDevListSize 30
 //------------------------------------------------------------------------------
 
 #pragma pack ( 1 )
@@ -29,6 +29,7 @@ class CxLogDeviceManager
 
    bool set_logdev( IxLogDevice * pLogDev );
    IxLogDevice *get_logdev( const char *name );
+   IxLogDevice *get_logdev_by_number( uint16_t numb );
 
    void process_all( );
       

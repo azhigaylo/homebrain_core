@@ -18,7 +18,7 @@
 //------------------------------------------------------------------------------
 
 CxLogDev_MA::CxLogDev_MA( const char *logDevName, const char *usedInterface, TAI_USO usoSettings ):
-    CxLogDevice    ( logDevName )
+    CxLogDevice    ( logDevName, usedInterface )
    ,CxSysTimer     ( "logDev_MA_Timer", 5000000000, false)  // time in nanosecond
    ,dev_settings   ( usoSettings )
    ,commError      ( 0 )
@@ -31,6 +31,7 @@ CxLogDev_MA::CxLogDev_MA( const char *logDevName, const char *usedInterface, TAI
 
    printDebug("CxLogDev_MA/%s: pModBusMaster=%i", __FUNCTION__, pModBusMaster);
 }
+
 CxLogDev_MA::~CxLogDev_MA()
 {
    if ( 0 != dev_settings.channelsPtr)

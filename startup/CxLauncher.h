@@ -4,7 +4,9 @@
 //------------------------------------------------------------------------------
 #include <signal.h>
 //------------------------------------------------------------------------------
+#include "CxVector.h"
 #include "IxRunnable.h"
+#include "CxUsoProcessor.h"
 #include "CxUsoCfgLoader.h"
 #include "IxEventConsumer.h"
 #include "CxIniFileParser.h"
@@ -62,6 +64,8 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
       CxIniFileParser IniFileParser;
       // project loader
       CxUsoCfgLoader UsoCfgLoader;
+      // list for each uso processors
+      CxVector<CxUsoProcessor*> ProcessorList;         
 
       void load_driver( const char *sDrvName );
       void start_sys_interface( const char *sIntName );
@@ -74,7 +78,8 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
       void start_all_logdev();
       // start all interface
       void start_all_interface();
-
+      // start uso processors
+      void startUsoProcessors();
       // close all activities
       void close_activities();
 

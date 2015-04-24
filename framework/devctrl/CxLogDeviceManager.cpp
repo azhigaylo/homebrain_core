@@ -113,6 +113,23 @@ IxLogDevice * CxLogDeviceManager::get_logdev( const char *name )
   return 0;
 }
 
+IxLogDevice *CxLogDeviceManager::get_logdev_by_number( uint16_t numb )
+{
+   CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
+
+   if( logDevCounter == LOGDEV_LIST.count() )
+   {
+      if (numb < logDevCounter)
+      {
+         IxLogDevice *pDevice = LOGDEV_LIST[numb].pLogDevice;
+
+         return pDevice;
+      }
+   }
+
+  return 0;
+}
+
 void CxLogDeviceManager::process_all( )
 {
    CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
