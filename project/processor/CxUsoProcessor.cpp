@@ -45,12 +45,12 @@ bool CxUsoProcessor::set_logdev( IxLogDevice *pLogDev )
    // counter increment
    if( true == result )
    {
-     logDevCounter++;
-     printDebug("CxUsoProcessor/%s: LogDev = %s add OK ", __FUNCTION__, pLogDev->getDeviceName());
+      logDevCounter++;
+      printDebug("CxUsoProcessor/%s: LogDev = %s add OK ", __FUNCTION__, pLogDev->getDeviceName());
    }
    else
    {
-     printError("CxUsoProcessor/%s: LogDev = %s add error ", __FUNCTION__, pLogDev->getDeviceName());
+      printError("CxUsoProcessor/%s: LogDev = %s add error ", __FUNCTION__, pLogDev->getDeviceName());
    }  
 
    return result;

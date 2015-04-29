@@ -102,7 +102,7 @@ void CxLauncher::start_sys_interface( const char *sIntName )
          {
             CxModBusMaster *pModBusMaster = new CxModBusMaster( sName, sDriver );        // this item will be deleted in CxInterfaceManager::delInstance()
             pModBusMaster->open();
-
+            // for each user interface we will create thread for independent processing
             CxUsoProcessor *pUsoProcessor = new CxUsoProcessor( sName );
             ProcessorList.add( pUsoProcessor );
          }
@@ -219,7 +219,7 @@ void CxLauncher::close_activities()
    // close uso processors
    for( uint8_t itr = 0; itr < ProcessorList.count(); itr++ )
    {
-      CxUsoProcessor *pPrc= ProcessorList[itr];
+      CxUsoProcessor *pPrc = ProcessorList[itr];
 
       if( NULL != pPrc )
       {
