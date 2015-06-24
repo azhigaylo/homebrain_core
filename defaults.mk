@@ -10,7 +10,7 @@ CPPFLAGS    :=
 LDFLAGS     :=
 LDLIBS      :=  -pthread -lrt
 
-COMPILER_PREFIX := 
-CC = $(COMPILER_PREFIX)gcc
-CXX = $(COMPILER_PREFIX)g++
+COMPILER_PREFIX := /home/azhigaylo/Work/HomeControl/buildroot/buildroot/output/host/usr/bin/
+CC = $(COMPILER_PREFIX)arm-linux-gcc
+CXX = $(COMPILER_PREFIX)arm-linux-g++
 LINK = $(CC)

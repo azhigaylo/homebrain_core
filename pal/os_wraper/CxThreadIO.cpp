@@ -69,8 +69,16 @@ void CxThreadIO::sendMsg( uint16_t ComID, void *data )
 int32_t CxThreadIO::create_comm_thread( )
 {
    int32_t task_result = 0;
+   pthread_attr_t attr;
 
-   task_result = pthread_create(&commThreadID, NULL, thRunnableCommFunction_ThreadIO, this);
+   pthread_attr_init(&attr);
+   int s = pthread_attr_setstacksize(&attr, 1048576);
+   if (s != 0)
+   {
+      printError("IxRunnable/%s: thread=%s pthread_attr_setstacksize error!!!", __FUNCTION__, pcCommThreadName);
+   }
+
+   task_result = pthread_create(&commThreadID, &attr, thRunnableCommFunction_ThreadIO, this);
 
    if (task_result != 0)
    {

@@ -52,10 +52,10 @@ void CxDebugProcessor::TaskProcessor()
    if ( true == CyclicQueue.get( DBGMSG ) )
    {
       setlogmask (LOG_UPTO (LOG_NOTICE));
-	  syslog(LOG_NOTICE, "[M] - %s", DBGMSG.DbgString);
+	   syslog(LOG_NOTICE, "[M] - %s", DBGMSG.DbgString);
    }
 
-   sleep_mcs(50);
+   sleep_mcs(100000);
 }
 
 //------------------------------------------------------------------------------

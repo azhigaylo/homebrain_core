@@ -53,8 +53,15 @@ uint64_t IxDriver::get_time()
 int32_t IxDriver::create_thread( )
 {
    int32_t task_result = 0;
+   pthread_attr_t attr;
 
-   task_result = pthread_create(&workThreadID, NULL, thRunnableFunction_IxDriver, this);
+   pthread_attr_init(&attr);
+   int s = pthread_attr_setstacksize(&attr, 1048576);
+   if (s != 0)
+   {
+      printError("IxRunnable/%s: thread=%s pthread_attr_setstacksize error!!!", __FUNCTION__, pcDrvName);
+   }
+   task_result = pthread_create(&workThreadID, &attr, thRunnableFunction_IxDriver, this);
 
    if (task_result != 0)
    {
@@ -71,8 +78,16 @@ int32_t IxDriver::create_thread( )
 int32_t IxDriver::create_comm_thread( )
 {
    int32_t task_result = 0;
+   pthread_attr_t attr;
 
-   task_result = pthread_create(&commThreadID, NULL, thRunnableCommFunction_IxDriver, this);
+   pthread_attr_init(&attr);
+   int s = pthread_attr_setstacksize(&attr, 1048576);
+   if (s != 0)
+   {
+      printError("IxRunnable/%s: thread=%s pthread_attr_setstacksize error!!!", __FUNCTION__, pcCommThreadName);
+   }
+   
+   task_result = pthread_create(&commThreadID, &attr, thRunnableCommFunction_IxDriver, this);
 
    if (task_result != 0)
    {

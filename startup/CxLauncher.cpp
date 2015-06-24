@@ -329,7 +329,7 @@ void CxLauncher::TaskProcessor()
       }
       case ST_L_NORMAL_WORK :
       {
-         sleep_mcs(100);
+         sleep_mcs(100000);
          break;
       }
 

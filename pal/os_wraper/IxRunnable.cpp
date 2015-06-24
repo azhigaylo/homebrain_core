@@ -60,7 +60,15 @@ int32_t IxRunnable::create_thread( )
 {
    int32_t task_result = 0;
 
-   task_result = pthread_create(&thread, NULL, thRunnableFunction, this);
+   pthread_attr_t attr;
+   pthread_attr_init(&attr);
+   int s = pthread_attr_setstacksize(&attr, 1048576);
+   if (s != 0)
+   {
+      printError("IxRunnable/%s: thread=%s pthread_attr_setstacksize error!!!", __FUNCTION__, pcTaskName);
+   }
+
+   task_result = pthread_create(&thread, &attr, thRunnableFunction, this);
 
    if (task_result != 0)
    {

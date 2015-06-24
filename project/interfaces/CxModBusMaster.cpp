@@ -47,9 +47,9 @@ uint16_t CxModBusMaster::GetRegister( uint8_t address, uint16_t reg_start, uint1
    mbReadRequest.numb_reg_low  = LOW(reg_count); 
    mbReadRequest.CRC           = CRC16_T(reinterpret_cast<char*>(&mbReadRequest), sizeof(mbReadRequest)-sizeof(mbReadRequest.CRC));
    
-   //printDebug("CxModBusMaster/%s: MB send %d %d %d %d %d %d", __FUNCTION__, mbReadRequest.address, mbReadRequest.command, mbReadRequest.start_reg_hi,
-   //                                                mbReadRequest.start_reg_low, mbReadRequest.numb_reg_hi, mbReadRequest.numb_reg_low );
-   //printDebug("CxModBusMaster/%s: MB CRC=%i / size=%i", __FUNCTION__, mbReadRequest.CRC, sizeof(mbReadRequest)-sizeof(mbReadRequest.CRC) );
+   printDebug("CxModBusMaster/%s: MB send %d %d %d %d %d %d", __FUNCTION__, mbReadRequest.address, mbReadRequest.command, mbReadRequest.start_reg_hi,
+                                                   mbReadRequest.start_reg_low, mbReadRequest.numb_reg_hi, mbReadRequest.numb_reg_low );
+   printDebug("CxModBusMaster/%s: MB CRC=%i / size=%i", __FUNCTION__, mbReadRequest.CRC, sizeof(mbReadRequest)-sizeof(mbReadRequest.CRC) );
 
    memcpy_m( commbuf.buffer, &mbReadRequest, sizeof mbReadRequest, sizeof commbuf.buffer );
 
@@ -87,9 +87,9 @@ bool CxModBusMaster::SetRegister( uint8_t address, uint16_t reg_numb, uint16_t r
    mbWriteRequest.REG           = reg_value; 
    mbWriteRequest.CRC           = CRC16_T(reinterpret_cast<char*>(&mbWriteRequest), sizeof(mbWriteRequest)-sizeof(mbWriteRequest.CRC));
    
-   //printDebug("CxModBusMaster/%s: MB send %d %d %d %d %d %d", __FUNCTION__, mbReadRequest.address, mbReadRequest.command, mbReadRequest.start_reg_hi,
-   //                                                                         mbReadRequest.start_reg_low, mbReadRequest.numb_reg_hi, mbReadRequest.numb_reg_low);
-   //printDebug("CxModBusMaster/%s: MB CRC=%i / size=%i", __FUNCTION__, mbReadRequest.CRC, sizeof(mbReadRequest)-sizeof(mbReadRequest.CRC) );
+   printDebug("CxModBusMaster/%s: MB send %d %d %d %d %d %d", __FUNCTION__, mbReadRequest.address, mbReadRequest.command, mbReadRequest.start_reg_hi,
+                                                                            mbReadRequest.start_reg_low, mbReadRequest.numb_reg_hi, mbReadRequest.numb_reg_low);
+   printDebug("CxModBusMaster/%s: MB CRC=%i / size=%i", __FUNCTION__, mbReadRequest.CRC, sizeof(mbReadRequest)-sizeof(mbReadRequest.CRC) );
 
    memcpy_m( commbuf.buffer, &mbWriteRequest, sizeof mbWriteRequest, sizeof commbuf.buffer );
 
@@ -185,11 +185,11 @@ void CxModBusMaster::CommandProcessor( uint16_t ComID, void *data )
       {
          case CM_INP_DATA :
          {
-            //printDebug("CxModBusMaster/%s: MB receive %d %d %d %d %d %d %d %d %d %d %d %d %d", __FUNCTION__, pSerialBlock->buffer[0],  pSerialBlock->buffer[1],  pSerialBlock->buffer[2],  pSerialBlock->buffer[3],
-            //                                                                                                 pSerialBlock->buffer[4],  pSerialBlock->buffer[5],  pSerialBlock->buffer[6],  pSerialBlock->buffer[7],
-            //                                                                                                 pSerialBlock->buffer[8],  pSerialBlock->buffer[9],  pSerialBlock->buffer[10], pSerialBlock->buffer[11],
-            //                                                                                                 pSerialBlock->buffer[12], pSerialBlock->buffer[13]);
-            //printDebug("CxModBusMaster/%s: MB CRC=%i / size=%i", __FUNCTION__, CRC16_T(reinterpret_cast<char*>(pSerialBlock->buffer), pSerialBlock->msgSize-2), pSerialBlock->msgSize-2 );
+            printDebug("CxModBusMaster/%s: MB receive %d %d %d %d %d %d %d %d %d %d %d %d %d", __FUNCTION__, pSerialBlock->buffer[0],  pSerialBlock->buffer[1],  pSerialBlock->buffer[2],  pSerialBlock->buffer[3],
+                                                                                                             pSerialBlock->buffer[4],  pSerialBlock->buffer[5],  pSerialBlock->buffer[6],  pSerialBlock->buffer[7],
+                                                                                                             pSerialBlock->buffer[8],  pSerialBlock->buffer[9],  pSerialBlock->buffer[10], pSerialBlock->buffer[11],
+                                                                                                             pSerialBlock->buffer[12], pSerialBlock->buffer[13]);
+            printDebug("CxModBusMaster/%s: MB CRC=%i / size=%i", __FUNCTION__, CRC16_T(reinterpret_cast<char*>(pSerialBlock->buffer), pSerialBlock->msgSize-2), pSerialBlock->msgSize-2 );
 
             if (0 == CRC16_T(reinterpret_cast<char*>(pSerialBlock->buffer), pSerialBlock->msgSize))
             {

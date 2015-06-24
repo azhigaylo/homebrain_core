@@ -116,6 +116,7 @@ void CxEventDispatcher::Dispatch()
         }
       }
     }
+    sleep_mcs(50);
 }
 
 bool CxEventDispatcher::setNotification( TEvent event, pTIxEventConsumer pIxEventConsumer )
