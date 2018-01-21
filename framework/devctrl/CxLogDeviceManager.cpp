@@ -85,7 +85,7 @@ bool CxLogDeviceManager::set_logdev( IxLogDevice * pLogDev )
    else
    {
      printError("CxLogDeviceManager/%s: LogDev = %s registartion error ", __FUNCTION__, pLogDev->getDeviceName());
-   }  
+   }
 
    return result;
 }
@@ -108,7 +108,7 @@ IxLogDevice * CxLogDeviceManager::get_logdev( const char *name )
            }
          }
       }
-   }  
+   }
 
   return 0;
 }
@@ -145,5 +145,5 @@ void CxLogDeviceManager::process_all( )
             pDevice->Process();
          }
       }
-   } 
+   }
 }

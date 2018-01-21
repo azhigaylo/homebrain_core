@@ -23,8 +23,8 @@
 //------------------------------------------------------------------------------
 struct TCommand
 {
-  uint16_t SenderID;  
-  uint16_t ConsumerID;  
+  uint16_t SenderID;
+  uint16_t ConsumerID;
   uint16_t ComType;
   uint16_t ComID;
   void     *Container;
@@ -32,7 +32,7 @@ struct TCommand
 //------------------------------------------------------------------------------
 
 class IxDriver
-{ 
+{
   public:
 
     ~IxDriver();
@@ -42,13 +42,13 @@ class IxDriver
     // get time in s from thread start
     uint64_t get_time();
 
-  protected:  
+  protected:
 
     virtual void CommandProcessor( uint16_t ComID, void *data ) = 0;
     virtual void ThreadProcessor ( );
-	void sendMsg( uint16_t ComID, void *data );   
+	 void sendMsg( uint16_t ComID, void *data );
 
-    // we hide it because everybody should inherit it !  
+    // we hide it because everybody should inherit it !
     IxDriver( const char *pcName );
 
     uint16_t DrvID;                       // this is CRC of drivers name

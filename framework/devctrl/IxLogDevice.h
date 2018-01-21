@@ -16,7 +16,9 @@ class IxLogDevice
    virtual const char *getInterfaceName() = 0; 
    virtual void start() = 0;
 
-   virtual void Process() = 0;
+   virtual bool Process() = 0;
+   virtual uint16_t getDevStatus( ) = 0;
+   virtual void setDevStatus( uint16_t status ) = 0;
 
 }; typedef IxLogDevice *pIxLogDevice;
 

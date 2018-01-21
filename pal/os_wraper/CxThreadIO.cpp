@@ -22,7 +22,7 @@ CxThreadIO::CxThreadIO(  const char *taskName,  const char *drvName ):
   ,initAttempt   ( 0 )
 {
    strncpy_m( pcDrvName, const_cast<char*>(drvName), sizeof(pcDrvName) );
-   strcat(strncpy_m( pcCommThreadName, const_cast<char*>(drvName), sizeof(pcCommThreadName) ), "_com");
+   strcat(strncpy_m( pcCommThreadName, const_cast<char*>(taskName), sizeof(pcCommThreadName) ), "_com");
 } 
 
 CxThreadIO::~CxThreadIO( )

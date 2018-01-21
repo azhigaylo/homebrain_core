@@ -20,19 +20,24 @@ class CxLogDevice : public IxLogDevice
    virtual void close(){}   // !!! should be fixed  
    virtual void start(){}   // !!! should be fixed
 
-   virtual void Process(){} // logical device processor
+   virtual bool Process(){} // logical device processor
    
- //protected:   // !!! should be fixed 
+   virtual uint16_t getDevStatus( );
+   virtual void setDevStatus( uint16_t status );
+   
+ protected:
 
    virtual ~CxLogDevice();
    CxLogDevice( const char *deviceName, const char *interfaceName );
    
- private:    
+ private :
    
    void registration();
    
    char pcDeviceName[configMAX_DEVICE_NAME_LEN]; 
    char pcInterfaceName[configMAX_DEVICE_NAME_LEN]; 
+   
+   uint16_t devStatus;          // USO_Status_OK(0) or USO_Status_NoReply(1)
    
 }; typedef CxLogDevice *pCxLogDevice;
 

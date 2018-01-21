@@ -13,7 +13,8 @@
 //------------------------------------------------------------------------------
 
 CxLogDevice::CxLogDevice( const char *deviceName, const char *interfaceName ):
-  IxLogDevice( )
+   IxLogDevice( )
+  ,devStatus  ( 1 )
 {
    strncpy_m( pcDeviceName, const_cast<char*>(deviceName), sizeof(pcDeviceName) );
    strncpy_m( pcInterfaceName, const_cast<char*>(interfaceName), sizeof(pcInterfaceName) );
@@ -31,6 +32,16 @@ void CxLogDevice::registration()
   pCxLogDeviceManager pLogDeviceManager = CxLogDeviceManager::getInstance();
   
   pLogDeviceManager->set_logdev( this );
+}
+
+uint16_t CxLogDevice::getDevStatus( )
+{
+   return devStatus;
+}
+
+void CxLogDevice::setDevStatus( uint16_t status )
+{
+   devStatus = status;
 }
 
 const char *CxLogDevice::getDeviceName()

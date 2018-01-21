@@ -95,8 +95,9 @@ void CxUsoCfgLoader::OpenExtModuleConfig( const char* cfg_path )
                      char *sCfgName = (char*)malloc(100);
                      sprintf( sCfgName, "LogDev_EXTM_%d", modNum);
                      
+                     // it's a bad hak, but i don't know how fix it
                      char *sInterfaceName = (char*)malloc(100);
-                     sprintf( sInterfaceName, "mbus_master_%d", CMODHEADER.PortN);                     
+                     sprintf( sInterfaceName, "mb_mast_%d", CMODHEADER.PortN);                     
 
                      // create logical device
                      TContExtMod_USO contExtMod_USO = { CMODHEADER.Adress, CMODHEADER.EMODpoint, CMODHEADER.RRecNumb + CMODHEADER.WRecNumb, pLinkedReg };
@@ -190,7 +191,7 @@ void CxUsoCfgLoader::OpenAnalModuleConfig( const char* cfg_path )
                      sprintf( sCfgName, "%s%d", sDummyName, modNum);
 
                      char *sInterfaceName = (char*)malloc(100);
-                     sprintf( sInterfaceName, "mbus_master_%d", CommonC.ContAI_USO.PortN);                     
+                     sprintf( sInterfaceName, "mb_mast_%d", CommonC.ContAI_USO.PortN);                     
 
                      // create logical device
                      TAI_USO contAI_USO = { CommonC.ContAI_USO.Adress, CommonC.ContAI_USO.USOpoint, CommonC.ContAI_USO.ChanN, pAioChannel };

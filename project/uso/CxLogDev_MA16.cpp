@@ -42,8 +42,10 @@ CxLogDev_MA::~CxLogDev_MA()
 
 }
       
-void CxLogDev_MA::Process()
+bool CxLogDev_MA::Process()
 {
+   bool result = false;
+
    if (0 != pModBusMaster)
    {
       // if error count less than retry_comm_count - do request
@@ -56,6 +58,7 @@ void CxLogDev_MA::Process()
                setUsoStatus( USO_Status_OK );
 
                commError = 0;
+               result = true;
             }
             else
             {
@@ -72,11 +75,13 @@ void CxLogDev_MA::Process()
             StartTimer();
             // we inc it to protect cyclic call setUsoStatus and StartTimer
             commError++;
-          }
+         }
       }
    }
-}
 
+   return result;
+}
+    
 void CxLogDev_MA::sigHandler()
 {
    commError = 0;
@@ -154,8 +159,7 @@ bool CxLogDev_MA::ReadRegisters()
       {
          if ((CT_ANALOG_IN == GetChannelType(pCurCh))||(CT_DISCRET_IN == GetChannelType(pCurCh)))
          {
-            pCurCh->Code = ConvertMBint( mbResponce[i]);
-            //printDebug("CxLogDev_MA/%s: %i ch_code = %i", __FUNCTION__, i, pCurCh->Code );                     
+            pCurCh->Code = ConvertMBint( mbResponce[i]);                 
          }
       }
 
@@ -211,6 +215,8 @@ CxLogDev_MA::TChType CxLogDev_MA::GetChannelType( const TAioChannel *pCurCh )
 
 void CxLogDev_MA::setUsoStatus( uint16_t status )
 {
+   setDevStatus( status );
+
    dataProvider.setDStatus(dev_settings.usoPoint, STATUS_RELIABLE);
    dataProvider.setDPoint(dev_settings.usoPoint, status);
 

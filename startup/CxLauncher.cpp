@@ -103,7 +103,7 @@ void CxLauncher::start_sys_interface( const char *sIntName )
             CxModBusMaster *pModBusMaster = new CxModBusMaster( sName, sDriver );        // this item will be deleted in CxInterfaceManager::delInstance()
             pModBusMaster->open();
             // for each user interface we will create thread for independent processing
-            CxUsoProcessor *pUsoProcessor = new CxUsoProcessor( sName );
+            CxUsoProcessor *pUsoProcessor = new CxUsoProcessor( "uso_processor", sName );
             ProcessorList.add( pUsoProcessor );
          }
 
@@ -329,7 +329,7 @@ void CxLauncher::TaskProcessor()
       }
       case ST_L_NORMAL_WORK :
       {
-         sleep_mcs(100000);
+         sleep_mcs(200000);
          break;
       }
 

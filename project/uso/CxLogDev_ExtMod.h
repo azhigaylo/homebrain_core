@@ -38,7 +38,7 @@ class CxLogDev_ExtMod : public CxLogDevice, public CxSysTimer
       CxLogDev_ExtMod( const char *logDevName, const char *usedInterface, TContExtMod_USO modSettings );
       virtual ~CxLogDev_ExtMod();
       
-      virtual void Process();
+      virtual bool Process();
 
    protected :
 

@@ -17,7 +17,7 @@ class CxUsoProcessor : public IxRunnable
 {
    public:
 
-      CxUsoProcessor( const char *sInterfaceNmae );
+      CxUsoProcessor( const char * sPrcName, const char *sInterfaceNmae );
       virtual ~CxUsoProcessor( );
 
       bool set_logdev( IxLogDevice * pLogDev );

@@ -32,10 +32,10 @@ class CxLogDeviceManager
    IxLogDevice *get_logdev_by_number( uint16_t numb );
 
    void process_all( );
-      
+
  private:
 
-   CxLogDeviceManager( ); 
+   CxLogDeviceManager( );
    ~CxLogDeviceManager(){}
 
    CxVector<TLogDevListItem> LOGDEV_LIST;
@@ -51,4 +51,4 @@ class CxLogDeviceManager
 }; typedef CxLogDeviceManager * pCxLogDeviceManager;
 
 
-#endif /*_CX_LOG_DEV_MANAGER*/   
+#endif /*_CX_LOG_DEV_MANAGER*/

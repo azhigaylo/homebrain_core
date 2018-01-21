@@ -41,8 +41,10 @@ CxLogDev_ExtMod::~CxLogDev_ExtMod()
    }
 }
 
-void CxLogDev_ExtMod::Process()
+bool CxLogDev_ExtMod::Process()
 {
+   bool result = false;
+
    if (0 != pModBusMaster)
    {
       // if error count less than retry_comm_count - do request
@@ -54,6 +56,7 @@ void CxLogDev_ExtMod::Process()
                setExtModStatus( USO_Status_OK );
 
                commError = 0;
+               result = true;
             }
             else
             {
@@ -73,6 +76,8 @@ void CxLogDev_ExtMod::Process()
           }
       }
    }
+
+   return result;
 }
 
 void CxLogDev_ExtMod::sigHandler()

@@ -16,6 +16,8 @@ CxModBusMaster::CxModBusMaster( const char *interfaceName, const char *drvName )
    ,IxEventProducer( )
    ,counter_item   ( 2 )
    ,sizeResponce   ( 0 )
+   ,cond_mutex     ( PTHREAD_MUTEX_INITIALIZER )
+   ,cond_var       ( PTHREAD_COND_INITIALIZER )
    ,cond_var_flag  ( 0 )
 {
    memset_m( &commbuf, 0, sizeof commbuf, sizeof commbuf );

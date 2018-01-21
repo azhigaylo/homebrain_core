@@ -48,7 +48,7 @@ class CxLogDev_MA : public CxLogDevice, public CxSysTimer
       CxLogDev_MA( const char *logDevName, const char *usedInterface, TAI_USO usoSettings );
       virtual ~CxLogDev_MA();
       
-      virtual void Process();
+      virtual bool Process();
 
    protected :
 
@@ -65,10 +65,10 @@ class CxLogDev_MA : public CxLogDevice, public CxSysTimer
          CT_DISCRET_OUT = 4
       };   
    
-      TAI_USO    dev_settings;       // USO settings address and so on 
-      uint8_t        commError;          // communication error with USO
-      CxDataProvider &dataProvider;      // reference on the data provider
-      CxModBusMaster *pModBusMaster;     // pointer to the interface
+      TAI_USO         dev_settings;       // USO settings address and so on 
+      uint8_t         commError;          // communication error with USO
+      CxDataProvider  &dataProvider;      // reference on the data provider
+      CxModBusMaster  *pModBusMaster;     // pointer to the interface
 
       bool CheckAndSetOutput();
       bool ReadRegisters();

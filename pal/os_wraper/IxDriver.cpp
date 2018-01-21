@@ -141,7 +141,7 @@ void IxDriver::run_comm()
   while(true)
   {   
     CommProcessor();
-	sleep_mcs(10);
+	 sleep_mcs(10);
   }
 } 
 
