@@ -27,14 +27,14 @@
 #define Swap4Bytes(val) \
  ( (((val) >> 24) & 0x000000FF) | (((val) >>  8) & 0x0000FF00) | \
    (((val) <<  8) & 0x00FF0000) | (((val) << 24) & 0xFF000000) )
- 
+
  // Swap 8 byte, 64 bit values:
 #define Swap8Bytes(val) \
  ( (((val) >> 56) & 0x00000000000000FF) | (((val) >>  40) & 0x000000000000FF00) | \
    (((val) >> 24) & 0x0000000000FF0000) | (((val) >>   8) & 0x00000000FF000000) | \
    (((val) <<  8) & 0x000000FF00000000) | (((val) <<  24) & 0x0000FF0000000000) | \
    (((val) << 40) & 0x00FF000000000000) | (((val) <<  56) & 0xFF0000000000000) )
-  
+
 #define TtNotificationSet   1
 #define TtNotificationReset 2
 #define TtDataUpdate        3
@@ -60,7 +60,7 @@ CxDataConnection::CxDataConnection( const char *pInterfaceName, const char *strS
 
    // create notification array
    createNotifiItemArray();
-     
+
    // config sockaddr_in
    char *strServer_port = strdup(strServer);
    char *strServer_ip = strsep(&strServer_port, ":");
@@ -69,7 +69,7 @@ CxDataConnection::CxDataConnection( const char *pInterfaceName, const char *strS
    hints.ai_family = AF_INET;
    hints.ai_socktype = SOCK_STREAM;
 
-   if ((rv = getaddrinfo(strServer_ip, strServer_port, &hints, &servinfo)) != 0) 
+   if ((rv = getaddrinfo(strServer_ip, strServer_port, &hints, &servinfo)) != 0)
    {
       printWarning("CxDataConnection/%s: getaddrinfo error=%s", __FUNCTION__, gai_strerror(rv));
    }
@@ -126,9 +126,9 @@ bool CxDataConnection::connectSocket()
 
       // we should clear all notifications, because connection on the server was renewed
       clrNotifiItemArray();
-      // set MY NAME on the server 
+      // set MY NAME on the server
       setString( APP_NAME );
-      
+
       result = true;
    }
 
@@ -150,7 +150,7 @@ void CxDataConnection::disconnectSocket()
          // Do not break - the socket needs to be closed
       } else
       {
-         printDebug("CxDataConnection/%s: Disconnected server...", __FUNCTION__); 
+         printDebug("CxDataConnection/%s: Disconnected server...", __FUNCTION__);
       }
 
       if (0 != ::close(mSocket))
@@ -180,7 +180,7 @@ void CxDataConnection::createNotifiItemArray()
    // calculate size
    if ( d_point_total >= a_point_total ) notifiArraySize = d_point_total;
    else notifiArraySize = a_point_total;
-   
+
    // create array
    pNotifiItemArray = new TNotifiItem[notifiArraySize];
 }
@@ -223,7 +223,7 @@ bool CxDataConnection::doesItNotifiable(uint32_t number, uint32_t type)
 //------------------------------------------------------------------------------
 
 void CxDataConnection::TaskProcessor()
-{  
+{
    if (true == getReconnectFlag())
    {
       if (true == connectSocket())
@@ -239,7 +239,7 @@ void CxDataConnection::TaskProcessor()
       uint32_t expectedSize = 0;
       const ssize_t size = recv(mSocket, reinterpret_cast<char*>(&expectedSize), sizeof expectedSize, 0);
       expectedSize = Swap4Bytes( expectedSize );
-      
+
       if (0 >= size)
       {
          printWarning("CxDataConnection/%s: Unable to receive data: %s, trying to reconnect...", __FUNCTION__, strerror(errno));
@@ -252,11 +252,11 @@ void CxDataConnection::TaskProcessor()
 
          if (0 >= size)
          {
-            printWarning("CxDataConnection/%s: Unable to receive data: %s, trying to reconnect...", __FUNCTION__, strerror(errno)); 
+            printWarning("CxDataConnection/%s: Unable to receive data: %s, trying to reconnect...", __FUNCTION__, strerror(errno));
             setReconnectFlag();
             return;
          }
-         
+
          printDebug("CxDataConnection/%s: rec size= %i/ expected= %i", __FUNCTION__, size, expectedSize);
 
          if (0 != CRC16_T(reinterpret_cast<char*>(&qByteArray.tradeUnit), size - sizeof(qByteArray.byteArrayBody)))
@@ -319,9 +319,9 @@ bool CxDataConnection::setNotification(uint32_t number, uint32_t type)
 
       memcpy(byteArray.Array, reinterpret_cast<char*>(&crc), sizeof(crc));
 
-      byteArray.byteArrayBody = sizeof(byteArray.tradeUnit) + sizeof(crc);  
+      byteArray.byteArrayBody = sizeof(byteArray.tradeUnit) + sizeof(crc);
 
-      uint32_t sendSize     = sizeof(byteArray.byteArrayBody) + byteArray.byteArrayBody;   
+      uint32_t sendSize     = sizeof(byteArray.byteArrayBody) + byteArray.byteArrayBody;
       uint32_t expectedSize = Swap4Bytes(byteArray.byteArrayBody);
 
       byteArray.byteArrayBody = Swap4Bytes( byteArray.byteArrayBody );
@@ -332,7 +332,7 @@ bool CxDataConnection::setNotification(uint32_t number, uint32_t type)
 
       if (-1 == rc or static_cast<size_t>(rc) != sendSize)
       {
-         printError("CxDataConnection/%s: Unable to send: %s, trying to reconnect...", __FUNCTION__, strerror(errno)); 
+         printError("CxDataConnection/%s: Unable to send: %s, trying to reconnect...", __FUNCTION__, strerror(errno));
          setReconnectFlag();
          ret = false;
       }
@@ -354,7 +354,7 @@ bool CxDataConnection::setApoint(uint32_t number, uint32_t status, float value)
 
    TQByteArray byteArray;
    TQApoint aPoint = { Swap4Bytes(status), Swap8Bytes(inputValue) };
-   //---------------------------- 
+   //----------------------------
 
    // fill out TQByteArray buffer
    byteArray.tradeUnit.tradeType  = Swap4Bytes( TtDataUpdate );
@@ -380,7 +380,7 @@ bool CxDataConnection::setApoint(uint32_t number, uint32_t status, float value)
 
    if (-1 == rc or static_cast<size_t>(rc) != sendSize)
    {
-      printError("CxDataConnection/%s: Unable to send: %s, trying to reconnect...", __FUNCTION__, strerror(errno)); 
+      printError("CxDataConnection/%s: Unable to send: %s, trying to reconnect...", __FUNCTION__, strerror(errno));
       setReconnectFlag();
       ret = false;
    }
@@ -495,7 +495,7 @@ bool CxDataConnection::setString(const char* const pString)
 bool CxDataConnection::onDataUpdate( uint32_t number, uint32_t status, uint32_t value )
 {
    printDebug("CxDataConnection/%s: got new dpoint number/status/value = %d/%d/%d", __FUNCTION__, number, status, value);
-   
+
    CxDataProvider::getInstance().setSilenceDPoint( number, value );
    CxDataProvider::getInstance().setSilenceDStatus( number, status );
 }

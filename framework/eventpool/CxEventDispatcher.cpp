@@ -11,10 +11,10 @@
 #include "CxEventDispatcher.h"
 //------------------------------------------------------------------------------
 using namespace event_pool;
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 CxEventDispatcher* CxEventDispatcher::theInstance = 0;
 CxMutex CxEventDispatcher::singlEventLock("singlEventLocker");
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 
 CxEventDispatcher::CxEventDispatcher():
     IxRunnable ( "EVENT_TASK" )
@@ -22,7 +22,7 @@ CxEventDispatcher::CxEventDispatcher():
    ,sNotificationUnitRecNumb( 0 )
    ,EventPool( "event_queue", configEVENT_POOL_SIZE, sizeof(TEvent), true )
    ,lastFreeEventId( event_pool::EVENT_LAST_EVENT )
-{    
+{
    task_run( );
 }
 
@@ -94,7 +94,7 @@ void CxEventDispatcher::TaskProcessor()
 {
    Dispatch();
 }
- 
+
 void CxEventDispatcher::Dispatch()
 {
    // blocked call
@@ -127,13 +127,13 @@ bool CxEventDispatcher::setNotification( TEvent event, pTIxEventConsumer pIxEven
 
    if( sNotificationUnitRecNumb < configNOTIFICATION_POOL_SIZE )
    {
-     // work with pool       
+     // work with pool
      NotificationPool.add( NotificationUnit );
      sNotificationUnitRecNumb++;
 
-     printDebug("CxEventDispatcher/%s: subscribe on event = %i ", __FUNCTION__, event.eventType);	 
-     return true;      
-   }  
+     printDebug("CxEventDispatcher/%s: subscribe on event = %i ", __FUNCTION__, event.eventType);
+     return true;
+   }
    return false;
 }
 

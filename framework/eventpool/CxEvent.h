@@ -9,7 +9,7 @@
 struct TEvent
 {
    unsigned short eventType;
-   unsigned short  dataSize;   
+   unsigned short  dataSize;
    void *eventData;
 }; typedef TEvent *pTEvent;
 #pragma pack ( )
@@ -20,7 +20,7 @@ class CxEvent
 {
   public:
 
-    CxEvent(); 
+    CxEvent();
     virtual ~CxEvent(){}
 
   protected:

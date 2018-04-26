@@ -15,9 +15,9 @@
 // scope declaretion
 #define  DBG_SCOPE_DEF(className, methodName) \
   {const char* SCOPE_NAME = MKSTRING(className##_##methodName); \
-    CxDebugBase::getInstance()->ScopeRegistration( SCOPE_NAME );} 
+    CxDebugBase::getInstance()->ScopeRegistration( SCOPE_NAME );}
 
-// scope definition 
+// scope definition
 #define  DBG_SCOPE(className, methodName) \
   const char* SCOPE_NAME = MKSTRING(className##_##methodName); \
    CxLocalDbg localScope( CRC16_T( const_cast<char*>(SCOPE_NAME), strlen_m(SCOPE_NAME, MAX_SCOPE_NAME_LENGTH) ) );

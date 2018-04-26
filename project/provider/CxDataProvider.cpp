@@ -21,14 +21,14 @@ CxDataProvider::CxDataProvider() :
       DPOINT[point].status = 0;
       DPOINT[point].value = 0;
    }
-   // clearing analog point  
+   // clearing analog point
    for( uint8_t point=0; point < a_point_total; point++ )
    {
       APOINT[point].number = point;
-      APOINT[point].status = 0;  
+      APOINT[point].status = 0;
       APOINT[point].value = 0;
    }
-} 
+}
 
 CxDataProvider::~CxDataProvider()
 {
@@ -53,14 +53,14 @@ CxDataConnection *CxDataProvider::getInterface()
 
       printDebug("CxDataConnection/%s: pDataConnection=%i", __FUNCTION__, pDataConnection);
    }
-   
+
    return pDataConnection;
 }
-      
+
 void CxDataProvider::sendExternalDpoint( uint16_t number )
 {
    // put in to external storage
-   CxDataConnection *pInterface = getInterface();  
+   CxDataConnection *pInterface = getInterface();
    if (pInterface != 0)
    {
       pInterface->setDpoint( number, DPOINT[number].status, DPOINT[number].value );
@@ -70,7 +70,7 @@ void CxDataProvider::sendExternalDpoint( uint16_t number )
 void CxDataProvider::sendExternalApoint( uint16_t number )
 {
    // put in to external storage
-   CxDataConnection *pInterface = getInterface();  
+   CxDataConnection *pInterface = getInterface();
    if (pInterface != 0)
    {
       pInterface->setApoint( number, APOINT[number].status, APOINT[number].value );
@@ -80,7 +80,7 @@ void CxDataProvider::sendExternalApoint( uint16_t number )
 void CxDataProvider::subscribeOnExternalDpoint( uint16_t number )
 {
    // put in to external storage
-   CxDataConnection *pInterface = getInterface();  
+   CxDataConnection *pInterface = getInterface();
    if (pInterface != 0)
    {
       pInterface->setNotification( number, DtDigitalPoint );
@@ -90,19 +90,19 @@ void CxDataProvider::subscribeOnExternalDpoint( uint16_t number )
 void CxDataProvider::subscribeOnExternalApoint( uint16_t number )
 {
    // put in to external storage
-   CxDataConnection *pInterface = getInterface();  
+   CxDataConnection *pInterface = getInterface();
    if (pInterface != 0)
    {
       pInterface->setNotification( number, DtAnalogPoint );
    }
-}     
+}
 
 //--------------------------------D point data provider-------------------------
 
 TDPOINT & CxDataProvider::getDPoint( uint16_t number )
 {
    CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
-  
+
    subscribeOnExternalDpoint( number );
 
    return DPOINT[number];
@@ -138,7 +138,7 @@ void CxDataProvider::decDPoint( uint16_t number )
 
    sendExternalDpoint( number );
 }
-     
+
 void CxDataProvider::setDStatus( uint16_t number, int8_t status )
 {
    CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
@@ -147,7 +147,7 @@ void CxDataProvider::setDStatus( uint16_t number, int8_t status )
    if (status != DPOINT[number].status)
    {
       DPOINT[number].status |= status;
-      sendExternalDpoint( number );      
+      sendExternalDpoint( number );
    }
 }
 

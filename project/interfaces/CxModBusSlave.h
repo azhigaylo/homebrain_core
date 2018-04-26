@@ -29,7 +29,7 @@ class CxModBusSlave : public CxThreadIO, public CxInterface
 
       void GetRegister( uint16_t reg_start, uint16_t reg_count );
       void SetRegister( uint16_t reg_start, uint16_t reg_value );
-      
+
    private :
 
       uint16_t          address;

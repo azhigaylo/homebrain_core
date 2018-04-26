@@ -13,9 +13,9 @@
 // name   - timer name, for easy debug only
 // period - in nanosecs
 // cyclic - if it true - timer will generate cyclic event
-  
+
 class CxSysTimer         // class of virtual timer's
-{  
+{
   public:
 
     CxSysTimer( const char *name, uint64_t period, bool cyclic );
@@ -26,7 +26,7 @@ class CxSysTimer         // class of virtual timer's
 
   protected:
 
-    char timerName[configMAX_TIMER_NAME_LEN];    
+    char timerName[configMAX_TIMER_NAME_LEN];
 
   private:
 

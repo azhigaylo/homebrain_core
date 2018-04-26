@@ -12,7 +12,7 @@
 class CxMutex
 {
 public:
-  
+
    CxMutex( const char *name );
    ~CxMutex( );
 
@@ -26,8 +26,8 @@ private:
    CxMutex& operator=( const CxMutex& rhs );
 
 protected:
-     
-   pthread_mutex_t mutex; 
+
+   pthread_mutex_t mutex;
    char mutexName[configMAX_MUTEX_NAME_LEN];
 };
 

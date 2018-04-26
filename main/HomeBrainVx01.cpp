@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
    int c = 0;
    int debug = 0;
    char *sCfg = "/home/azhigaylo/.config/home_brain/HBconfig.conf";
-   
+
    while (-1 != (c = getopt(argc, argv, "c:d:")))
    {
       switch (c)

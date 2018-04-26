@@ -13,7 +13,7 @@ CxStaticPool *CxStaticPool::theInstance = 0;
 CxStaticPool::CxStaticPool():
     sRecNumb( 0 )
    ,pHead   ( staticpool )
-{    
+{
    memset_m( staticpool, 0, configSTATICPOOL_SIZE, configSTATICPOOL_SIZE );
 }
 

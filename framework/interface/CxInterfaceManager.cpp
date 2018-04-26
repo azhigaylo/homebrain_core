@@ -18,7 +18,7 @@ CxMutex CxInterfaceManager::singlInterfaceLock("singlInterfaceLocker");
 CxInterfaceManager::CxInterfaceManager( ):
     CONNECTION_LIST ( interfaceListSize )
    ,interfaceCounter( 0 )
-{   
+{
 
 }
 
@@ -51,7 +51,7 @@ void CxInterfaceManager::delInstance()
          {
             printDebug("CxInterfaceManager/%s: try to remove interface = %s...", __FUNCTION__, pInterface->getInterfaceName());
             delete pInterface;
-         } 
+         }
       }
       // clean up list
       CONNECTION_LIST.clear();
@@ -59,7 +59,7 @@ void CxInterfaceManager::delInstance()
       delete this;
    }
 }
-               
+
 bool CxInterfaceManager::set_interface( IxInterface * pNewInterface )
 {
    bool result = false;
@@ -95,7 +95,7 @@ IxInterface *CxInterfaceManager::get_interface( const char *name )
          {
            return pInterface;
          }
-      } 
-   } 
+      }
+   }
    return 0;
 }

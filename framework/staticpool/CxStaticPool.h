@@ -86,7 +86,7 @@ class CxStaticPoolAllocator
    pTMemBlockHeader pCurentBlock;
    unsigned short sElementsCount;
 
-   TElement* getFreeElementPosition( );  
+   TElement* getFreeElementPosition( );
    pTMemBlockHeader createOneMoreBlock( );
    pTMemBlockHeader getLastBlock( );
    pTMemBlockHeader getNextBlock( );
@@ -143,10 +143,10 @@ TElement* CxStaticPoolAllocator<TElement>::getContainer( const TElement& element
            *pNewElement = element;
            sElementsCount++;
          }
-      }  
+      }
     }
 
-  SPAmutex.unlock(); 
+  SPAmutex.unlock();
 
   return pNewElement;
 }
@@ -190,9 +190,9 @@ bool CxStaticPoolAllocator<TElement>::delContainer( TElement* pElement )
       {
         if(pMemBlockHeader->cElemCount)
         {
-          // free space in this block is to be available 
+          // free space in this block is to be available
           TIntBlk* pIntBlk = reinterpret_cast<TIntBlk*>(reinterpret_cast<char*>(pMemBlockHeader) + sizeof(TMemBlockHeader));
-          
+
           for( unsigned short iterator = 0; iterator <= static_cast<unsigned short>(pMemBlockHeader->sBlkSize/sizeof(TIntBlk)); iterator++, pIntBlk++ )
           {
             if( (&(pIntBlk->element) == pElement) && (pIntBlk->busy == true) )
@@ -204,7 +204,7 @@ bool CxStaticPoolAllocator<TElement>::delContainer( TElement* pElement )
               return true;
             }
           }
-          
+
         }
         pMemBlockHeader = pMemBlockHeader->pNextMemBlockHeader;
       }
@@ -240,7 +240,7 @@ TElement* CxStaticPoolAllocator<TElement>::searchByFunktion( bool (*execution_fu
      {
        if( pMemBlockHeader->cElemCount )
        {
-         // free space in this block is to be available 
+         // free space in this block is to be available
          TIntBlk* pIntBlk = reinterpret_cast<TIntBlk*>(reinterpret_cast<char*>(pMemBlockHeader) + sizeof(TMemBlockHeader));
          for( unsigned short iterator = 0; iterator < pMemBlockHeader->sBlkSize/static_cast<unsigned short>(sizeof(TIntBlk)); iterator++, pIntBlk++ )
          {
@@ -271,7 +271,7 @@ TElement* CxStaticPoolAllocator<TElement>::getFreeElementPosition()
     {
       if( pMemBlockHeader->cElemCount*sizeof(TIntBlk) < pMemBlockHeader->sBlkSize )
       {
-        // free space in this block is to be available 
+        // free space in this block is to be available
         TIntBlk* pIntBlk = reinterpret_cast<TIntBlk*>(reinterpret_cast<char*>(pMemBlockHeader) + sizeof(TMemBlockHeader));
 
         for( unsigned short iterator = 0; iterator <= static_cast<unsigned short>(pMemBlockHeader->sBlkSize/sizeof(TIntBlk)); iterator++, pIntBlk++ )
@@ -320,7 +320,7 @@ pTMemBlockHeader CxStaticPoolAllocator<TElement>::createOneMoreBlock()
    CxStaticPool *pStaticPool = CxStaticPool::getInstance();
    pTMemBlockHeader pLastMemBlockHeader = getLastBlock();
 
-   pTMemBlockHeader pTmpBlock = reinterpret_cast<pTMemBlockHeader>( pStaticPool->pStaticMalloc(sizeof(TMemBlockHeader) 
+   pTMemBlockHeader pTmpBlock = reinterpret_cast<pTMemBlockHeader>( pStaticPool->pStaticMalloc(sizeof(TMemBlockHeader)
                                                               +   sizeof(TIntBlk)*(pStrtBlock->cElemCount/2 + 1)) );
    if( pTmpBlock != NULL && pLastMemBlockHeader != NULL )
    {
@@ -332,8 +332,8 @@ pTMemBlockHeader CxStaticPoolAllocator<TElement>::createOneMoreBlock()
      pTmpBlock->cElemCount = 0;
      sElementsCount = 0;
    }
-   
+
   return pTmpBlock;
 }
 
-#endif /*_CX_STATIC_POOL*/   
+#endif /*_CX_STATIC_POOL*/

@@ -26,10 +26,10 @@ IxEventConsumer::~IxEventConsumer()
 eEventType IxEventConsumer::getUnusedEvent( )
 {
    CxEventDispatcher *pDispatcher = CxEventDispatcher::getInstance();
-   
+
    return pDispatcher->getVirtualEvent();
 }
-	  
+
 bool IxEventConsumer::setNotification(eEventType event)
 {
    CxEventDispatcher *pDispatcher = CxEventDispatcher::getInstance();
@@ -54,4 +54,3 @@ bool IxEventConsumer::clrNotification(eEventType event)
    return false;
 }
 
-	

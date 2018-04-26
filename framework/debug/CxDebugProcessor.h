@@ -1,7 +1,7 @@
 #ifndef _CXDEBUG_PROCESSOR
 #define _CXDEBUG_PROCESSOR
 
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -24,9 +24,9 @@ struct TDBGMSG
 {
    uint8_t Size;
    char DbgString[configCONTEINER_SIZE];
-}; 
+};
 #pragma pack ( )
-typedef TDBGMSG *pTDBGMSG; 
+typedef TDBGMSG *pTDBGMSG;
 
 //------------------------------------------------------------------------------
 
@@ -42,18 +42,18 @@ class CxDebugProcessor : public IxRunnable
 
    private:
 
-      // internal container DBGMSG protector 
+      // internal container DBGMSG protector
       static CxMutex queueMutex;
       // cyclic queue with messages
-      CxCyclicQueue<TDBGMSG>CyclicQueue;    
-      // current message    
+      CxCyclicQueue<TDBGMSG>CyclicQueue;
+      // current message
       TDBGMSG DBGMSG;
 
       // task processor
       virtual void TaskProcessor( );                        // from IxRunnable
 
       bool transmitterAreFree;
-}; 
+};
 typedef CxDebugProcessor *pCxDebugProcessor;
 
 #endif /*_CXDEBUG_PROCESSOR*/

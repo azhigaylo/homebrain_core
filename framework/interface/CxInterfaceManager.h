@@ -42,7 +42,7 @@ class CxInterfaceManager
 
       CxInterfaceManager( const CxInterfaceManager& );                 // Prevent copy-construction
       CxInterfaceManager& operator=( const CxInterfaceManager& );      // Prevent assignment
-  
+
 }; typedef CxInterfaceManager * pCxInterfaceManager;
 
 #endif /*_CX_INTERFACE_MANAGER*/

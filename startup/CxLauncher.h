@@ -30,7 +30,7 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
    {
       dbg_off = 0,
       dbg_on
-   };        
+   };
 
    enum TLauncherState
    {
@@ -54,7 +54,7 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
    private:
       // current state os launcher
       TLauncherState LauncherState;
-      // interface manager	  
+      // interface manager
       const CxInterfaceManager *pInterfaceManager;
       // logical device manager
       const CxLogDeviceManager *pLogDeviceManager;
@@ -65,7 +65,7 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
       // project loader
       CxUsoCfgLoader UsoCfgLoader;
       // list for each uso processors
-      CxVector<CxUsoProcessor*> ProcessorList;         
+      CxVector<CxUsoProcessor*> ProcessorList;
 
       void load_driver( const char *sDrvName );
       void start_sys_interface( const char *sIntName );
@@ -90,9 +90,9 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
 
       //static void sigHandler( int sig );
 
-      // work with scheduler 
-      void scheduler_start(){}                         // only for RTOS 
-      void scheduler_stop(){}                          // only for RTOS 
+      // work with scheduler
+      void scheduler_start(){}                         // only for RTOS
+      void scheduler_stop(){}                          // only for RTOS
 
       char cgfname[configMAX_NAME_NAME_LEN];
 

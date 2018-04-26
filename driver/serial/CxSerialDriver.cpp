@@ -13,11 +13,11 @@
 
 CxSerialDriver::CxSerialDriver( const char *drvName, const char *ttyPath, DCB *pDCB ):
     IxDriver       ( drvName )
-   ,CxSysTimer     ( "timeoutTimer", 500000000, false)          // time in nunosecond
+   ,CxSysTimer     ( "timeoutTimer", 500000000, false)          // time in nanosecond
    ,internalDCB    ( *pDCB   )
    ,fdTTY          ( 0 )
    ,timeout        ( 0 )
-   ,singlSerialLock( "serialLocker" ) 
+   ,singlSerialLock( "serialLocker" )
 {
    memset_m( &tty, 0, sizeof tty, sizeof tty );
    memset_m( &txBuffer, 0, sizeof txBuffer, sizeof txBuffer );
@@ -52,7 +52,7 @@ bool CxSerialDriver::ttyConfig(const char *ttyPath)
       {
          case 5  : tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS5; break;  // 5-bit chars
          case 6  : tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS6; break;  // 6-bit chars
-         case 7  : tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS7; break;  // 7-bit chars 
+         case 7  : tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS7; break;  // 7-bit chars
          case 8  : tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8; break;  // 8-bit chars
          default : tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8; break;  // 8-bit chars
       }
@@ -132,7 +132,7 @@ void CxSerialDriver::CommandProcessor( uint16_t ComID, void *data )
       }
       case CM_OUT_DATA :
       {
-         TSerialBlock* pSerBlk = reinterpret_cast<TSerialBlock*>(data); 
+         TSerialBlock* pSerBlk = reinterpret_cast<TSerialBlock*>(data);
 
          if ((pSerBlk->msgSize > 0)&&(pSerBlk->msgSize < BUFFER_SIZE))
          {
@@ -193,9 +193,9 @@ void CxSerialDriver::ThreadProcessor( )
 void CxSerialDriver::sigHandler()
 {
    CxMutexLocker locker( &singlSerialLock );
-   
+
    rxBuffer.msgSize = 0;
-   
+
    sendMsg( CM_TIMEOUT, &rxBuffer );
 }
-	  
+

@@ -13,9 +13,9 @@ struct TScopeListItem
 {
   uint16_t number;
   uint16_t hashCode;
-}; 
+};
 #pragma pack ( )
-typedef TScopeListItem *pTScopeListItem; 
+typedef TScopeListItem *pTScopeListItem;
 //------------------------------------------------------------------------------
 
 class CxDebugBase
@@ -32,7 +32,7 @@ class CxDebugBase
    void dbgError  ( const char* pFormat, va_list *dataList );
 
  protected:
-   
+
    CxDebugBase();
    ~CxDebugBase( ){}
 
@@ -46,4 +46,4 @@ class CxDebugBase
 };
 typedef CxDebugBase *pTCxDebugBase;
 
-#endif // _CX_DEBUG_BASE 
+#endif // _CX_DEBUG_BASE

@@ -18,13 +18,13 @@
    };
 
    //--------------------------------------
-   
+
    struct TPortMode
    {
-     int8_t P1_MODE; 
+     int8_t P1_MODE;
      int8_t P2_MODE;
      int8_t P3_MODE;
-     int8_t P4_MODE;      
+     int8_t P4_MODE;
    };
 
    struct TContAI_USO
@@ -39,7 +39,7 @@
    {
      int8_t PortN;
      int8_t Adress;
-     int8_t ChanN;  
+     int8_t ChanN;
      uint16_t USOpoint;
    };// ttl  byte
 
@@ -48,7 +48,7 @@
    {
      int8_t PortN;
      int8_t Adress;
-     uint16_t USOpoint;   
+     uint16_t USOpoint;
      uint16_t InfoBlkPoint;
      uint16_t ComBlkPoint;
    };// ttl  byte
@@ -57,7 +57,7 @@
    {
      int8_t PortN;
      int8_t Adress;
-     uint16_t USOpoint;   
+     uint16_t USOpoint;
      uint16_t PowerPointNumb;
      uint16_t StealPointNumb;
    };// ttl  byte
@@ -71,7 +71,7 @@
    struct TConfigFileSP
    {
       TPortMode PortMode;
-      int8_t nmb_AI_moduls;  
+      int8_t nmb_AI_moduls;
       int8_t nmb_DIDO_moduls;
       int8_t nmb_tmp1_moduls;
       int8_t nmb_tmp2_moduls;
@@ -84,7 +84,7 @@
       // ContDI16_USO * nmb_DI16_moduls
       // ContDI11_DO5_USO * nmb_DI11_DO5_moduls
       // ContDI16_DO4_USO * nmb_DI16_DO4_moduls
-      // ContMUK_USO * nmb_MUK_moduls  
+      // ContMUK_USO * nmb_MUK_moduls
    };
 
 #pragma pack(pop)
@@ -103,9 +103,9 @@ class CxUsoCfgLoader
 
       void OpenExtModuleConfig( const char* cfg_path );
       void OpenAnalModuleConfig( const char* cfg_path );
-      
+
       char* sUsoCgf_path;
-      
+
 }; typedef CxUsoCfgLoader *pTCxUsoCfgLoader;
 
 #endif /*_CX_USOCFG_LOADER*/

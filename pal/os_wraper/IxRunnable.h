@@ -11,8 +11,8 @@
 //------------------------------------------------------------------------------
 
 class IxRunnable
-{ 
-  public:       
+{
+  public:
 
     ~IxRunnable();
 
@@ -25,7 +25,7 @@ class IxRunnable
     // get time in s from thread start
     uint64_t get_time();
 
-    char pcTaskName[configMAX_TASK_NAME_LEN];    
+    char pcTaskName[configMAX_TASK_NAME_LEN];
 
     pthread_t thread;
     time_t    start_time;
@@ -41,7 +41,7 @@ class IxRunnable
 
     static void * thRunnableFunction( void *args );
 
-    int32_t create_thread( );  
+    int32_t create_thread( );
 
     IxRunnable( const IxRunnable & ){}
     IxRunnable & operator=( const IxRunnable & ){}

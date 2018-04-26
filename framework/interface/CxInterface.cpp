@@ -13,7 +13,7 @@ CxInterface::CxInterface( const char *name ):
    IxInterface()
 {
    strncpy_m( pcInterfaceName, const_cast<char*>(name), sizeof(pcInterfaceName) );
-   registration();     
+   registration();
 }
 
 CxInterface::~CxInterface()
@@ -24,7 +24,7 @@ CxInterface::~CxInterface()
 void CxInterface::registration()
 {
   pCxInterfaceManager pInterfaceManager = CxInterfaceManager::getInstance();
-  
+
   pInterfaceManager->set_interface( this );
 }
 

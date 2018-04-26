@@ -19,9 +19,7 @@ uint16_t        CRC16_T_0   ( char *Buff, uint16_t Count );
 
 uint16_t        GenWfrom2B  ( uint8_t B_h, uint8_t B_l );
 
-
-
-
+//------------------------------------------------------------------------------
 
 bool            mod_memcpy  ( char*to, char*from, unsigned short datasize, unsigned short sizeofto );
 

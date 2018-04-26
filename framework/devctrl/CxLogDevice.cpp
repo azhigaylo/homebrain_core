@@ -30,7 +30,7 @@ CxLogDevice::~CxLogDevice()
 void CxLogDevice::registration()
 {
   pCxLogDeviceManager pLogDeviceManager = CxLogDeviceManager::getInstance();
-  
+
   pLogDeviceManager->set_logdev( this );
 }
 
@@ -53,4 +53,3 @@ const char *CxLogDevice::getInterfaceName()
 {
    return pcInterfaceName;
 }
-   

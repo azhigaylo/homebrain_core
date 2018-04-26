@@ -28,4 +28,4 @@ class CxInterface : public IxInterface
 
 }; typedef CxInterface *pCxInterface;
 
-#endif /*_CX_INTERFACE*/   
+#endif /*_CX_INTERFACE*/

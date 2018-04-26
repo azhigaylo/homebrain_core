@@ -26,7 +26,7 @@ class CxCyclicQueue
       TElement* pQueueLastElement;
 
       TElement* pElementForGet;
-      TElement* pElementForPut;   
+      TElement* pElementForPut;
 
       CxCyclicQueue( CxCyclicQueue const & other );
       CxCyclicQueue& operator=( CxCyclicQueue const & other );
@@ -51,11 +51,11 @@ CxCyclicQueue<TElement>::CxCyclicQueue( char count ):
    {
       pElementForGet = pElementForPut = pQueueStartElement = pQueueLastElement = tmpQueuePtr;
       pQueueLastElement = pQueueStartElement + (count-1);
-   } 
+   }
    else
    {
       printError("CxCyclicQueue/%s: static pool malloc error !", __FUNCTION__);
-   }  
+   }
 }
 
 //------------------------------------------------------------------------------
@@ -74,9 +74,9 @@ bool CxCyclicQueue<TElement>::put( const TElement& inElement )
       }
       else
       {
-         // queue not full - OK     
-         // save element      
-         *pElementForPut = inElement;      
+         // queue not full - OK
+         // save element
+         *pElementForPut = inElement;
          // inc pointer
          if( pElementForPut == pQueueLastElement )
          {
@@ -109,7 +109,7 @@ bool CxCyclicQueue<TElement>::get( TElement& outElement )
       }
       else
       {
-         // queue not empty - OK  
+         // queue not empty - OK
          outElement = *pElementForGet;
          // inc pointer
          if( pElementForGet == pQueueLastElement )
@@ -123,7 +123,7 @@ bool CxCyclicQueue<TElement>::get( TElement& outElement )
 
          // inc number of elements
          numberOfElements--;
-         result = true;      
+         result = true;
       }
    }
    return result;

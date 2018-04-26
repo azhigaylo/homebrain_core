@@ -11,7 +11,7 @@
 CxDebugBase* CxDebugBase::theInstance = 0;
 CxMutex CxDebugBase::singlDebugLock("singlDebugLocker");
 //------------------------------------------------------------------------------
-CxDebugBase::CxDebugBase( ):  
+CxDebugBase::CxDebugBase( ):
     SCOPE_LIST( MAX_TRACE_PACKAGE )
    ,debugProcessor( )
 {
@@ -52,8 +52,7 @@ void CxDebugBase::ScopeRegistration( const char* pScopeName )
 
   if( true != SCOPE_LIST.add( scopeListItem ) )
   {
-     // vax vax plexo :(
-     printWarning("CxDebugBase/%s:scope %s was not registerd", __FUNCTION__, pScopeName);
+     printWarning("CxDebugBase/%s:scope %s was not registered", __FUNCTION__, pScopeName);
   }
 }
 
@@ -76,11 +75,11 @@ bool CxDebugBase::IsScopeActive( uint16_t sID )
 //------------------------------------------------------------------------------
 
 void CxDebugBase::dbgMessage( const char* pFormat, va_list *dataList )
-{ 
+{
    debugProcessor.PutDbgMsgInQueu( pFormat, dataList );
 }
 
 void CxDebugBase::dbgError( const char* pFormat, va_list *dataList )
-{  
+{
    debugProcessor.PutDbgMsgInQueu( pFormat, dataList );
 }

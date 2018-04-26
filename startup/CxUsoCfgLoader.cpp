@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <string.h>
 #include <iostream>
-#include <sys/stat.h> 
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 //------------------------------------------------------------------------------
@@ -50,7 +50,7 @@ void CxUsoCfgLoader::OpenExtModuleConfig( const char* cfg_path )
 
    // allocate memory for name str
    char *sExtModConfig = (char*)malloc(strlen_m(const_cast<char*>(cfg_path),200) + strlen_m(const_cast<char*>(sExtModName),50));
-   // copy path 
+   // copy path
    strncpy_m( sExtModConfig, const_cast<char*>(cfg_path), strlen_m(const_cast<char*>(cfg_path),200) );
    // copy name
    strcat(sExtModConfig, sExtModName);
@@ -61,7 +61,7 @@ void CxUsoCfgLoader::OpenExtModuleConfig( const char* cfg_path )
 
       if( -1 != ID )
       {
-         printDebug("CxUsoCfgLoader/%s: load %s", __FUNCTION__, sExtModConfig);   
+         printDebug("CxUsoCfgLoader/%s: load %s", __FUNCTION__, sExtModConfig);
 
          //read link-file header
          uint8_t totalMod = 0;
@@ -82,7 +82,7 @@ void CxUsoCfgLoader::OpenExtModuleConfig( const char* cfg_path )
                   // read linked data
                   uint32_t linkedSize = (CMODHEADER.RRecNumb*sizeof(TLinkedReg) + CMODHEADER.WRecNumb*sizeof(TLinkedReg));
                   TLinkedReg *pLinkedReg = new TLinkedReg[CMODHEADER.RRecNumb + CMODHEADER.WRecNumb];
-                  
+
                   if (-1 == lseek(ID,  offset, SEEK_SET))
                   {
                      printError("CxUsoCfgLoader/%s: lseek error=%s", __FUNCTION__, strerror(errno));
@@ -94,10 +94,10 @@ void CxUsoCfgLoader::OpenExtModuleConfig( const char* cfg_path )
                      // make a name
                      char *sCfgName = (char*)malloc(100);
                      sprintf( sCfgName, "LogDev_EXTM_%d", modNum);
-                     
+
                      // it's a bad hak, but i don't know how fix it
                      char *sInterfaceName = (char*)malloc(100);
-                     sprintf( sInterfaceName, "mb_mast_%d", CMODHEADER.PortN);                     
+                     sprintf( sInterfaceName, "mb_mast_%d", CMODHEADER.PortN);
 
                      // create logical device
                      TContExtMod_USO contExtMod_USO = { CMODHEADER.Adress, CMODHEADER.EMODpoint, CMODHEADER.RRecNumb + CMODHEADER.WRecNumb, pLinkedReg };
@@ -117,7 +117,7 @@ void CxUsoCfgLoader::OpenExtModuleConfig( const char* cfg_path )
                      printError("CxUsoCfgLoader/%s: lseek error=%s", __FUNCTION__, strerror(errno));
                      break;
                   }
-                  
+
                   offset += linkedSize;
                }
                else
@@ -164,15 +164,15 @@ void CxUsoCfgLoader::OpenAnalModuleConfig( const char* cfg_path )
          {
             TConfigFileSP ConfigFileSP; TAioChannel AioChannel; TDioChannel DioChannel; TContAI_USO ContAI_USO; TContDIDO_USO ContDIDO_USO; TContMUK_USO ContMUK_USO; TContLO1111_USO ContLO1111_USO;
          }CommonC;
-         
+
          if (-1 != read( ID,(char*)&CommonC, sizeof(CommonC.ConfigFileSP)) )
          {
             nmb_AI_moduls   = CommonC.ConfigFileSP.nmb_AI_moduls;
             nmb_DIDO_moduls = CommonC.ConfigFileSP.nmb_DIDO_moduls;
             nmb_MUK_moduls  = CommonC.ConfigFileSP.nmb_MUK_moduls;
-            nmb_LO1111_moduls = CommonC.ConfigFileSP.nmb_LO1111_moduls;      
+            nmb_LO1111_moduls = CommonC.ConfigFileSP.nmb_LO1111_moduls;
 
-           // create AI module 
+           // create AI module
            for (uint8_t modNum=0; modNum<nmb_AI_moduls; modNum++)
            {
                // read module description
@@ -180,7 +180,7 @@ void CxUsoCfgLoader::OpenAnalModuleConfig( const char* cfg_path )
                {
                   printDebug("CxUsoCfgLoader/%s: find module modNum=%d: %d %d %d", __FUNCTION__, modNum, CommonC.ContAI_USO.Adress, CommonC.ContAI_USO.USOpoint, CommonC.ContAI_USO.ChanN );
 
-                  // read channel description   
+                  // read channel description
                   uint32_t linkedSize = CommonC.ContAI_USO.ChanN * sizeof(CommonC.AioChannel);
                   TAioChannel *pAioChannel = new TAioChannel[CommonC.ContAI_USO.ChanN];
 
@@ -191,35 +191,35 @@ void CxUsoCfgLoader::OpenAnalModuleConfig( const char* cfg_path )
                      sprintf( sCfgName, "%s%d", sDummyName, modNum);
 
                      char *sInterfaceName = (char*)malloc(100);
-                     sprintf( sInterfaceName, "mb_mast_%d", CommonC.ContAI_USO.PortN);                     
+                     sprintf( sInterfaceName, "mb_mast_%d", CommonC.ContAI_USO.PortN);
 
                      // create logical device
                      TAI_USO contAI_USO = { CommonC.ContAI_USO.Adress, CommonC.ContAI_USO.USOpoint, CommonC.ContAI_USO.ChanN, pAioChannel };
 
                      new CxLogDev_MA( sCfgName, sInterfaceName, contAI_USO);   // this item will be deleted in CxLogDeviceManager::delInstance()
-                     
+
                      free(sCfgName);
                      free(sInterfaceName);
                   }
                   else
                   {
                      printDebug("CxUsoCfgLoader/%s: read LinkedReg, error=%s", __FUNCTION__, strerror(errno));
-                  }                  
+                  }
                }
                else
                {
                   printError("CxUsoCfgLoader/%s: read %s, error=%s", __FUNCTION__, sDevMaConfig, strerror(errno));
-               }               
-            }           
-           // another module 
+               }
+            }
+           // another module
            // ...
          }
 
-         close( ID ); 
+         close( ID );
       }
       else
       {
-         printDebug("CxUsoCfgLoader/%s: open %s, error=%s", __FUNCTION__, sDevMaConfig, strerror(errno));   
+         printDebug("CxUsoCfgLoader/%s: open %s, error=%s", __FUNCTION__, sDevMaConfig, strerror(errno));
       }
 
       free(sDevMaConfig);

@@ -68,24 +68,24 @@ struct TNotifiItem
 
 #pragma pack(pop)
 //------------------------------------------------------------------------------
-   
+
 class CxDataConnection : public IxRunnable, public CxInterface, public IxEventProducer
 {
    public:
 
       CxDataConnection( const char *pInterfaceName, const char *strServer );
       virtual ~CxDataConnection( );
-      
+
       virtual int32_t open  ( );
       virtual int32_t close ( );
-      
+
       bool setNotification( uint32_t number, uint32_t type );
       bool setDpoint( uint32_t number, uint32_t status, uint32_t value );
       bool setApoint( uint32_t number, uint32_t status, float value );
       bool setString( const char* const pString );
 
    protected:
-   
+
       virtual void TaskProcessor();
       bool onDataUpdate( uint32_t number, uint32_t status, uint32_t value );
 
@@ -93,16 +93,16 @@ private:
 
      void setReconnectFlag(){reconnectFlag = true;}
      void resetReconnectFlag(){reconnectFlag = false;}
-     bool getReconnectFlag(){return reconnectFlag;}     
+     bool getReconnectFlag(){return reconnectFlag;}
      bool connectSocket();
      void disconnectSocket();
      void clrNotifiItemArray();
      void createNotifiItemArray();
      bool doesItNotifiable(uint32_t number, uint32_t type);
-     
+
      struct addrinfo *servinfo;
      int mSocket;                       // socket descriptor
-     bool reconnectFlag;                // if true - trying to reconnect 
+     bool reconnectFlag;                // if true - trying to reconnect
      uint32_t notifiArraySize;
      TNotifiItem *pNotifiItemArray;     // pointer on the notification array
 };

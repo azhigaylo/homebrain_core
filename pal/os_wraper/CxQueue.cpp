@@ -74,18 +74,18 @@ bool CxQueue::send( const void *pItemToQueue, int32_t msg_size )
    bool result = false;
 
    if( xQueue != -1 )
-   {  
+   {
      result = (0 == mq_send( xQueue, reinterpret_cast<const char*>(pItemToQueue), msg_size, MSG_PRIO));
 
      if(false == result )
      {
          printError("CxQueue/%s: queue=%s msg_size=%d send error=%d(%s)!!!", __FUNCTION__, queueName, msg_size, errno, strerror(errno));
      }
-   }  
+   }
    return result;
 }
 
-bool CxQueue::timedSend( const void *pItemToQueue, int32_t msg_size, uint64_t time )   
+bool CxQueue::timedSend( const void *pItemToQueue, int32_t msg_size, uint64_t time )
 {
    bool result = false;
    const timespec abs_timeout = {(time/1000000000), (time % 1000000000)};
@@ -105,15 +105,15 @@ int32_t CxQueue::receive( void *pItemFromQueue, int32_t msg_size )
   {
       bytes_read = mq_receive(xQueue, reinterpret_cast<char*>(pItemFromQueue), msg_size, NULL);
   }
-  return bytes_read;  
+  return bytes_read;
 }
 
 int32_t CxQueue::occupancy( )
 {
-   mq_attr tmpAttr; 
+   mq_attr tmpAttr;
    int32_t msg_in_queue = -1;
 
-   if( xQueue != -1 ) 
+   if( xQueue != -1 )
    {
       if (-1 != mq_getattr(xQueue, &tmpAttr))
       {

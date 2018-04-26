@@ -35,7 +35,7 @@ class CxModBusMaster : public CxThreadIO, public CxInterface, public IxEventProd
    private :
 
       uint16_t          counter_item;
-      uint16_t          sizeResponce; 
+      uint16_t          sizeResponce;
 
       TSerialBlock      commbuf;
       TMREQ             mbReadRequest;
@@ -46,10 +46,10 @@ class CxModBusMaster : public CxThreadIO, public CxInterface, public IxEventProd
       // synchronization block
       pthread_barrier_t our_barrier;
 
-      pthread_mutex_t cond_mutex; 
-      pthread_cond_t  cond_var; 
+      pthread_mutex_t cond_mutex;
+      pthread_cond_t  cond_var;
       uint16_t        cond_var_flag; // if flag > 0 - we can go further
-      
+
       void sleep_till_resp();
       void waikeup_by_serial();
 

@@ -23,56 +23,56 @@ void sleep_s ( uint64_t delay_in_s )
 //Long from word
 unsigned long GenLfrom2W(unsigned short W_h, unsigned short W_l)
 {
-  return(((unsigned long)W_h<<16)|((unsigned long)W_l));  
+  return(((unsigned long)W_h<<16)|((unsigned long)W_l));
 }
 
-// function return LSB of word           
+// function return LSB of word
 unsigned char LOW(unsigned short celoe)
-{   
+{
   return((char)(0x00FF & celoe));
 }
 
-// function return MSB of word           
+// function return MSB of word
 unsigned char HIGH(unsigned short celoe)
-{  
-  return((char)(celoe>>8));  
-} 
+{
+  return((char)(celoe>>8));
+}
 
 //turn bit in byte
 char TurnBitInByte(char Byte)
 {
    unsigned char rez=0;
    for(unsigned char i=0;i<8;i++){
-     if((unsigned char)(0x80>>i) & Byte)rez |= (unsigned char)((0x01)<<i);      
-   } 
-   return(rez);  
+     if((unsigned char)(0x80>>i) & Byte)rez |= (unsigned char)((0x01)<<i);
+   }
+   return(rez);
 }
- 
+
 void LShiftArray(char*buff,unsigned short b_size,unsigned short shift)
-{ 
+{
   if(b_size > shift){
     unsigned short shiftsize = b_size-shift;
     for(unsigned short i=0; i<shiftsize; i++){
-      *(buff+i) = *(buff+shift+i);  
+      *(buff+i) = *(buff+shift+i);
     }
-    memset(buff+shiftsize,0x33,shift);      
+    memset(buff+shiftsize,0x33,shift);
   }else{
     memset(buff,0x33,b_size);
-    //ASSERTION(e_lshift);   
-  }  
+    //ASSERTION(e_lshift);
+  }
 }
- 
+
 void revertbuff( char*dest,unsigned short chng_size )
 {
-   char tmp_d = 0; 
+   char tmp_d = 0;
    unsigned short custom_counter = 0;
    if(chng_size)chng_size--;
    while(custom_counter<chng_size)
    {
      tmp_d = dest[custom_counter];
      dest[custom_counter++] = dest[chng_size];
-     dest[chng_size--] = tmp_d;     
-   }  
+     dest[chng_size--] = tmp_d;
+   }
 }
 
 //-----------------------------ModBus utylites----------------------------------
@@ -81,12 +81,12 @@ void revertbuff( char*dest,unsigned short chng_size )
 unsigned short getWordFromMbReg( unsigned short registerMB )
 {
    return((registerMB>>8)|(registerMB<<8));
-} 
+}
 
 long getLongFromTwoMbReg( unsigned short registerMB_1, unsigned short registerMB_2 )
 {
   long result = (getWordFromMbReg(registerMB_2)<<16) | (getWordFromMbReg(registerMB_1));
-  return result;   
+  return result;
 }
 
 float getFloatFromTwoMbReg( unsigned short registerMB_1, unsigned short registerMB_2 )
@@ -142,7 +142,7 @@ uint16_t CRC16b( char *Buff, uint16_t Count, uint8_t base)
   uint8_t ah = base;
   uint8_t al = base;
   uint8_t bl;
-  
+
   if(Count<3)return (0x000F);
   while (Count) {
     bl = *Buff ^ ah;
@@ -166,7 +166,7 @@ uint16_t  CRC16_T_0( char *Buff, uint16_t Count)
 //word from byte
 uint16_t GenWfrom2B(uint8_t B_h, uint8_t B_l)
 {
-  return( ((uint16_t)B_h<<8)|((uint16_t)(B_l)) );  
+  return( ((uint16_t)B_h<<8)|((uint16_t)(B_l)) );
 }
 
 //-----------------------------standard functions which had been modified-------
@@ -179,7 +179,7 @@ char* strncpy_m( char* e_str, char* s_str, int32_t dest_size )
    {
       e_str[dest_size - 1]= '\0';
    }
-	
+
    return dst_str;
 }
 
@@ -193,7 +193,7 @@ void* memset_m( void* ptr, int value, int32_t num, int32_t dest_size )
    }
    else
    {
-      res_ptr = memset(ptr, value, num); 
+      res_ptr = memset(ptr, value, num);
    }
    return res_ptr;
 }
@@ -216,7 +216,7 @@ void* memcpy_m( void* destination, const void* source, int32_t num, int32_t dest
    }
    else
    {
-      pDest = memcpy(destination, source, num); 
+      pDest = memcpy(destination, source, num);
    }
    return pDest;
 }
@@ -232,7 +232,7 @@ char* mod_strchr( char* string1, char symbol, unsigned short sStringSize )
 {
   char* tmp_out = strchr( string1, symbol );
   if( tmp_out > (string1 + sStringSize ) ) tmp_out = NULL;
-  
+
   return tmp_out;
 }
 
@@ -240,6 +240,6 @@ char* mod_strrchr( char* string1, char symbol, unsigned short sStringSize )
 {
   char* tmp_out = strrchr( string1, symbol );
   if( tmp_out > (string1 + sStringSize ) ) tmp_out = NULL;
-  
+
   return tmp_out;
 }

@@ -9,7 +9,7 @@
 #define VALUELENGTH     100  // max value for paramiter
 #define INI_BUF_SIZE    50   // size of buffer for parsing cfg fule
 //------------------------------------------------------------------------------
-enum ST_INI_PROCESS 
+enum ST_INI_PROCESS
 {
    ST_LOOK_SECTION_START = 0,   // Search for start section
    ST_LOOK_SECTION_END,         // Search for end section

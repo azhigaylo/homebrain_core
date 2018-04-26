@@ -37,7 +37,7 @@ class CxLogDev_ExtMod : public CxLogDevice, public CxSysTimer
 
       CxLogDev_ExtMod( const char *logDevName, const char *usedInterface, TContExtMod_USO modSettings );
       virtual ~CxLogDev_ExtMod();
-      
+
       virtual bool Process();
 
    protected :
@@ -46,13 +46,13 @@ class CxLogDev_ExtMod : public CxLogDevice, public CxSysTimer
 
    private :
 
-      TContExtMod_USO  dev_settings;       // USO settings address and so on 
+      TContExtMod_USO  dev_settings;       // USO settings address and so on
       uint8_t          commError;          // communication error with USO
       CxDataProvider   &dataProvider;      // reference on the data provider
       CxModBusMaster   *pModBusMaster;     // pointer to the interface
 
       bool ReadWriteRegisters();
-      
+
       bool getWordToApoint ( const TLinkedReg* pLinkedReg );
       bool getLongToApoint ( const TLinkedReg* pLinkedReg );
       bool getFloatToApoint( const TLinkedReg* pLinkedReg );

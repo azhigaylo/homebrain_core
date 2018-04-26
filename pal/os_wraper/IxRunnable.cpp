@@ -40,11 +40,11 @@ void IxRunnable::task_join( )
 }
 
 void IxRunnable::task_delete( )
-{  
+{
    if (thread != 0)
    {
       pthread_cancel(thread);
-      
+
       pthread_join(thread, NULL);
 
       printDebug("IxRunnable/%s: thread=%s deleted", __FUNCTION__, pcTaskName);
@@ -53,7 +53,7 @@ void IxRunnable::task_delete( )
 
 uint64_t IxRunnable::get_time()
 {
-   return difftime(time(NULL), start_time); 
+   return difftime(time(NULL), start_time);
 }
 
 int32_t IxRunnable::create_thread( )

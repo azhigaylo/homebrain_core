@@ -12,11 +12,11 @@ using namespace event_pool;
 class IxEventConsumer
 {
    public:
-      IxEventConsumer( ); 
+      IxEventConsumer( );
       virtual ~IxEventConsumer( );
 
       virtual bool processEvent( pTEvent pEvent ) = 0;
-	  
+
 	  eEventType getUnusedEvent ( );
       bool setNotification( eEventType event );
       bool clrNotification( eEventType event );

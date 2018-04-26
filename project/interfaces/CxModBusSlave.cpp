@@ -30,8 +30,8 @@ int32_t CxModBusSlave::close( )
 
 void CxModBusSlave::GetRegister( uint16_t reg_start, uint16_t reg_count )
 {
-   mbResponce.Header.address = address; 
-   mbResponce.Header.command = CMD_MB_RREG; 
+   mbResponce.Header.address = address;
+   mbResponce.Header.command = CMD_MB_RREG;
    mbResponce.Header.counter = reg_count * sizeof(uint16_t);
 
    // prepare data for response
@@ -39,23 +39,23 @@ void CxModBusSlave::GetRegister( uint16_t reg_start, uint16_t reg_count )
    for (uint16_t posIn = reg_start; posIn < reg_start+reg_count; posIn++, posOut++)
    {
      if (posOut < (sizeof(mbResponce.OutputBuf)/2))
-     {  
-        mbResponce.OutputBuf[posOut] = 0;   
+     {
+        mbResponce.OutputBuf[posOut] = 0;
      }
      else
      {
        printWarning("CxModBusSlave/%s: read register out of range", __FUNCTION__);
-     }  
-   } 
+     }
+   }
 
    // CRC calculation
    mbResponce.OutputBuf[posOut] = CRC16_T( (char*)&mbResponce, sizeof(TMRESPHeader) + reg_count*sizeof(uint16_t) );
-   
+
    commbuf.msgSize   = sizeof(TMRESPHeader) + reg_count*sizeof(uint16_t) + sizeof(uint16_t);
-   commbuf.msgNumber = 0;   
+   commbuf.msgNumber = 0;
    memcpy_m( commbuf.buffer, &mbResponce, commbuf.msgSize, sizeof commbuf.buffer );
-   
-   // send message to serial driver    
+
+   // send message to serial driver
    sendMsg( CM_OUT_DATA, &commbuf );
 }
 
@@ -81,7 +81,7 @@ void CxModBusSlave::CommandProcessor( uint16_t ComID, void *data )
             memcpy_m( &commbuf, pSerialBlock->buffer, pSerialBlock->msgSize, sizeof(commbuf) );
 
             TMREQ *pMREQ = reinterpret_cast<TMREQ*>(commbuf.buffer);
-            
+
             if (pMREQ->address == address)
             {
                switch (pMREQ->command)
@@ -100,8 +100,8 @@ void CxModBusSlave::CommandProcessor( uint16_t ComID, void *data )
                      uint16_t start_reg = GenWfrom2B( pMWRREG->start_reg_hi, pMWRREG->start_reg_low );
 
                      SetRegister( start_reg, pMWRREG->REG );
-                     
-                     // send message to serial driver      
+
+                     // send message to serial driver
                      sendMsg( CM_OUT_DATA, &commbuf );
 
                      break;
@@ -112,8 +112,8 @@ void CxModBusSlave::CommandProcessor( uint16_t ComID, void *data )
                      break;
                   }
                   default : break;
-               }               
-               
+               }
+
 
             }
             else

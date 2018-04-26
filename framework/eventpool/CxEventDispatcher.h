@@ -12,7 +12,7 @@
 //------------------------------------------------------------------------------
 #define configEVENT_POOL_SIZE         (10)      // in event
 #define configNOTIFICATION_POOL_SIZE  (50)      // in notification unit
-//------------------------------------------------------------------------------ 
+//------------------------------------------------------------------------------
 
 #pragma pack ( 1 )
 struct TNotificationUnit
@@ -39,7 +39,7 @@ class CxEventDispatcher : public IxRunnable
     TEvent getEvent( );
 
     friend bool IxEventConsumer::setNotification( eEventType event );
-    friend bool IxEventConsumer::clrNotification( eEventType event ); 
+    friend bool IxEventConsumer::clrNotification( eEventType event );
     friend bool IxEventProducer::sendEvent( eEventType event, uint16_t containerSize, void* );
 
  private:
@@ -48,7 +48,7 @@ class CxEventDispatcher : public IxRunnable
     unsigned short sNotificationUnitRecNumb;  // number of element in notification pool
     CxQueue EventPool;
     eEventType lastFreeEventId;
-   
+
     bool setNotification( TEvent event, pTIxEventConsumer pIxEventConsumer );
     bool clrNotification( TEvent event, pTIxEventConsumer pIxEventConsumer );
     void Dispatch();
@@ -57,11 +57,11 @@ class CxEventDispatcher : public IxRunnable
 
 	static CxMutex singlEventLock;
 	static CxEventDispatcher* theInstance;
-	
+
     CxEventDispatcher();
     ~CxEventDispatcher( ){}
 
 };
 typedef CxEventDispatcher *pTCxEventDispatcher;
 
-#endif /*_CX_EVENT_PROCESSOR*/   
+#endif /*_CX_EVENT_PROCESSOR*/

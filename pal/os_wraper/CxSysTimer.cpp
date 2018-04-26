@@ -70,7 +70,7 @@ void CxSysTimer::StartTimer()
    {
       printError("CxSysTimer/%s: timer=%s timerid = 0 !", __FUNCTION__, timerName);
    }
-} 
+}
 void CxSysTimer::StopTimer()
 {
    struct itimerspec its_stop;
@@ -78,7 +78,7 @@ void CxSysTimer::StopTimer()
    its_stop.it_value.tv_sec     = 0;
    its_stop.it_value.tv_nsec    = 0;
    its_stop.it_interval.tv_sec  = 0;
-   its_stop.it_interval.tv_nsec = 0;   
+   its_stop.it_interval.tv_nsec = 0;
 
    if (timerid != 0)
    {

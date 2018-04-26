@@ -5,7 +5,7 @@
 // HW COM X
 
 void ScopeRegistration()
-{  
+{
   DBG_SCOPE_DEF ( CxTstThread,            CxTstThread            )
   DBG_SCOPE_DEF ( CxSerialConnection,     CxSerialConnection     )
   DBG_SCOPE_DEF ( CxDebugProcessor,       CxDebugProcessor       )
@@ -15,4 +15,3 @@ void ScopeRegistration()
   DBG_SCOPE_DEF ( CxDataProvider,         CxDataProvider         )
   DBG_SCOPE_DEF ( CxFileSystemConnection, CxFileSystemConnection )
 }
-

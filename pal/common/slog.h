@@ -5,7 +5,7 @@
  * set debug level
  * @param debug level
  */
- 
+
 void setDbgLevel(int lvl);
 
 /**

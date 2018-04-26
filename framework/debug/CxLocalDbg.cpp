@@ -9,9 +9,9 @@
 
 CxLocalDbg::CxLocalDbg( uint16_t sID ):
    pDbgBase( CxDebugBase::getInstance() )
-  ,scopID( sID )   
-{   
-  ScopIsActive = pDbgBase->IsScopeActive( sID );  
+  ,scopID( sID )
+{
+  ScopIsActive = pDbgBase->IsScopeActive( sID );
 }
 
 //------------------------------------------------------------------------------
@@ -22,9 +22,9 @@ void CxLocalDbg::sendMessage( const char* pFormat, ...)const
    va_start(argPtr, pFormat);
 
    if( true == ScopIsActive )
-   {    
-      pDbgBase->dbgMessage( pFormat, &argPtr ); 
-   }  
+   {
+      pDbgBase->dbgMessage( pFormat, &argPtr );
+   }
 
    va_end(argPtr);
 }

@@ -21,7 +21,7 @@ private:
 
    CxMutexLocker( const CxMutexLocker& rhs );
    CxMutexLocker& operator=( const CxMutexLocker& rhs );
-   
+
    CxMutex *mutex;
 
 };

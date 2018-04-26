@@ -17,7 +17,7 @@
 #define STATUS_ALARM             2  // "ALARM"
 #define STATUS_BEFORE_CRASH      4  // "BEFORE CRASH"
 #define STATUS_CRASH             8  // "CRASH"
-#define STATUS_SETNEW            16 // set new value of point 
+#define STATUS_SETNEW            16 // set new value of point
 #define STATUS_PROCESSED         32 // processed of new value of point flag
 
 //------------------------------------------------------------------------------
@@ -29,7 +29,7 @@ struct TDPOINT
    uint8_t  number;
    int8_t   status;
    uint16_t value;
-}; typedef TDPOINT *pTDPOINT; 
+}; typedef TDPOINT *pTDPOINT;
 
 struct TAPOINT
 {
@@ -47,10 +47,10 @@ class CxDataProvider
      // function's
      CxDataProvider();
      ~CxDataProvider();
-      
+
    public:
       static CxDataProvider &getInstance();
-      
+
       TDPOINT & getDPoint( uint16_t number );
       void setDPoint( uint16_t number, uint16_t value );
       void incDPoint( uint16_t number );
@@ -58,7 +58,7 @@ class CxDataProvider
       void setDStatus( uint16_t number, int8_t status );
       int8_t getDStatus( uint16_t number );
       void setSilenceDPoint( uint16_t number, uint16_t value );
-      void setSilenceDStatus( uint16_t number, int8_t status );      
+      void setSilenceDStatus( uint16_t number, int8_t status );
 
       TAPOINT & getAPoint( uint16_t number );
       void setAPoint( uint16_t number, float value );
@@ -72,14 +72,14 @@ class CxDataProvider
 
       static CxMutex digitalDataProviderMutex;
       static CxMutex analogDataProviderMutex;
-      
+
       CxDataConnection *getInterface();
       void sendExternalDpoint( uint16_t number );
       void sendExternalApoint( uint16_t number );
       void subscribeOnExternalDpoint( uint16_t number );
-      void subscribeOnExternalApoint( uint16_t number );      
-      
-      CxDataConnection *pDataConnection;     // pointer to the interface   
+      void subscribeOnExternalApoint( uint16_t number );
+
+      CxDataConnection *pDataConnection;     // pointer to the interface
 
  }; typedef CxDataProvider *pTCxDataProvider;
 

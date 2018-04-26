@@ -22,17 +22,17 @@ class CxUsoProcessor : public IxRunnable
 
       bool set_logdev( IxLogDevice * pLogDev );
       char *get_interfacename( )const;
-         
+
    protected:
-   
+
       virtual void TaskProcessor();
 
 
    private:
-      
+
       char *sUsedInterface;
       uint16_t logDevCounter;
-      CxVector<TLogDevListItem> LOGDEV_LIST;   
+      CxVector<TLogDevListItem> LOGDEV_LIST;
 };
 
 //------------------------------------------------------------------------------

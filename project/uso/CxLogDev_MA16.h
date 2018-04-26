@@ -32,7 +32,7 @@
 
    struct TAI_USO
    {
-      uint8_t  address;  
+      uint8_t  address;
       uint16_t usoPoint;
       uint8_t  chanNumb;
       TAioChannel *channelsPtr;  // array of the TAioChannel
@@ -47,7 +47,7 @@ class CxLogDev_MA : public CxLogDevice, public CxSysTimer
 
       CxLogDev_MA( const char *logDevName, const char *usedInterface, TAI_USO usoSettings );
       virtual ~CxLogDev_MA();
-      
+
       virtual bool Process();
 
    protected :
@@ -63,9 +63,9 @@ class CxLogDev_MA : public CxLogDevice, public CxSysTimer
          CT_ANALOG_OUT  = 2,
          CT_DISCRET_IN  = 3,
          CT_DISCRET_OUT = 4
-      };   
-   
-      TAI_USO         dev_settings;       // USO settings address and so on 
+      };
+
+      TAI_USO         dev_settings;       // USO settings address and so on
       uint8_t         commError;          // communication error with USO
       CxDataProvider  &dataProvider;      // reference on the data provider
       CxModBusMaster  *pModBusMaster;     // pointer to the interface

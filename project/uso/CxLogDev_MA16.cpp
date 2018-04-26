@@ -41,7 +41,7 @@ CxLogDev_MA::~CxLogDev_MA()
    }
 
 }
-      
+
 bool CxLogDev_MA::Process()
 {
    bool result = false;
@@ -63,7 +63,7 @@ bool CxLogDev_MA::Process()
             else
             {
                commError++;           // increment error counter
-            }            
+            }
       }
       else
       {
@@ -81,7 +81,7 @@ bool CxLogDev_MA::Process()
 
    return result;
 }
-    
+
 void CxLogDev_MA::sigHandler()
 {
    commError = 0;
@@ -109,7 +109,7 @@ bool CxLogDev_MA::CheckAndSetOutput()
                   if (STATUS_SETNEW == dataProvider.getAStatus(pCurCh->ValPointNumb))
                   {
                     TAPOINT & a_point = dataProvider.getAPoint( pCurCh->ValPointNumb );
-                    
+
                     if (true == pModBusMaster->SetRegister( dev_settings.address, i, a_point.value ))
                     {
                        dataProvider.setAStatus( pCurCh->ValPointNumb, STATUS_PROCESSED );
@@ -118,7 +118,7 @@ bool CxLogDev_MA::CheckAndSetOutput()
                   }
                   break;
                }
-               case CT_DISCRET_OUT : 
+               case CT_DISCRET_OUT :
                {
                   if (STATUS_SETNEW == dataProvider.getDStatus(pCurCh->ValPointNumb))
                   {
@@ -144,7 +144,7 @@ bool CxLogDev_MA::CheckAndSetOutput()
 bool CxLogDev_MA::ReadRegisters()
 {
    bool result = false;
- 
+
    uint16_t mbResponce[dev_settings.chanNumb];
 
    // if nothing to set we can do read all MB registers
@@ -159,7 +159,7 @@ bool CxLogDev_MA::ReadRegisters()
       {
          if ((CT_ANALOG_IN == GetChannelType(pCurCh))||(CT_DISCRET_IN == GetChannelType(pCurCh)))
          {
-            pCurCh->Code = ConvertMBint( mbResponce[i]);                 
+            pCurCh->Code = ConvertMBint( mbResponce[i]);
          }
       }
 
@@ -167,19 +167,19 @@ bool CxLogDev_MA::ReadRegisters()
       ConvAiToVal();
       // convert value to parameter
       ConvAiToParam();
-      
+
       result = true;
    }
 
    return result;
 }
 
-//------------------------------------------------------------------------------      
-    
+//------------------------------------------------------------------------------
+
 CxLogDev_MA::TChType CxLogDev_MA::GetChannelType( const TAioChannel *pCurCh )
 {
    TChType chType = CT_UNUSED;
-   
+
    switch (pCurCh->Type)
    {
       case ATYPE_AI_20mA :
@@ -209,7 +209,7 @@ CxLogDev_MA::TChType CxLogDev_MA::GetChannelType( const TAioChannel *pCurCh )
       case ATYPE_unuse:
       default:               { chType = CT_UNUSED; break; }
    }
-   
+
    return chType;
 }
 
@@ -263,9 +263,9 @@ void CxLogDev_MA::ConvAiToVal()
    {
       TAioChannel *pCurCh = dev_settings.channelsPtr;
 
-      //chanel processing 
+      //chanel processing
       for (uint8_t i=0; i<dev_settings.chanNumb; i++)
-      {         
+      {
          switch (pCurCh->Type)
          {
             case ATYPE_AI_20mA     : {pCurCh->MidValue = pCurCh->Code * AI_4_20;   break;}
@@ -329,7 +329,7 @@ void CxLogDev_MA::ConvAiToParam()
             case ATYPE_AI_120V     : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/120)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;  break;}
             case ATYPE_AI_D300V    : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/300)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;  break;}
             case ATYPE_AI_A300V    : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/300)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;  break;}
-            case ATYPE_AI_TCM100   : { pCurCh->PhisValue = K - (float)sqrt(K2 + (float)(pCurCh->MidValue/R0-1.0)/B); break;} 
+            case ATYPE_AI_TCM100   : { pCurCh->PhisValue = K - (float)sqrt(K2 + (float)(pCurCh->MidValue/R0-1.0)/B); break;}
             case ATYPE_AI_TCP100_A : { pCurCh->PhisValue = K - (float)sqrt(K2 + (float)(pCurCh->MidValue/R0-1.0)/B); break;}
             default                : { break; }
          }
@@ -341,7 +341,7 @@ void CxLogDev_MA::ConvAiToParam()
          // analyse - more code sp
          if (pCurCh->PhisValue > pCurCh->MaxVal){pCurCh->ChanelStatus = A_PARAM_MOREVALSP;}
 
-         // store value 
+         // store value
          if (0 != pCurCh->ValPointNumb)
          {
             switch (GetChannelType(pCurCh))
@@ -356,7 +356,7 @@ void CxLogDev_MA::ConvAiToParam()
                   {
                      dataProvider.setAStatus( pCurCh->ValPointNumb, STATUS_ALARM );
                   }
-                  
+
                   dataProvider.setAPoint( pCurCh->ValPointNumb, pCurCh->PhisValue );
                   break;
                }
@@ -366,7 +366,7 @@ void CxLogDev_MA::ConvAiToParam()
                   {
                      dataProvider.setDPoint(pCurCh->ValPointNumb, 0x01);
                   }
-                  else 
+                  else
                   {
                      dataProvider.setDPoint(pCurCh->ValPointNumb, 0x00);
                   }
@@ -377,7 +377,7 @@ void CxLogDev_MA::ConvAiToParam()
                default : break;
             }
          }
-       
+
       }
    }
 }

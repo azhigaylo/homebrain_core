@@ -12,7 +12,7 @@
 class CxMutexRecursive
 {
 public:
-  
+
    CxMutexRecursive( const char *name );
    ~CxMutexRecursive( );
 
@@ -25,8 +25,8 @@ private:
    CxMutexRecursive& operator=( const CxMutexRecursive& rhs );
 
 protected:
-     
-   pthread_mutex_t mutex; 
+
+   pthread_mutex_t mutex;
    char mutexName[configMAX_MUTEX_NAME_LEN];
 };
 

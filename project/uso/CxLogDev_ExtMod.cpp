@@ -61,7 +61,7 @@ bool CxLogDev_ExtMod::Process()
             else
             {
                commError++;           // increment error counter
-            }            
+            }
       }
       else
       {
@@ -103,11 +103,11 @@ bool CxLogDev_ExtMod::ReadWriteRegisters()
          {
             case WordToApoint :
             {
-               result = getWordToApoint ( pCurLinkedReg ); 
+               result = getWordToApoint ( pCurLinkedReg );
                break;
             }
             case LongToApoint:
-            {   
+            {
                result = getLongToApoint ( pCurLinkedReg );
                break;
             }
@@ -160,13 +160,13 @@ bool CxLogDev_ExtMod::ReadWriteRegisters()
    return result;
 }
 
-//------------------------------------------------------------------------------      
+//------------------------------------------------------------------------------
 bool CxLogDev_ExtMod::getWordToApoint (  const TLinkedReg* pLinkedReg  )
 {
    bool result = false;
    uint16_t mbResponce[5];
    uint16_t reg_num = pModBusMaster->GetRegister( dev_settings.address, pLinkedReg->strtReg, 1, mbResponce );
-   
+
    if (reg_num == 1)
    {
       uint16_t responce = ConvertMBint( mbResponce[0] );
@@ -179,7 +179,7 @@ bool CxLogDev_ExtMod::getWordToApoint (  const TLinkedReg* pLinkedReg  )
       result = true;
    }
 
-   return result;   
+   return result;
 }
 
 bool CxLogDev_ExtMod::getLongToApoint (  const TLinkedReg* pLinkedReg  )
@@ -191,8 +191,8 @@ bool CxLogDev_ExtMod::getLongToApoint (  const TLinkedReg* pLinkedReg  )
 
    if (reg_num == 2)
    {
-      mbResponce[0] = ConvertMBint( mbResponce[0] ); 
-      mbResponce[1] = ConvertMBint( mbResponce[1] ); 
+      mbResponce[0] = ConvertMBint( mbResponce[0] );
+      mbResponce[1] = ConvertMBint( mbResponce[1] );
 
       float value = (float)*((long*)mbResponce);
       dataProvider.setAPoint( pLinkedReg->NPoint, value );
@@ -213,9 +213,9 @@ bool CxLogDev_ExtMod::getFloatToApoint(  const TLinkedReg* pLinkedReg  )
 
    if (reg_num == 2)
    {
-      mbResponce[0] = ConvertMBint( mbResponce[0] ); 
-      mbResponce[1] = ConvertMBint( mbResponce[1] ); 
-      
+      mbResponce[0] = ConvertMBint( mbResponce[0] );
+      mbResponce[1] = ConvertMBint( mbResponce[1] );
+
       float value = *((float*)mbResponce);
       dataProvider.setAPoint( pLinkedReg->NPoint, value );
       dataProvider.setAStatus( pLinkedReg->NPoint, STATUS_RELIABLE );
@@ -235,8 +235,8 @@ bool CxLogDev_ExtMod::getHRegToDpoint (  const TLinkedReg* pLinkedReg  )
 
    if (reg_num == 1)
    {
-      uint16_t responce = ConvertMBint( mbResponce[0] ); 
-      
+      uint16_t responce = ConvertMBint( mbResponce[0] );
+
       dataProvider.setDPoint( pLinkedReg->NPoint, HIGH(responce));
       dataProvider.setDStatus( pLinkedReg->NPoint, STATUS_RELIABLE);
 
@@ -255,12 +255,12 @@ bool CxLogDev_ExtMod::getLRegToDpoint (  const TLinkedReg* pLinkedReg  )
 
    if (reg_num == 1)
    {
-      uint16_t responce = ConvertMBint( mbResponce[0] ); 
-      
+      uint16_t responce = ConvertMBint( mbResponce[0] );
+
       dataProvider.setDPoint( pLinkedReg->NPoint, LOW(responce));
       dataProvider.setDStatus( pLinkedReg->NPoint, STATUS_RELIABLE);
 
-      printDebug("CxLogDev_ExtMod/%s: WordToApoint = %i", __FUNCTION__, responce );      
+      printDebug("CxLogDev_ExtMod/%s: WordToApoint = %i", __FUNCTION__, responce );
       result = true;
    }
 
@@ -272,7 +272,7 @@ bool CxLogDev_ExtMod::setApointToWord ( const TLinkedReg* pLinkedReg )
    bool result = true;
 
    if (STATUS_SETNEW == dataProvider.getAStatus(pLinkedReg->NPoint))
-   { 
+   {
       uint16_t mbrequest[5];
       TAPOINT & a_point = dataProvider.getAPoint( pLinkedReg->NPoint );
 
@@ -296,7 +296,7 @@ bool CxLogDev_ExtMod::setApointToLong ( const TLinkedReg* pLinkedReg )
    bool result = true;
 
    if (STATUS_SETNEW == dataProvider.getAStatus(pLinkedReg->NPoint))
-   { 
+   {
       uint16_t mbrequest[5];
       TAPOINT & a_point = dataProvider.getAPoint( pLinkedReg->NPoint );
 
@@ -322,7 +322,7 @@ bool CxLogDev_ExtMod::setApointToFloat( const TLinkedReg* pLinkedReg )
    bool result = true;
 
    if (STATUS_SETNEW == dataProvider.getAStatus(pLinkedReg->NPoint))
-   { 
+   {
       uint16_t mbrequest[5];
       TAPOINT & a_point = dataProvider.getAPoint( pLinkedReg->NPoint );
 
@@ -348,7 +348,7 @@ bool CxLogDev_ExtMod::setDpointToReg( const TLinkedReg* pLinkedReg )
    bool result = true;
 
    if (STATUS_SETNEW == dataProvider.getDStatus(pLinkedReg->NPoint))
-   { 
+   {
       uint16_t mbrequest[5];
       TDPOINT & d_point = dataProvider.getDPoint( pLinkedReg->NPoint );
 
@@ -366,12 +366,12 @@ bool CxLogDev_ExtMod::setDpointToReg( const TLinkedReg* pLinkedReg )
 
    return result;
 }
-      
+
 void CxLogDev_ExtMod::setExtModStatus( uint16_t status )
 {
    dataProvider.setDPoint(dev_settings.usoPoint, status);
    dataProvider.setDStatus(dev_settings.usoPoint, STATUS_RELIABLE);
-    
+
    // set error status for USO
    if ((status == USO_Status_NoReply) && (0 != dev_settings.pLinkedReg))
    {

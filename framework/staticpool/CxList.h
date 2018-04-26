@@ -8,8 +8,8 @@
 template <class TElem>
 struct TAlgIntBlkList
 {
-  TAlgIntBlkList* pNextIntBlk;     // next block pointer 
-  TAlgIntBlkList* pPrevIntBlk;     // previous block pointer 
+  TAlgIntBlkList* pNextIntBlk;     // next block pointer
+  TAlgIntBlkList* pPrevIntBlk;     // previous block pointer
   TElem     element;               // element
 };
 #pragma pack ( )
@@ -39,8 +39,8 @@ class CxList
    TIntBlk* GetIntBlkByElement(TElement* pElement);
 
    unsigned short size;
-   TIntBlk* pFirstIntBlk;     // 
-   TIntBlk* pLastIntBlk;      // 
+   TIntBlk* pFirstIntBlk;     //
+   TIntBlk* pLastIntBlk;      //
 
    CxStaticPoolAllocator<TIntBlk> CONTAINER;       // container for editor object
 };
@@ -67,7 +67,7 @@ bool CxList<TElement>::add( const TElement & element )
     if( size == 0 )
     {
        pIntBlk->pNextIntBlk = NULL;
-       pIntBlk->pPrevIntBlk = NULL;  
+       pIntBlk->pPrevIntBlk = NULL;
        pFirstIntBlk = pLastIntBlk = pIntBlk;
     }
     else{
@@ -78,7 +78,7 @@ bool CxList<TElement>::add( const TElement & element )
 
     pIntBlk->element = element;
 
-    size++;    
+    size++;
 
     result = true;
   }
@@ -94,7 +94,7 @@ bool CxList<TElement>::clear( )
   while( (size != 0) && (pLastIntBlk != NULL) )
   {
 
-    TIntBlk* pIntBlk = pLastIntBlk; 
+    TIntBlk* pIntBlk = pLastIntBlk;
     pLastIntBlk = pIntBlk->pPrevIntBlk;
     if( CONTAINER.delContainer( pIntBlk ) == false )
     {
@@ -104,8 +104,8 @@ bool CxList<TElement>::clear( )
 
     if( --size == 0)
     {
-      pFirstIntBlk = pLastIntBlk = NULL; 
-    }  
+      pFirstIntBlk = pLastIntBlk = NULL;
+    }
 
   }
 
@@ -132,9 +132,9 @@ bool CxList<TElement>::remove( TElement* pElement )
       else
       {
         pFirstIntBlk = pLastIntBlk = NULL;
-      }  
+      }
 
-      result = CONTAINER.delContainer( pIntBlk );  
+      result = CONTAINER.delContainer( pIntBlk );
 
     }
     else
@@ -146,7 +146,7 @@ bool CxList<TElement>::remove( TElement* pElement )
         pIntBlk->pPrevIntBlk->pNextIntBlk = NULL;
         pLastIntBlk = pIntBlk->pPrevIntBlk;
 
-        result = CONTAINER.delContainer( pIntBlk );  
+        result = CONTAINER.delContainer( pIntBlk );
 
       }
       else
@@ -169,7 +169,7 @@ bool CxList<TElement>::remove( TElement* pElement )
 template <class TElement>
 TElement & CxList<TElement>::operator[]( unsigned short pos )                   // interval 1 - 65536
 {
-  TElement* pElement = NULL;  
+  TElement* pElement = NULL;
   unsigned  short pointer = 0;
   TIntBlk*  pIntBlk = pFirstIntBlk;
 
@@ -196,7 +196,7 @@ bool CxList<TElement>::insert( unsigned short pos, const TElement & element )   
   // create new element
   TIntBlk* pNewIntBlk = CONTAINER.getContainer( );
 
-  // search element with position pos 
+  // search element with position pos
   unsigned  short pointer = 0;
   TIntBlk*  pIntBlk = pFirstIntBlk;
 
@@ -204,7 +204,7 @@ bool CxList<TElement>::insert( unsigned short pos, const TElement & element )   
   {
     if( pointer == pos ){ break; }
     // get next block
-    pIntBlk = pIntBlk->pNextIntBlk;    
+    pIntBlk = pIntBlk->pNextIntBlk;
     pointer++;
   }
 
@@ -257,7 +257,7 @@ bool CxList<TElement>::insert( unsigned short pos, const TElement & element )   
         return false;
       }
     }
-    
+
     pNewIntBlk->element = element;
 
     size++;
@@ -288,7 +288,7 @@ TElement & CxList<TElement>::last()
   if( pLastIntBlk != NULL )
   {
 
-    result = &(pLastIntBlk->element);  
+    result = &(pLastIntBlk->element);
 
   }
 

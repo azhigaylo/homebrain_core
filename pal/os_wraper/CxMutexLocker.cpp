@@ -28,7 +28,7 @@ CxMutexLocker::~CxMutexLocker( )
      printError("CxMutexLocker/%s: mutex=0", __FUNCTION__);
    }
 }
- 
+
 void CxMutexLocker::unlock( )
 {
    if (0 != mutex)
@@ -38,7 +38,7 @@ void CxMutexLocker::unlock( )
    else
    {
      printError("CxMutexLocker/%s: mutex=0", __FUNCTION__);
-   } 
+   }
 }
 
 CxMutex * CxMutexLocker::getmutex( )

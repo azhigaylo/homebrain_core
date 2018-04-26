@@ -35,7 +35,7 @@ void CxLauncher::load_driver( const char *sDrvName )
    if (true == portState)
    {
       char serialName[50];
-      char serialPath[50];   
+      char serialPath[50];
       DCB dcb = {115200, 0, 8, 1};
 
       char* name = IniFileParser.ReadString( cgfname, sDrvName, "name" );
@@ -171,7 +171,7 @@ void CxLauncher::start_all_logdev()
 void CxLauncher::startUsoProcessors()
 {
    pCxLogDeviceManager pLogDeviceManager = CxLogDeviceManager::getInstance();
-         
+
    for( uint8_t itr = 0; itr < ProcessorList.count(); itr++ )
    {
       CxUsoProcessor *pPrc = ProcessorList[itr];
@@ -205,7 +205,7 @@ void CxLauncher::startUsoProcessors()
       }
    }
 }
-      
+
 //------------------------------------------------------------------------------
 
 // close all tasks
@@ -215,7 +215,7 @@ void CxLauncher::close_activities()
 
    // delete my own task
    task_delete( );
-   
+
    // close uso processors
    for( uint8_t itr = 0; itr < ProcessorList.count(); itr++ )
    {
@@ -251,13 +251,13 @@ void CxLauncher::close_activities()
 CxLauncher::CxLauncher( const char* cgf_name ):
    IxRunnable        ( "INI_TASK"   )
   ,LauncherState     ( ST_L_UNKNOWN )
-  ,pInterfaceManager ( CxInterfaceManager::getInstance() )  
-  ,pLogDeviceManager ( CxLogDeviceManager::getInstance() ) 
+  ,pInterfaceManager ( CxInterfaceManager::getInstance() )
+  ,pLogDeviceManager ( CxLogDeviceManager::getInstance() )
   ,bDataConnectReady ( false )
   ,IniFileParser     ( )
   ,ProcessorList     ( 5 )
 {
-   strncpy_m ( cgfname, const_cast<char*>(cgf_name), sizeof(cgfname) );  
+   strncpy_m ( cgfname, const_cast<char*>(cgf_name), sizeof(cgfname) );
 
    // set notification for data server
    setNotification( event_pool::EVENT_DATA_CONNECTED );
@@ -269,13 +269,13 @@ CxLauncher::~CxLauncher( )
 }
 
 void CxLauncher::Start()
-{ 
+{
    // create thread
    task_run( );
    // start RTOS scheduler
    scheduler_start();
 }
-     
+
 // FSM process
 void CxLauncher::TaskProcessor()
 {
@@ -339,11 +339,11 @@ void CxLauncher::TaskProcessor()
 
 bool CxLauncher::processEvent( pTEvent pEvent )
 {
-   // value event processing  
+   // value event processing
    if( pEvent->eventType == event_pool::EVENT_DATA_CONNECTED )
    {
       printDebug("CxLauncher/%s: CxLauncher DataConnectReady received", __FUNCTION__);
-      bDataConnectReady = true;  
+      bDataConnectReady = true;
       return true;
    }
 

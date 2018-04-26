@@ -28,7 +28,7 @@ struct DCB
   uint8_t  Parity;                                      // 0-4=no,odd,even,mark,space
   uint8_t  ByteSize;                                    // number of bits/byte (5-8)
   uint8_t  StopBits;                                    // 1,2
-}; 
+};
 
 struct TSerialBlock
 {
@@ -51,7 +51,7 @@ class CxSerialDriver : public IxDriver, public CxSysTimer
       void startTimer();
 
    private :
-      
+
       DCB internalDCB;
       int fdTTY;
       struct termios tty;

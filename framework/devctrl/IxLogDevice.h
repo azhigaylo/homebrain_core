@@ -5,15 +5,15 @@
 
 class IxLogDevice
 {
- public: 
+ public:
 
    IxLogDevice(){}
    virtual ~IxLogDevice(){}
 
    virtual void open()  = 0;
-   virtual void close() = 0;      
-   virtual const char *getDeviceName() = 0; 
-   virtual const char *getInterfaceName() = 0; 
+   virtual void close() = 0;
+   virtual const char *getDeviceName() = 0;
+   virtual const char *getInterfaceName() = 0;
    virtual void start() = 0;
 
    virtual bool Process() = 0;
@@ -22,4 +22,4 @@ class IxLogDevice
 
 }; typedef IxLogDevice *pIxLogDevice;
 
-#endif /*_IX_LOGDEVICE*/   
+#endif /*_IX_LOGDEVICE*/

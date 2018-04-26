@@ -9,7 +9,7 @@
 uint16_t ConvertMBint(uint16_t ReadFromMB)
 {
    uint8_t tmp=0;
-   
+
    union
    {
      struct{uint8_t one; uint8_t two;} VitrualLong;

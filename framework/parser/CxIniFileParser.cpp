@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <string.h>
 #include <iostream>
-#include <sys/stat.h> 
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 //------------------------------------------------------------------------------
@@ -146,12 +146,12 @@ void CxIniFileParser::SetEtalonSection( const char* section )
 
 void CxIniFileParser::SetEtalonKey( const char* key )
 {
-  memset_m( etalonKey, 0, KEYLENGTH, KEYLENGTH );  
+  memset_m( etalonKey, 0, KEYLENGTH, KEYLENGTH );
   memcpy_m( etalonKey, key, strlen_m(key, KEYLENGTH), KEYLENGTH );
 }
 
 bool CxIniFileParser::isItEtalonSection()
-{  
+{
   if( 0 == strcmp(section, etalonSection) ) return true;
   return false;
 }
@@ -170,7 +170,7 @@ bool CxIniFileParser::ReadBool( const char *IniFileName, const char*section, con
    bool result = defoult;
 
    int ID = open( IniFileName, O_RDONLY );
-   
+
    if( -1 != ID )
    {
       SetEtalonSection(section);
@@ -187,11 +187,11 @@ bool CxIniFileParser::ReadBool( const char *IniFileName, const char*section, con
          if( true == ParseBuffer(tmp_ini_buf, read_length) )
          {
             result = static_cast<bool>( atoi(GetValue()) );
-            break; 
+            break;
          }
       }
-      close( ID );   
-   }  
+      close( ID );
+   }
    else
    {
       printError("CxIniFileParser/%s: open inifile=%s error!!! ", __FUNCTION__, IniFileName);
@@ -222,7 +222,7 @@ int32_t CxIniFileParser::ReadInt( const char *IniFileName, const char*section, c
          if( true == ParseBuffer(tmp_ini_buf, read_length) )
          {
             result = static_cast<int32_t>( atol(GetValue()) );
-            break; 
+            break;
          }
       }
       close( ID );
@@ -239,45 +239,9 @@ float CxIniFileParser::ReadFloat( const char *IniFileName, const char*section, c
 {
    uint16_t read_length = true;
    float result = defoult;
-   
+
    int ID = open( IniFileName, O_RDONLY );
-   
-   if( -1 != ID )
-   {
-      SetEtalonSection(section);
-      SetEtalonKey(id);
 
-      while( 0 != read_length )
-      { 
-         if ( (read_length = read( ID, tmp_ini_buf, INI_BUF_SIZE )) == -1)
-         {
-            printError("CxIniFileParser/%s: read inifile error happened ", __FUNCTION__);
-            break;
-         }
-
-         if( true == ParseBuffer(tmp_ini_buf, read_length) )
-         { 
-            result = static_cast<float>( atof(GetValue()) );
-            break; 
-         }
-      }
-      close( ID );   
-   }  
-   else
-   {
-      printError("CxIniFileParser/%s: open inifile=%s error!!! ", __FUNCTION__, IniFileName);
-   }
-
-   return result;
-}
-
-char* CxIniFileParser::ReadString( const char *IniFileName, const char*section, const char*id )
-{
-   uint16_t read_length = true;
-   char* result = NULL;
-   
-   int ID = open( IniFileName, O_RDONLY );
-   
    if( -1 != ID )
    {
       SetEtalonSection(section);
@@ -292,12 +256,48 @@ char* CxIniFileParser::ReadString( const char *IniFileName, const char*section, 
          }
 
          if( true == ParseBuffer(tmp_ini_buf, read_length) )
-         { 
-            result = GetValue();
-            break; 
+         {
+            result = static_cast<float>( atof(GetValue()) );
+            break;
          }
       }
-      close( ID );   
+      close( ID );
+   }
+   else
+   {
+      printError("CxIniFileParser/%s: open inifile=%s error!!! ", __FUNCTION__, IniFileName);
+   }
+
+   return result;
+}
+
+char* CxIniFileParser::ReadString( const char *IniFileName, const char*section, const char*id )
+{
+   uint16_t read_length = true;
+   char* result = NULL;
+
+   int ID = open( IniFileName, O_RDONLY );
+
+   if( -1 != ID )
+   {
+      SetEtalonSection(section);
+      SetEtalonKey(id);
+
+      while( 0 != read_length )
+      {
+         if ( (read_length = read( ID, tmp_ini_buf, INI_BUF_SIZE )) == -1)
+         {
+            printError("CxIniFileParser/%s: read inifile error happened ", __FUNCTION__);
+            break;
+         }
+
+         if( true == ParseBuffer(tmp_ini_buf, read_length) )
+         {
+            result = GetValue();
+            break;
+         }
+      }
+      close( ID );
    }
    else
    {

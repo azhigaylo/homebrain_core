@@ -15,7 +15,7 @@ CxThreadIO::CxThreadIO(  const char *taskName,  const char *drvName ):
    IxRunnable    ( taskName )
   ,threadIOState ( ST_IO_UNKNOWN )
   ,drvID         ( CRC16_T(const_cast<char*>(drvName), strlen_m(const_cast<char*>(drvName), configMAX_DRIVER_NAME_LEN)) )
-  ,threadID      ( CRC16_T(const_cast<char*>(taskName), strlen_m(const_cast<char*>(taskName), configMAX_TASK_NAME_LEN)) )  
+  ,threadID      ( CRC16_T(const_cast<char*>(taskName), strlen_m(const_cast<char*>(taskName), configMAX_TASK_NAME_LEN)) )
   ,commThreadID  ( 0 )
   ,inQueue       ( strcat(strncpy_m( pcDrvName, const_cast<char*>(drvName), sizeof(pcDrvName) ), "_out"), 10, sizeof(TCommand), true )
   ,outQueue      ( strcat(strncpy_m( pcDrvName, const_cast<char*>(drvName), sizeof(pcDrvName) ), "_in"),  10, sizeof(TCommand), true )
@@ -23,7 +23,7 @@ CxThreadIO::CxThreadIO(  const char *taskName,  const char *drvName ):
 {
    strncpy_m( pcDrvName, const_cast<char*>(drvName), sizeof(pcDrvName) );
    strcat(strncpy_m( pcCommThreadName, const_cast<char*>(taskName), sizeof(pcCommThreadName) ), "_com");
-} 
+}
 
 CxThreadIO::~CxThreadIO( )
 {
@@ -34,11 +34,11 @@ CxThreadIO::~CxThreadIO( )
 //------------------------------------------------------------------------------
 
 void CxThreadIO::Start()
-{ 
+{
   // create thread
   create_comm_thread();
-  
-  task_run( ); 
+
+  task_run( );
 }
 
 void CxThreadIO::sendMsg( uint16_t ComID, void *data )
@@ -93,20 +93,20 @@ int32_t CxThreadIO::create_comm_thread( )
 }
 
 void *CxThreadIO::thRunnableCommFunction_ThreadIO( void *args )
-{   
+{
    (reinterpret_cast<CxThreadIO*>(args))->run_comm();
 }
 
 void CxThreadIO::run_comm()
 {
   while(true)
-  {   
+  {
     CheckDrvCommand();
   }
-} 
+}
 
 void CxThreadIO::comm_task_delete( )
-{  
+{
    if (commThreadID != 0)
    {
       pthread_cancel(commThreadID);
@@ -135,13 +135,13 @@ void CxThreadIO::TaskProcessor()
         break;
       }
       case ST_IO_WAIT_DRV_RESP :
-      { 
+      {
         if( initAttempt > 0 )
         {
-           threadIOState = ST_IO_NORMAL_WORK;             // put in next state        
-        }  
+           threadIOState = ST_IO_NORMAL_WORK;             // put in next state
+        }
         break;
-      }	
+      }
       case ST_IO_NORMAL_WORK :
       {
         ThreadProcessor();
@@ -149,7 +149,7 @@ void CxThreadIO::TaskProcessor()
         break;
       }
       default : break;
-   } 
+   }
 }
 
 //------------------------------------------------------------------------------
@@ -185,7 +185,7 @@ bool CxThreadIO::CheckDrvCommand()
 
    return result;
 }
-   
+
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------
 //------------------------------------------------------------------------------

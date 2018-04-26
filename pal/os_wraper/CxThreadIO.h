@@ -24,7 +24,7 @@ class CxThreadIO : public IxRunnable
 
   protected:
 
-     // we hide it because everybody should inherit it !  
+     // we hide it because everybody should inherit it !
      CxThreadIO(  const char *taskName,  const char *drvName );
 
      // start all parts of system task
@@ -35,7 +35,7 @@ class CxThreadIO : public IxRunnable
      virtual void ThreadProcessor ( );
 
   private:
-  
+
      int32_t create_comm_thread( );
      static void *thRunnableCommFunction_ThreadIO( void *args );
      void run_comm();
@@ -64,7 +64,7 @@ class CxThreadIO : public IxRunnable
      CxThreadIO & operator=( const CxThreadIO & );
 
  }; typedef CxThreadIO *pCxThreadIO;
- 
+
 //------------------------------------------------------------------------------
 
 #endif // _CX_LAUNCHER
