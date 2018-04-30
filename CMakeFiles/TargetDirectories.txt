@@ -1,0 +1,5 @@
+/home/azhigaylo/homebrain/homebrain/CMakeFiles/rebuild_cache.dir
+/home/azhigaylo/homebrain/homebrain/CMakeFiles/edit_cache.dir
+/home/azhigaylo/homebrain/homebrain/src/CMakeFiles/rebuild_cache.dir
+/home/azhigaylo/homebrain/homebrain/src/CMakeFiles/edit_cache.dir
+/home/azhigaylo/homebrain/homebrain/src/CMakeFiles/HomeBrain.dir

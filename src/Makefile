@@ -80,14 +80,14 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/azhigaylo/homebrain/homebrain/CMakeFiles /home/azhigaylo/homebrain/homebrain/CMakeFiles/progress.marks
-	$(MAKE) -f CMakeFiles/Makefile2 all
+	cd /home/azhigaylo/homebrain/homebrain && $(CMAKE_COMMAND) -E cmake_progress_start /home/azhigaylo/homebrain/homebrain/CMakeFiles /home/azhigaylo/homebrain/homebrain/src/CMakeFiles/progress.marks
+	cd /home/azhigaylo/homebrain/homebrain && $(MAKE) -f CMakeFiles/Makefile2 src/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /home/azhigaylo/homebrain/homebrain/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	$(MAKE) -f CMakeFiles/Makefile2 clean
+	cd /home/azhigaylo/homebrain/homebrain && $(MAKE) -f CMakeFiles/Makefile2 src/clean
 .PHONY : clean
 
 # The main clean target
@@ -97,31 +97,60 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	$(MAKE) -f CMakeFiles/Makefile2 preinstall
+	cd /home/azhigaylo/homebrain/homebrain && $(MAKE) -f CMakeFiles/Makefile2 src/preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	$(MAKE) -f CMakeFiles/Makefile2 preinstall
+	cd /home/azhigaylo/homebrain/homebrain && $(MAKE) -f CMakeFiles/Makefile2 src/preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	cd /home/azhigaylo/homebrain/homebrain && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-#=============================================================================
-# Target rules for targets named HomeBrain
+# Convenience name for target.
+src/CMakeFiles/HomeBrain.dir/rule:
+	cd /home/azhigaylo/homebrain/homebrain && $(MAKE) -f CMakeFiles/Makefile2 src/CMakeFiles/HomeBrain.dir/rule
+.PHONY : src/CMakeFiles/HomeBrain.dir/rule
 
-# Build rule for target.
-HomeBrain: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 HomeBrain
+# Convenience name for target.
+HomeBrain: src/CMakeFiles/HomeBrain.dir/rule
+
 .PHONY : HomeBrain
 
 # fast build rule for target.
 HomeBrain/fast:
-	$(MAKE) -f src/CMakeFiles/HomeBrain.dir/build.make src/CMakeFiles/HomeBrain.dir/build
+	cd /home/azhigaylo/homebrain/homebrain && $(MAKE) -f src/CMakeFiles/HomeBrain.dir/build.make src/CMakeFiles/HomeBrain.dir/build
 .PHONY : HomeBrain/fast
+
+main/HomeBrainVx01.o: main/HomeBrainVx01.cpp.o
+
+.PHONY : main/HomeBrainVx01.o
+
+# target to build an object file
+main/HomeBrainVx01.cpp.o:
+	cd /home/azhigaylo/homebrain/homebrain && $(MAKE) -f src/CMakeFiles/HomeBrain.dir/build.make src/CMakeFiles/HomeBrain.dir/main/HomeBrainVx01.cpp.o
+.PHONY : main/HomeBrainVx01.cpp.o
+
+main/HomeBrainVx01.i: main/HomeBrainVx01.cpp.i
+
+.PHONY : main/HomeBrainVx01.i
+
+# target to preprocess a source file
+main/HomeBrainVx01.cpp.i:
+	cd /home/azhigaylo/homebrain/homebrain && $(MAKE) -f src/CMakeFiles/HomeBrain.dir/build.make src/CMakeFiles/HomeBrain.dir/main/HomeBrainVx01.cpp.i
+.PHONY : main/HomeBrainVx01.cpp.i
+
+main/HomeBrainVx01.s: main/HomeBrainVx01.cpp.s
+
+.PHONY : main/HomeBrainVx01.s
+
+# target to generate assembly for a file
+main/HomeBrainVx01.cpp.s:
+	cd /home/azhigaylo/homebrain/homebrain && $(MAKE) -f src/CMakeFiles/HomeBrain.dir/build.make src/CMakeFiles/HomeBrain.dir/main/HomeBrainVx01.cpp.s
+.PHONY : main/HomeBrainVx01.cpp.s
 
 # Help Target
 help:
@@ -132,6 +161,9 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
 	@echo "... HomeBrain"
+	@echo "... main/HomeBrainVx01.o"
+	@echo "... main/HomeBrainVx01.i"
+	@echo "... main/HomeBrainVx01.s"
 .PHONY : help
 
 
@@ -143,6 +175,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	$(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	cd /home/azhigaylo/homebrain/homebrain && $(CMAKE_COMMAND) -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 

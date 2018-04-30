@@ -3,11 +3,32 @@ cmake_minimum_required(VERSION 3.7.2)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Contains definitions
-include(HealthController)
- 
-project(${HEALTH_CONTROLLER_APPLICATION} VERSION 2.2.0)
+include(HomeBrain)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang$"))
+project(${HOME_IO_APPLICATION} VERSION 1.0.0)
+
+################################################################################
+
+if (CMAKE_CROSSCOMPILING)
+    message(STATUS "Cross compiling: TRUE")
+    message(STATUS "Target: ${CMAKE_SYSTEM_NAME}")
+    if (CMAKE_SYSTEM_PROCESSOR) 
+        message(STATUS "Target system processor(or hardware): ${CMAKE_SYSTEM_PROCESSOR}")
+    endif(CMAKE_SYSTEM_PROCESSOR)
+    if (CMAKE_SYSTEM_VERSION)
+        message(STATUS "Target OS version: ${CMAKE_SYSTEM_VERSION}")
+    endif()
+else()
+    message(STATUS "Cross compiling: FALSE")
+    message(STATUS "Target: Host 'Linux'")
+endif()
+
+################################################################################
+
+# Include 'function(enable_cxx_compiler_flag_if_supported flag)'
+include(EnableCxxCompilerFlag)
+
+if(CMAKE_COMPILER_IS_GNUCXX)
     enable_cxx_compiler_flag_if_supported(-Werror=all)
     enable_cxx_compiler_flag_if_supported(-Werror=extra)
     enable_cxx_compiler_flag_if_supported(-Werror=pedantic)
@@ -16,37 +37,11 @@ if(CMAKE_COMPILER_IS_GNUCXX OR (${CMAKE_CXX_COMPILER_ID} MATCHES "Clang$"))
     enable_cxx_compiler_flag_if_supported(-Werror=write-strings)
     enable_cxx_compiler_flag_if_supported(-Werror=conversion)
     enable_cxx_compiler_flag_if_supported(-Werror=float-equal)
-
-    if(CMAKE_COMPILER_IS_GNUCXX)
-        enable_cxx_compiler_flag_if_supported(-Werror=suggest-override)
-    elseif(${CMAKE_CXX_COMPILER_ID} MATCHES "Clang$")
-        enable_cxx_compiler_flag_if_supported(-Werror=inconsistent-missing-override)
-    endif()
-
-elseif(MSVC)
-    enable_cxx_compiler_flag_if_supported(-WX)
-    enable_cxx_compiler_flag_if_supported(-W2)
+    enable_cxx_compiler_flag_if_supported(-Werror=suggest-override)
+    enable_cxx_compiler_flag_if_supported(-Werror=inconsistent-missing-override)
 else()
-    message(FATAL_ERROR "Unknown compiller '${CMAKE_CXX_COMPILER_ID}'")
+    message(FATAL_ERROR "not supported compiler '${CMAKE_CXX_COMPILER_ID}' ")
 endif()
-
-set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 add_subdirectory(src)
 
-if (WITH_ROOTFS)
-    install(DIRECTORY
-        ${CMAKE_CURRENT_SOURCE_DIR}/deploy/
-        DESTINATION ${CMAKE_INSTALL_ROOT}/etc/systemd/system/
-        USE_SOURCE_PERMISSIONS
-        FILES_MATCHING PATTERN "*"
-        )
-else (WITH_ROOTFS)
-    install(FILES
-        ${CMAKE_CURRENT_SOURCE_DIR}/deploy/healthctrl.service
-        DESTINATION etc/systemd/
-        )
-endif (WITH_ROOTFS)
-
-#must come in the end of main project's CMakeLists
-add_package(${PROJECT_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/pkg/CMakeLists.txt.in)
