@@ -5,94 +5,62 @@
 #include <unistd.h>
 #include <iostream>
 //------------------------------------------------------------------------------
-#include "utils.h"
+#include "common/utils.h"
 //-----------------------------System Utilities---------------------------------
 
-void sleep_mcs( uint64_t delay_in_ms)
+void sleep_mcs( uint32_t delay_in_ms)
 {
    usleep(delay_in_ms);
 }
 
-void sleep_s ( uint64_t delay_in_s )
+void sleep_s ( uint32_t delay_in_s )
 {
    sleep(delay_in_s);
 }
 
-//-----------------------------Utilities-Routines-------------------------------
+//------------------------------------------------------------------------------
+
+//word from byte
+uint16_t GenWfrom2B(uint8_t B_h, uint8_t B_l)
+{
+  return (uint16_t)((B_h<<8)|(B_l));
+}
 
 //Long from word
-unsigned long GenLfrom2W(unsigned short W_h, unsigned short W_l)
+uint32_t GenLfrom2W(uint16_t W_h, uint16_t W_l)
 {
-  return(((unsigned long)W_h<<16)|((unsigned long)W_l));
+  return(((uint32_t)W_h<<16)|((uint32_t)W_l));
 }
 
 // function return LSB of word
-unsigned char LOW(unsigned short celoe)
+uint8_t LOW(uint16_t celoe)
 {
-  return((char)(0x00FF & celoe));
+  return((uint8_t)(0x00FF & celoe));
 }
 
 // function return MSB of word
-unsigned char HIGH(unsigned short celoe)
+uint8_t HIGH(uint16_t celoe)
 {
-  return((char)(celoe>>8));
-}
-
-//turn bit in byte
-char TurnBitInByte(char Byte)
-{
-   unsigned char rez=0;
-   for(unsigned char i=0;i<8;i++){
-     if((unsigned char)(0x80>>i) & Byte)rez |= (unsigned char)((0x01)<<i);
-   }
-   return(rez);
-}
-
-void LShiftArray(char*buff,unsigned short b_size,unsigned short shift)
-{
-  if(b_size > shift){
-    unsigned short shiftsize = b_size-shift;
-    for(unsigned short i=0; i<shiftsize; i++){
-      *(buff+i) = *(buff+shift+i);
-    }
-    memset(buff+shiftsize,0x33,shift);
-  }else{
-    memset(buff,0x33,b_size);
-    //ASSERTION(e_lshift);
-  }
-}
-
-void revertbuff( char*dest,unsigned short chng_size )
-{
-   char tmp_d = 0;
-   unsigned short custom_counter = 0;
-   if(chng_size)chng_size--;
-   while(custom_counter<chng_size)
-   {
-     tmp_d = dest[custom_counter];
-     dest[custom_counter++] = dest[chng_size];
-     dest[chng_size--] = tmp_d;
-   }
+  return((uint8_t)(celoe>>8));
 }
 
 //-----------------------------ModBus utylites----------------------------------
 
-//function convert MB short
-unsigned short getWordFromMbReg( unsigned short registerMB )
+uint16_t getWordFromMbReg( uint16_t registerMB )
 {
-   return((registerMB>>8)|(registerMB<<8));
+   return(uint16_t)((registerMB>>8)|(registerMB<<8));
 }
 
-long getLongFromTwoMbReg( unsigned short registerMB_1, unsigned short registerMB_2 )
+uint32_t getLongFromTwoMbReg( uint16_t registerMB_1, uint16_t registerMB_2 )
 {
-  long result = (getWordFromMbReg(registerMB_2)<<16) | (getWordFromMbReg(registerMB_1));
+  uint32_t result = (getWordFromMbReg(registerMB_2)<<16) | (getWordFromMbReg(registerMB_1));
   return result;
 }
 
-float getFloatFromTwoMbReg( unsigned short registerMB_1, unsigned short registerMB_2 )
+float getFloatFromTwoMbReg( uint16_t registerMB_1, uint16_t registerMB_2 )
 {
-  union { float result; long temp;}tmpBlock;
-  tmpBlock.temp = (getWordFromMbReg(registerMB_2)<<16) | (getWordFromMbReg(registerMB_1));
+  union { float result; uint32_t tmp;}tmpBlock;
+  tmpBlock.tmp = (getWordFromMbReg(registerMB_2)<<16) | (getWordFromMbReg(registerMB_1));
   return tmpBlock.result;
 }
 
@@ -144,13 +112,14 @@ uint16_t CRC16b( char *Buff, uint16_t Count, uint8_t base)
   uint8_t bl;
 
   if(Count<3)return (0x000F);
-  while (Count) {
-    bl = *Buff ^ ah;
-    ah = al ^ CRC_Hi[bl];
+  while (Count)
+  {
+    bl = (uint8_t)(*Buff ^ ah);
+    ah = (uint8_t)(al ^ CRC_Hi[bl]);
     al = CRC_Lo[bl];
     Buff++; Count--;
   }
-  return (uint16_t)(al<<8) | ah;
+  return (uint16_t)((al<<8) | ah);
 }
 
 uint16_t CRC16_T( char *Buff, uint16_t Count)
@@ -161,85 +130,4 @@ uint16_t CRC16_T( char *Buff, uint16_t Count)
 uint16_t  CRC16_T_0( char *Buff, uint16_t Count)
 {
   return CRC16b(Buff, Count, 0);
-}
-
-//word from byte
-uint16_t GenWfrom2B(uint8_t B_h, uint8_t B_l)
-{
-  return( ((uint16_t)B_h<<8)|((uint16_t)(B_l)) );
-}
-
-//-----------------------------standard functions which had been modified-------
-
-char* strncpy_m( char* e_str, char* s_str, int32_t dest_size )
-{
-   char* dst_str = strncpy(e_str, s_str, dest_size);
-
-   if (dest_size > 0)
-   {
-      e_str[dest_size - 1]= '\0';
-   }
-
-   return dst_str;
-}
-
-void* memset_m( void* ptr, int value, int32_t num, int32_t dest_size )
-{
-   void* res_ptr = 0;
-
-   if(num >= dest_size)
-   {
-      res_ptr = memset(ptr, value, dest_size);
-   }
-   else
-   {
-      res_ptr = memset(ptr, value, num);
-   }
-   return res_ptr;
-}
-
-uint32_t strlen_m( const char*string, uint32_t reasonvalue )
-{
-  uint32_t len = strlen(string);
-  if(len > reasonvalue) len = reasonvalue;
-
-  return(len);
-}
-
-void* memcpy_m( void* destination, const void* source, int32_t num, int32_t dest_size )
-{
-   void *pDest = 0;
-
-   if(num >= dest_size)
-   {
-      pDest = memcpy(destination, source, dest_size);
-   }
-   else
-   {
-      pDest = memcpy(destination, source, num);
-   }
-   return pDest;
-}
-
-//--------------------------------------------------------------------------------------
-
-bool mod_strstr( char*string1, char*string2, unsigned short len1, unsigned short len2 )
-{
-  return strstr(string1, string2);
-}
-
-char* mod_strchr( char* string1, char symbol, unsigned short sStringSize )
-{
-  char* tmp_out = strchr( string1, symbol );
-  if( tmp_out > (string1 + sStringSize ) ) tmp_out = NULL;
-
-  return tmp_out;
-}
-
-char* mod_strrchr( char* string1, char symbol, unsigned short sStringSize )
-{
-  char* tmp_out = strrchr( string1, symbol );
-  if( tmp_out > (string1 + sStringSize ) ) tmp_out = NULL;
-
-  return tmp_out;
 }

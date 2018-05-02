@@ -1,8 +1,8 @@
 //------------------------------------------------------------------------------
-#include "slog.h"
-#include "utils.h"
-#include "CxMutexLocker.h"
-#include "CxStaticPool.h"
+#include "common/slog.h"
+#include "common/utils.h"
+#include "os_wrapper/CxMutexLocker.h"
+#include "staticpool/CxStaticPool.h"
 //------------------------------------------------------------------------------
 //-------------------------------STATIC POOL class------------------------------
 //------------------------------------------------------------------------------
@@ -14,7 +14,7 @@ CxStaticPool::CxStaticPool():
     sRecNumb( 0 )
    ,pHead   ( staticpool )
 {
-   memset_m( staticpool, 0, configSTATICPOOL_SIZE, configSTATICPOOL_SIZE );
+   memset( staticpool, 0, configSTATICPOOL_SIZE );
 }
 
 CxStaticPool *CxStaticPool::getInstance()
@@ -38,7 +38,7 @@ void CxStaticPool::delInstance()
    {
       sRecNumb = 0;
       pHead    = 0;
-      memset_m( staticpool, 0, configSTATICPOOL_SIZE, configSTATICPOOL_SIZE );
+      memset( staticpool, 0, configSTATICPOOL_SIZE );
 
       delete this;
    }
@@ -70,5 +70,5 @@ void* CxStaticPool::pStaticMalloc( unsigned short xSize )
 
 unsigned short CxStaticPool::GetFreeSize() const
 {
-   return( (staticpool + configSTATICPOOL_SIZE) - pHead );
+   return(unsigned short)((staticpool + configSTATICPOOL_SIZE) - pHead );
 }

@@ -5,11 +5,11 @@
 #include <string.h>
 #include <iostream>
 //------------------------------------------------------------------------------
-#include "slog.h"
-#include "utils.h"
-#include "CxInterface.h"
-#include "CxMutexLocker.h"
-#include "CxLogDeviceManager.h"
+#include "common/slog.h"
+#include "common/utils.h"
+#include "interface/CxInterface.h"
+#include "os_wrapper/CxMutexLocker.h"
+#include "devctrl/CxLogDeviceManager.h"
 //------------------------------------------------------------------------------
 CxLogDeviceManager* CxLogDeviceManager::theInstance = 0;
 CxMutex CxLogDeviceManager::singlDeviceLock("singlDeviceLocker");
@@ -71,7 +71,7 @@ bool CxLogDeviceManager::set_logdev( IxLogDevice * pLogDev )
    CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
 
    // add pointer on logdev in vector
-   logDevListItemTmp.number  = logDevCounter;
+   logDevListItemTmp.number  = (char)logDevCounter;
    logDevListItemTmp.pLogDevice = pLogDev;
 
    result = LOGDEV_LIST.add( logDevListItemTmp );

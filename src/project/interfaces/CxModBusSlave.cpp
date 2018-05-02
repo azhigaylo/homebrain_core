@@ -5,9 +5,8 @@
 #include <string.h>
 #include <iostream>
 //------------------------------------------------------------------------------
-#include "slog.h"
-#include "utils.h"
-#include "CxModBusSlave.h"
+#include "common/slog.h"
+#include "interfaces/CxModBusSlave.h"
 //------------------------------------------------------------------------------
 
 CxModBusSlave::CxModBusSlave( const char *interfaceName, const char *drvName ):
@@ -15,24 +14,26 @@ CxModBusSlave::CxModBusSlave( const char *interfaceName, const char *drvName ):
    ,CxInterface    ( interfaceName )
    ,address        ( 1 )
 {
-   memset_m( &commbuf, 0, sizeof commbuf, sizeof commbuf );
+   memset( &commbuf, 0, sizeof commbuf );
 }
 
 int32_t CxModBusSlave::open( )
 {
    Start();
+   return 0;
 }
 
 int32_t CxModBusSlave::close( )
 {
    printWarning("CxModBusSlave/%s: CxModBusSlave close not implemented", __FUNCTION__);
+   return 0;
 }
 
 void CxModBusSlave::GetRegister( uint16_t reg_start, uint16_t reg_count )
 {
-   mbResponce.Header.address = address;
+   mbResponce.Header.address = static_cast<uint8_t>(address);
    mbResponce.Header.command = CMD_MB_RREG;
-   mbResponce.Header.counter = reg_count * sizeof(uint16_t);
+   mbResponce.Header.counter = static_cast<uint8_t>(reg_count * sizeof(uint16_t));
 
    // prepare data for response
    uint16_t posOut = 0;
@@ -49,17 +50,17 @@ void CxModBusSlave::GetRegister( uint16_t reg_start, uint16_t reg_count )
    }
 
    // CRC calculation
-   mbResponce.OutputBuf[posOut] = CRC16_T( (char*)&mbResponce, sizeof(TMRESPHeader) + reg_count*sizeof(uint16_t) );
+   mbResponce.OutputBuf[posOut] = CRC16_T( (char*)&mbResponce, static_cast<uint16_t>(sizeof(TMRESPHeader) + reg_count*sizeof(uint16_t)) );
 
-   commbuf.msgSize   = sizeof(TMRESPHeader) + reg_count*sizeof(uint16_t) + sizeof(uint16_t);
+   commbuf.msgSize   = static_cast<uint16_t>(sizeof(TMRESPHeader) + reg_count*sizeof(uint16_t) + sizeof(uint16_t));
    commbuf.msgNumber = 0;
-   memcpy_m( commbuf.buffer, &mbResponce, commbuf.msgSize, sizeof commbuf.buffer );
+   memcpy( commbuf.buffer, &mbResponce, commbuf.msgSize);
 
    // send message to serial driver
    sendMsg( CM_OUT_DATA, &commbuf );
 }
 
-void CxModBusSlave::SetRegister( uint16_t reg_start, uint16_t reg_value )
+void CxModBusSlave::SetRegister( uint16_t /*reg_start*/, uint16_t /*reg_value*/ )
 {
 
 }
@@ -78,7 +79,7 @@ void CxModBusSlave::CommandProcessor( uint16_t ComID, void *data )
          if (0 == CRC16_T(reinterpret_cast<char*>(pSerialBlock->buffer), pSerialBlock->msgSize))
          {
             // copy in the internal buffer(rx buffer can receive another data)
-            memcpy_m( &commbuf, pSerialBlock->buffer, pSerialBlock->msgSize, sizeof(commbuf) );
+            memcpy( &commbuf, pSerialBlock->buffer, pSerialBlock->msgSize );
 
             TMREQ *pMREQ = reinterpret_cast<TMREQ*>(commbuf.buffer);
 

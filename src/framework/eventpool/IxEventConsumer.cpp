@@ -5,10 +5,10 @@
 #include <string.h>
 #include <iostream>
 //------------------------------------------------------------------------------
-#include "slog.h"
-#include "utils.h"
-#include "IxEventConsumer.h"
-#include "CxEventDispatcher.h"
+#include "common/slog.h"
+#include "common/utils.h"
+#include "eventpool/IxEventConsumer.h"
+#include "eventpool/CxEventDispatcher.h"
 //------------------------------------------------------------------------------
 using namespace event_pool;
 //------------------------------------------------------------------------------

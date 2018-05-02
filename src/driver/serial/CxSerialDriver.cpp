@@ -5,10 +5,9 @@
 #include <string.h>
 #include <iostream>
 //------------------------------------------------------------------------------
-#include "slog.h"
-#include "utils.h"
-#include "CxMutexLocker.h"
-#include "CxSerialDriver.h"
+#include "common/slog.h"
+#include "os_wrapper/CxMutexLocker.h"
+#include "serial/CxSerialDriver.h"
 //------------------------------------------------------------------------------
 
 CxSerialDriver::CxSerialDriver( const char *drvName, const char *ttyPath, DCB *pDCB ):
@@ -19,9 +18,9 @@ CxSerialDriver::CxSerialDriver( const char *drvName, const char *ttyPath, DCB *p
    ,timeout        ( 0 )
    ,singlSerialLock( "serialLocker" )
 {
-   memset_m( &tty, 0, sizeof tty, sizeof tty );
-   memset_m( &txBuffer, 0, sizeof txBuffer, sizeof txBuffer );
-   memset_m( &rxBuffer, 0, sizeof rxBuffer, sizeof rxBuffer );
+   memset( &tty, 0, sizeof tty );
+   memset( &txBuffer, 0, sizeof txBuffer );
+   memset( &rxBuffer, 0, sizeof rxBuffer );
 
    ttyConfig( ttyPath );
 }
@@ -82,7 +81,7 @@ bool CxSerialDriver::ttyConfig(const char *ttyPath)
       tty.c_cflag |= (CLOCAL | CREAD);                           // ignore modem controls, enable reading
       tty.c_oflag = 0;                                           // no remapping, no delays
 
-      tty.c_cc[VMIN]  = BUFFER_SIZE;   // blocked
+      tty.c_cc[VMIN]  = static_cast<cc_t>(BUFFER_SIZE);   // blocked
       tty.c_cc[VTIME] = 1;             // 0.5 seconds read timeout
 
       if (tcsetattr (fdTTY, TCSANOW, &tty) != 0)
@@ -94,7 +93,7 @@ bool CxSerialDriver::ttyConfig(const char *ttyPath)
    {
       printError ("CxSerialDriver/%s: error=%d from tcgetattr", __FUNCTION__, errno);
    }
-
+   return result;
 }
 
 CxSerialDriver::~CxSerialDriver()
@@ -139,7 +138,7 @@ void CxSerialDriver::CommandProcessor( uint16_t ComID, void *data )
             txBuffer.msgSize   = pSerBlk->msgSize;
             txBuffer.msgNumber = pSerBlk->msgNumber;
             rxBuffer.msgNumber = txBuffer.msgNumber;
-            memcpy_m( txBuffer.buffer, pSerBlk->buffer, pSerBlk->msgSize, pSerBlk->msgSize );
+            memcpy( txBuffer.buffer, pSerBlk->buffer, pSerBlk->msgSize );
 
             // send to USART
             if (0 != fdTTY)
@@ -171,7 +170,7 @@ void CxSerialDriver::ThreadProcessor( )
 {
    if (0 != fdTTY)
    {
-      uint16_t rxLenght = read( fdTTY, rxBuffer.buffer, sizeof(rxBuffer.buffer) );
+      uint16_t rxLenght = static_cast<uint16_t>(read( fdTTY, rxBuffer.buffer, sizeof(rxBuffer.buffer)));
 
       printDebug("CxSerialDriver/%s: tty rec %d byte: %d %d %d %d %d %d %d %d %d %d %d %d %d", __FUNCTION__, rxLenght, rxBuffer.buffer[0],  rxBuffer.buffer[1],  rxBuffer.buffer[2],  rxBuffer.buffer[3],
                                                                                                        rxBuffer.buffer[4],  rxBuffer.buffer[5],  rxBuffer.buffer[6],  rxBuffer.buffer[7],

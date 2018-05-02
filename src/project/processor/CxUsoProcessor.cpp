@@ -4,10 +4,10 @@
 #include <errno.h>
 #include <string.h>
 
-#include "slog.h"
-#include "utils.h"
-#include "USODefinition.h"
-#include "CxUsoProcessor.h"
+#include "common/slog.h"
+#include "common/utils.h"
+#include "processor/CxUsoProcessor.h"
+#include "uso/USODefinition.h"
 //------------------------------------------------------------------------------
 
 CxUsoProcessor::CxUsoProcessor( const char * sPrcName, const char *sInterfaceNmae ) :
@@ -38,7 +38,7 @@ bool CxUsoProcessor::set_logdev( IxLogDevice *pLogDev )
    bool result = false;
 
    // add pointer on logdev in vector
-   TLogDevListItem logDevListItemTmp = {logDevCounter, pLogDev};
+   TLogDevListItem logDevListItemTmp = {static_cast<int8_t>(logDevCounter), pLogDev};
 
    result = LOGDEV_LIST.add( logDevListItemTmp );
 

@@ -1,1 +1,0 @@
-/usr/bin/c++   -Werror=all -Werror=extra -Werror=pedantic -Werror=shadow -Werror=cast-align -Werror=write-strings -Werror=conversion -Werror=float-equal -Werror=suggest-override   CMakeFiles/HomeBrain.dir/main/HomeBrainVx01.cpp.o  -o HomeBrain 

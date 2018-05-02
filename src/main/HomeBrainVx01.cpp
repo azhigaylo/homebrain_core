@@ -1,10 +1,10 @@
 #include <iostream>
-#include "utils.h"
-#include "slog.h"
 #include <getopt.h>
 
-#include "DebugMacros.h"
-#include "CxLauncher.h"
+#include "common/slog.h"
+#include "common/utils.h"
+
+#include "startup/CxLauncher.h"
 
 using namespace std;
 using namespace event_pool;
@@ -13,7 +13,7 @@ using namespace event_pool;
 CxLauncher *pLauncher = 0;
 //------------------------------------------------------------------------------
 
-void mainSigHandler( int sig )
+void mainSigHandler( int /*sig*/ )
 {
    if (0 != pLauncher)
    {
@@ -31,7 +31,7 @@ int main(int argc, char* argv[])
 
    int c = 0;
    int debug = 0;
-   char *sCfg = "/home/azhigaylo/.config/home_brain/HBconfig.conf";
+   const char *sCfg = "/home/azhigaylo/.config/home_brain/HBconfig.conf";
 
    while (-1 != (c = getopt(argc, argv, "c:d:")))
    {

@@ -5,19 +5,19 @@
 #include <string.h>
 #include <iostream>
 //------------------------------------------------------------------------------
-#include "slog.h"
-#include "utils.h"
-#include "CxInterface.h"
-#include "CxLogDevice.h"
-#include "CxLogDeviceManager.h"
+#include "common/slog.h"
+#include "common/utils.h"
+#include "interface/CxInterface.h"
+#include "devctrl/CxLogDevice.h"
+#include "devctrl/CxLogDeviceManager.h"
 //------------------------------------------------------------------------------
 
 CxLogDevice::CxLogDevice( const char *deviceName, const char *interfaceName ):
    IxLogDevice( )
   ,devStatus  ( 1 )
 {
-   strncpy_m( pcDeviceName, const_cast<char*>(deviceName), sizeof(pcDeviceName) );
-   strncpy_m( pcInterfaceName, const_cast<char*>(interfaceName), sizeof(pcInterfaceName) );
+   strncpy( pcDeviceName, const_cast<char*>(deviceName), sizeof(pcDeviceName) );
+   strncpy( pcInterfaceName, const_cast<char*>(interfaceName), sizeof(pcInterfaceName) );
 
    registration();
 }

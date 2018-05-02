@@ -5,9 +5,8 @@
 #include <string.h>
 #include <iostream>
 //------------------------------------------------------------------------------
-#include "slog.h"
-#include "utils.h"
-#include "CxModBusMaster.h"
+#include "common/slog.h"
+#include "interfaces/CxModBusMaster.h"
 //------------------------------------------------------------------------------
 
 CxModBusMaster::CxModBusMaster( const char *interfaceName, const char *drvName ):
@@ -20,17 +19,19 @@ CxModBusMaster::CxModBusMaster( const char *interfaceName, const char *drvName )
    ,cond_var       ( PTHREAD_COND_INITIALIZER )
    ,cond_var_flag  ( 0 )
 {
-   memset_m( &commbuf, 0, sizeof commbuf, sizeof commbuf );
+   memset( &commbuf, 0, sizeof commbuf );
 }
 
 int32_t CxModBusMaster::open( )
 {
    Start();
+   return 0;
 }
 
 int32_t CxModBusMaster::close( )
 {
    printWarning("CxModBusMaster/%s: CxModBusMaster close not implemented", __FUNCTION__);
+   return 0;
 }
 
 uint16_t CxModBusMaster::GetRegister( uint8_t address, uint16_t reg_start, uint16_t reg_count, uint16_t *pResponce )
@@ -53,7 +54,7 @@ uint16_t CxModBusMaster::GetRegister( uint8_t address, uint16_t reg_start, uint1
                                                    mbReadRequest.start_reg_low, mbReadRequest.numb_reg_hi, mbReadRequest.numb_reg_low );
    printDebug("CxModBusMaster/%s: MB CRC=%i / size=%i", __FUNCTION__, mbReadRequest.CRC, sizeof(mbReadRequest)-sizeof(mbReadRequest.CRC) );
 
-   memcpy_m( commbuf.buffer, &mbReadRequest, sizeof mbReadRequest, sizeof commbuf.buffer );
+   memcpy( commbuf.buffer, &mbReadRequest, sizeof mbReadRequest);
 
    // send message to serial driver
    sendMsg( CM_OUT_DATA, &commbuf );
@@ -64,9 +65,9 @@ uint16_t CxModBusMaster::GetRegister( uint8_t address, uint16_t reg_start, uint1
    {
       if (0 != pResponce)
       {
-         memcpy_m( pResponce, mbResponce.OutputBuf, sizeResponce, reg_count * sizeof(uint16_t) );
+         memcpy( pResponce, mbResponce.OutputBuf, sizeResponce );
       }
-      reg_num = mbResponce.Header.counter / sizeof(uint16_t);
+      reg_num = mbResponce.Header.counter / (uint8_t)(sizeof(uint16_t));
    }
 
    return reg_num;
@@ -93,7 +94,7 @@ bool CxModBusMaster::SetRegister( uint8_t address, uint16_t reg_numb, uint16_t r
                                                                             mbReadRequest.start_reg_low, mbReadRequest.numb_reg_hi, mbReadRequest.numb_reg_low);
    printDebug("CxModBusMaster/%s: MB CRC=%i / size=%i", __FUNCTION__, mbReadRequest.CRC, sizeof(mbReadRequest)-sizeof(mbReadRequest.CRC) );
 
-   memcpy_m( commbuf.buffer, &mbWriteRequest, sizeof mbWriteRequest, sizeof commbuf.buffer );
+   memcpy( commbuf.buffer, &mbWriteRequest, sizeof mbWriteRequest);
 
    // send message to serial driver
    sendMsg( CM_OUT_DATA, &commbuf );
@@ -121,17 +122,17 @@ bool CxModBusMaster::SetRegisterBlock( uint8_t address, uint16_t reg_start, uint
    mbWrBlkReg.Header.start_reg_low = LOW(reg_start);
    mbWrBlkReg.Header.numb_reg_hi   = HIGH(reg_count);
    mbWrBlkReg.Header.numb_reg_low  = LOW(reg_count);
-   mbWrBlkReg.Header.NumbB         = reg_count*sizeof(uint16_t);
+   mbWrBlkReg.Header.NumbB         = (uint8_t)(reg_count*sizeof(uint16_t));
    // copy buffer
-   memcpy_m( mbWrBlkReg.OutputBuf, pOutput, mbWrBlkReg.Header.NumbB, sizeof(mbWrBlkReg.OutputBuf) );
+   memcpy( mbWrBlkReg.OutputBuf, pOutput, mbWrBlkReg.Header.NumbB );
    //setup CRC
-   mbWrBlkReg.OutputBuf[reg_count] = CRC16_T(reinterpret_cast<char*>(&mbWrBlkReg), sizeof(mbWrBlkReg.Header) + mbWrBlkReg.Header.NumbB);
+   mbWrBlkReg.OutputBuf[reg_count] = CRC16_T(reinterpret_cast<char*>(&mbWrBlkReg), (uint16_t)(sizeof(mbWrBlkReg.Header) + mbWrBlkReg.Header.NumbB));
 
    // copy to communication buffer
-   commbuf.msgSize   = sizeof(mbWrBlkReg.Header) + mbWrBlkReg.Header.NumbB + sizeof(uint16_t);   // sizeof(uint16_t) - CRC size
+   commbuf.msgSize   = (uint16_t)(sizeof(mbWrBlkReg.Header) + mbWrBlkReg.Header.NumbB + sizeof(uint16_t));   // sizeof(uint16_t) - CRC size
    commbuf.msgNumber = counter_item++;
 
-   memcpy_m( commbuf.buffer, &mbWrBlkReg, commbuf.msgSize, sizeof commbuf.buffer );
+   memcpy( commbuf.buffer, &mbWrBlkReg, commbuf.msgSize);
 
    // send message to serial driver
    sendMsg( CM_OUT_DATA, &commbuf );
@@ -191,12 +192,14 @@ void CxModBusMaster::CommandProcessor( uint16_t ComID, void *data )
                                                                                                              pSerialBlock->buffer[4],  pSerialBlock->buffer[5],  pSerialBlock->buffer[6],  pSerialBlock->buffer[7],
                                                                                                              pSerialBlock->buffer[8],  pSerialBlock->buffer[9],  pSerialBlock->buffer[10], pSerialBlock->buffer[11],
                                                                                                              pSerialBlock->buffer[12], pSerialBlock->buffer[13]);
-            printDebug("CxModBusMaster/%s: MB CRC=%i / size=%i", __FUNCTION__, CRC16_T(reinterpret_cast<char*>(pSerialBlock->buffer), pSerialBlock->msgSize-2), pSerialBlock->msgSize-2 );
+            printDebug("CxModBusMaster/%s: MB CRC=%i / size=%i"
+                       , __FUNCTION__
+                       , CRC16_T(reinterpret_cast<char*>(pSerialBlock->buffer), (uint16_t)(pSerialBlock->msgSize-2)), pSerialBlock->msgSize-2 );
 
             if (0 == CRC16_T(reinterpret_cast<char*>(pSerialBlock->buffer), pSerialBlock->msgSize))
             {
                // copy in the internal buffer(rx buffer can receive another data)
-               memcpy_m( &mbResponce, pSerialBlock->buffer, pSerialBlock->msgSize, sizeof(mbResponce) );
+               memcpy( &mbResponce, pSerialBlock->buffer, pSerialBlock->msgSize );
 
                if ((mbReadRequest.address == mbResponce.Header.address) && (mbReadRequest.command == mbResponce.Header.command))
                {

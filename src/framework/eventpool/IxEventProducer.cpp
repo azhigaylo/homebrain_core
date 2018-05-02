@@ -1,10 +1,10 @@
 //------------------------------------------------------------------------------
 #include <stdlib.h>
 //------------------------------------------------------------------------------
-#include "slog.h"
-#include "utils.h"
-#include "IxEventProducer.h"
-#include "CxEventDispatcher.h"
+#include "common/slog.h"
+#include "common/utils.h"
+#include "eventpool/IxEventProducer.h"
+#include "eventpool/CxEventDispatcher.h"
 //------------------------------------------------------------------------------
 
 IxEventProducer::IxEventProducer()

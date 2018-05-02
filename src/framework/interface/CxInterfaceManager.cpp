@@ -5,19 +5,20 @@
 #include <string.h>
 #include <iostream>
 //------------------------------------------------------------------------------
-#include "slog.h"
-#include "utils.h"
-#include "CxInterface.h"
-#include "CxMutexLocker.h"
-#include "CxInterfaceManager.h"
+#include "common/slog.h"
+#include "common/utils.h"
+#include "os_wrapper/CxMutexLocker.h"
+#include "interface/CxInterface.h"
+#include "interface/CxInterfaceManager.h"
+
 //------------------------------------------------------------------------------
 CxInterfaceManager* CxInterfaceManager::theInstance = 0;
 CxMutex CxInterfaceManager::singlInterfaceLock("singlInterfaceLocker");
 //------------------------------------------------------------------------------
 
 CxInterfaceManager::CxInterfaceManager( ):
-    CONNECTION_LIST ( interfaceListSize )
-   ,interfaceCounter( 0 )
+   interfaceCounter( 0 )
+  ,CONNECTION_LIST ( interfaceListSize )
 {
 
 }
@@ -68,7 +69,7 @@ bool CxInterfaceManager::set_interface( IxInterface * pNewInterface )
 
    TInterfaceItem connectionItem;
 
-   connectionItem.ID = rand();
+   connectionItem.ID = static_cast<uint16_t>(rand());
    connectionItem.pInterface = pNewInterface;
    result = CONNECTION_LIST.add( connectionItem );
 

@@ -5,10 +5,10 @@
 #include <string.h>
 #include <iostream>
 //------------------------------------------------------------------------------
-#include "slog.h"
-#include "utils.h"
-#include "CxMutexLocker.h"
-#include "CxEventDispatcher.h"
+#include "common/slog.h"
+#include "common/utils.h"
+#include "os_wrapper/CxMutexLocker.h"
+#include "eventpool/CxEventDispatcher.h"
 //------------------------------------------------------------------------------
 using namespace event_pool;
 //------------------------------------------------------------------------------
@@ -47,7 +47,7 @@ void CxEventDispatcher::delInstance()
 {
    if(theInstance != 0)
    {
-      delete this;
+      delete theInstance;
    }
 }
 
@@ -137,7 +137,7 @@ bool CxEventDispatcher::setNotification( TEvent event, pTIxEventConsumer pIxEven
    return false;
 }
 
-bool CxEventDispatcher::clrNotification(TEvent event, pTIxEventConsumer pIxEventConsumer)
+bool CxEventDispatcher::clrNotification(TEvent /*event*/, pTIxEventConsumer /*pIxEventConsumer*/)
 {
    return false;
 }

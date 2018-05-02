@@ -1,15 +1,13 @@
 //------------------------------------------------------------------------------
-#include "DebugMacros.h"
-#include "ScopeDeclaration.h"
+#include "common/utils.h"
 
-#include "CxSerialDriver.h"
-#include "CxModBusMaster.h"
-#include "CxModBusSlave.h"
-#include "CxDataConnection.h"
-#include "CxEventDispatcher.h"
-#include "CxLogDeviceManager.h"
+#include "serial/CxSerialDriver.h"
+#include "interfaces/CxModBusMaster.h"
+#include "interfaces/CxModBusSlave.h"
+#include "eventpool/CxEventDispatcher.h"
+#include "devctrl/CxLogDeviceManager.h"
 
-#include "CxLauncher.h"
+#include "startup/CxLauncher.h"
 //------------------------------------------------------------------------------
 using namespace event_pool;
 //------------------------------------------------------------------------------
@@ -17,12 +15,7 @@ using namespace event_pool;
 // load all drivers
 void CxLauncher::load_debug()
 {
-   bool dbgState = IniFileParser.ReadBool( cgfname, "DEBUG", "state", false );
 
-   if (true == dbgState)
-   {
-      ScopeRegistration();
-   }
 }
 
 //------------------------------------------------------------------------------
@@ -39,11 +32,11 @@ void CxLauncher::load_driver( const char *sDrvName )
       DCB dcb = {115200, 0, 8, 1};
 
       char* name = IniFileParser.ReadString( cgfname, sDrvName, "name" );
-      strncpy_m(serialName, name, 50 );
+      strncpy(serialName, name, 50 );
       char* path = IniFileParser.ReadString( cgfname, sDrvName, "path" );
-      strncpy_m(serialPath, path, 50 );
+      strncpy(serialPath, path, 50 );
       dcb.BaudRate = IniFileParser.ReadInt( cgfname, sDrvName, "baudrate", 115200 );
-      dcb.Parity   = IniFileParser.ReadInt( cgfname, sDrvName, "parity", 0 );
+      dcb.Parity   = static_cast<uint8_t>(IniFileParser.ReadInt( cgfname, sDrvName, "parity", 0 ));
 
       printDebug("CxLauncher/%s: %s name = %s", __FUNCTION__, sDrvName, serialName);
       printDebug("CxLauncher/%s: %s path = %s", __FUNCTION__, sDrvName, serialPath);
@@ -117,8 +110,7 @@ void CxLauncher::start_sys_interface( const char *sIntName )
          // DATA_CNCT interfaces
          if( 0 == strcmp(sType, "dtaconnect"))
          {
-            CxDataConnection *pDataConnection = new CxDataConnection(sName, sDriver );   // this item will be deleted in CxInterfaceManager::delInstance()
-            pDataConnection->open();
+
          }
 
          free(sType);
@@ -170,7 +162,7 @@ void CxLauncher::start_all_logdev()
 // start uso processors
 void CxLauncher::startUsoProcessors()
 {
-   pCxLogDeviceManager pLogDeviceManager = CxLogDeviceManager::getInstance();
+   pCxLogDeviceManager pLogDeviceMan = CxLogDeviceManager::getInstance();
 
    for( uint8_t itr = 0; itr < ProcessorList.count(); itr++ )
    {
@@ -178,7 +170,7 @@ void CxLauncher::startUsoProcessors()
 
       for (uint8_t indx = 0; ; indx++)
       {
-         IxLogDevice *pLogDevice = pLogDeviceManager->get_logdev_by_number( indx );
+         IxLogDevice *pLogDevice = pLogDeviceMan->get_logdev_by_number( indx );
 
          if ((pLogDevice != 0) && (0 != pPrc))
          {
@@ -227,18 +219,15 @@ void CxLauncher::close_activities()
       }
    }
    // here will be deleted not only InterfaceManager, will be deleted all interfaces
-   pCxInterfaceManager pInterfaceManager = CxInterfaceManager::getInstance();
-   pInterfaceManager->delInstance();
+   pCxInterfaceManager pInterfaceMan = CxInterfaceManager::getInstance();
+   pInterfaceMan->delInstance();
 
    // here will be deleted not only LogDeviceManager, will be deleted all logical devices
-   pCxLogDeviceManager pLogDeviceManager = CxLogDeviceManager::getInstance();
-   pLogDeviceManager->delInstance();
+   pCxLogDeviceManager pLogDeviceMan = CxLogDeviceManager::getInstance();
+   pLogDeviceMan->delInstance();
 
    pTCxEventDispatcher pEventDispatcher = CxEventDispatcher::getInstance();
    pEventDispatcher->delInstance();
-
-   pTCxDebugBase pDebugBase = CxDebugBase::getInstance();
-   pDebugBase->delInstance();
 
    pTCxStaticPool pStaticPool = CxStaticPool::getInstance();
    pStaticPool->delInstance();
@@ -257,7 +246,7 @@ CxLauncher::CxLauncher( const char* cgf_name ):
   ,IniFileParser     ( )
   ,ProcessorList     ( 5 )
 {
-   strncpy_m ( cgfname, const_cast<char*>(cgf_name), sizeof(cgfname) );
+   strncpy( cgfname, const_cast<char*>(cgf_name), sizeof(cgfname) );
 
    // set notification for data server
    setNotification( event_pool::EVENT_DATA_CONNECTED );

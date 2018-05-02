@@ -6,11 +6,11 @@
 #include <string.h>
 #include <iostream>
 //------------------------------------------------------------------------------
-#include "slog.h"
-#include "utils.h"
-#include "USODefinition.h"
-#include "CxLogDev_ExtMod.h"
-#include "CxInterfaceManager.h"
+#include "common/slog.h"
+#include "interface/CxInterfaceManager.h"
+
+#include "uso/USODefinition.h"
+#include "uso/CxLogDev_ExtMod.h"
 //------------------------------------------------------------------------------
 
 #define retry_comm_count   3
@@ -300,7 +300,7 @@ bool CxLogDev_ExtMod::setApointToLong ( const TLinkedReg* pLinkedReg )
       uint16_t mbrequest[5];
       TAPOINT & a_point = dataProvider.getAPoint( pLinkedReg->NPoint );
 
-      *((long*)mbrequest) = a_point.value;
+      memcpy(reinterpret_cast<char*>(mbrequest), reinterpret_cast<char*>(&a_point.value), sizeof(a_point.value));
       mbrequest[0] = ConvertMBint(mbrequest[0]);
       mbrequest[1] = ConvertMBint(mbrequest[1]);
 

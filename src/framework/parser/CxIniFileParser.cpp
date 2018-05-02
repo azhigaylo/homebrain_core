@@ -8,17 +8,17 @@
 #include <fcntl.h>
 #include <unistd.h>
 //------------------------------------------------------------------------------
-#include "slog.h"
-#include "utils.h"
-#include "CxIniFileParser.h"
+#include "common/slog.h"
+#include "common/utils.h"
+#include "parser/CxIniFileParser.h"
 
 //------------------------------------------------------------------------------
 //-----------------------CREATE INI FILE PARSER---------------------------------
 //------------------------------------------------------------------------------
 
 CxIniFileParser::CxIniFileParser():
-  stateFSM(ST_LOOK_SECTION_START),
-  index(0)
+   index(0)
+  ,stateFSM(ST_LOOK_SECTION_START)
 {
 
 }
@@ -28,9 +28,9 @@ CxIniFileParser::~CxIniFileParser()
 
 }
 
-bool CxIniFileParser::ParseBuffer(const char *pBuff, uint32_t dwLen)
+bool CxIniFileParser::ParseBuffer(const char *pBuff, int32_t dwLen)
 {
-   for(uint32_t i = 0; i < dwLen; i++)
+   for(int32_t i = 0; i < dwLen; i++)
    {
      if( true == ProcessData(pBuff[i]) ) return true;
    }
@@ -138,16 +138,16 @@ bool CxIniFileParser::ProcessData(uint8_t btData)
    return false;
 }
 
-void CxIniFileParser::SetEtalonSection( const char* section )
+void CxIniFileParser::SetEtalonSection( const char* sect )
 {
-  memset_m( etalonSection, 0, SECLENGTH, SECLENGTH );
-  memcpy_m( etalonSection, section, strlen_m(section, SECLENGTH), SECLENGTH );
+  memset( etalonSection, 0, SECLENGTH );
+  memcpy( etalonSection, sect, strnlen(sect, SECLENGTH) );
 }
 
-void CxIniFileParser::SetEtalonKey( const char* key )
+void CxIniFileParser::SetEtalonKey( const char* k )
 {
-  memset_m( etalonKey, 0, KEYLENGTH, KEYLENGTH );
-  memcpy_m( etalonKey, key, strlen_m(key, KEYLENGTH), KEYLENGTH );
+  memset( etalonKey, 0, KEYLENGTH );
+  memcpy( etalonKey, k, strnlen(k, KEYLENGTH) );
 }
 
 bool CxIniFileParser::isItEtalonSection()
@@ -164,21 +164,21 @@ bool CxIniFileParser::isItEtalonKey()
 
 //------------------------------------------------------------------------------
 
-bool CxIniFileParser::ReadBool( const char *IniFileName, const char*section, const char*id, bool defoult )
+bool CxIniFileParser::ReadBool( const char *IniFileName, const char*sect, const char*id, bool defoult )
 {
-   uint16_t read_length = true;
+   int32_t read_length = true;
    bool result = defoult;
 
    int ID = open( IniFileName, O_RDONLY );
 
    if( -1 != ID )
    {
-      SetEtalonSection(section);
+      SetEtalonSection(sect);
       SetEtalonKey(id);
 
       while( 0 != read_length )
       {
-         if ( (read_length = read( ID, tmp_ini_buf, INI_BUF_SIZE )) == -1)
+         if ( (read_length = static_cast<uint32_t>(read( ID, tmp_ini_buf, INI_BUF_SIZE ))) == -1)
          {
             printError("CxIniFileParser/%s: read inifile error happened ", __FUNCTION__);
             break;
@@ -199,21 +199,21 @@ bool CxIniFileParser::ReadBool( const char *IniFileName, const char*section, con
    return result;
 }
 
-int32_t CxIniFileParser::ReadInt( const char *IniFileName, const char*section, const char*id, int32_t defoult )
+int32_t CxIniFileParser::ReadInt( const char *IniFileName, const char*sect, const char*id, int32_t defoult )
 {
-   uint16_t read_length = true;
+   int32_t read_length = true;
    int32_t  result = defoult;
 
    int ID = open( IniFileName, O_RDONLY );
 
    if( -1 != ID )
    {
-      SetEtalonSection(section);
+      SetEtalonSection(sect);
       SetEtalonKey(id);
 
       while( 0 != read_length )
       {
-         if ( (read_length = read( ID, tmp_ini_buf, INI_BUF_SIZE )) == -1)
+         if ( (read_length = static_cast<uint32_t>(read( ID, tmp_ini_buf, INI_BUF_SIZE ))) == -1)
          {
             printError("CxIniFileParser/%s: read inifile error happened ", __FUNCTION__);
             break;
@@ -235,21 +235,21 @@ int32_t CxIniFileParser::ReadInt( const char *IniFileName, const char*section, c
    return result;
 }
 
-float CxIniFileParser::ReadFloat( const char *IniFileName, const char*section, const char*id, float defoult )
+float CxIniFileParser::ReadFloat( const char *IniFileName, const char*sect, const char*id, float defoult )
 {
-   uint16_t read_length = true;
+   int32_t read_length = true;
    float result = defoult;
 
    int ID = open( IniFileName, O_RDONLY );
 
    if( -1 != ID )
    {
-      SetEtalonSection(section);
+      SetEtalonSection(sect);
       SetEtalonKey(id);
 
       while( 0 != read_length )
       {
-         if ( (read_length = read( ID, tmp_ini_buf, INI_BUF_SIZE )) == -1)
+         if ( (read_length = static_cast<uint32_t>(read( ID, tmp_ini_buf, INI_BUF_SIZE ))) == -1)
          {
             printError("CxIniFileParser/%s: read inifile error happened ", __FUNCTION__);
             break;
@@ -271,21 +271,21 @@ float CxIniFileParser::ReadFloat( const char *IniFileName, const char*section, c
    return result;
 }
 
-char* CxIniFileParser::ReadString( const char *IniFileName, const char*section, const char*id )
+char* CxIniFileParser::ReadString( const char *IniFileName, const char*sect, const char*id )
 {
-   uint16_t read_length = true;
+   int32_t read_length = true;
    char* result = NULL;
 
    int ID = open( IniFileName, O_RDONLY );
 
    if( -1 != ID )
    {
-      SetEtalonSection(section);
+      SetEtalonSection(sect);
       SetEtalonKey(id);
 
       while( 0 != read_length )
       {
-         if ( (read_length = read( ID, tmp_ini_buf, INI_BUF_SIZE )) == -1)
+         if ( (read_length = static_cast<uint32_t>(read( ID, tmp_ini_buf, INI_BUF_SIZE ))) == -1)
          {
             printError("CxIniFileParser/%s: read inifile error happened ", __FUNCTION__);
             break;

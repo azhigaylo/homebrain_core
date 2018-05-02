@@ -6,11 +6,12 @@
 #include <string.h>
 #include <iostream>
 //------------------------------------------------------------------------------
-#include "slog.h"
-#include "utils.h"
-#include "USODefinition.h"
-#include "CxLogDev_MA16.h"
-#include "CxInterfaceManager.h"
+#include "common/slog.h"
+#include "interface/CxInterfaceManager.h"
+
+#include "uso/USODefinition.h"
+#include "uso/CxLogDev_MA16.h"
+
 //------------------------------------------------------------------------------
 
 #define retry_comm_count   3
@@ -110,7 +111,7 @@ bool CxLogDev_MA::CheckAndSetOutput()
                   {
                     TAPOINT & a_point = dataProvider.getAPoint( pCurCh->ValPointNumb );
 
-                    if (true == pModBusMaster->SetRegister( dev_settings.address, i, a_point.value ))
+                    if (true == pModBusMaster->SetRegister( dev_settings.address, i, static_cast<uint16_t>(a_point.value) ))
                     {
                        dataProvider.setAStatus( pCurCh->ValPointNumb, STATUS_PROCESSED );
                        result = true;
@@ -268,17 +269,17 @@ void CxLogDev_MA::ConvAiToVal()
       {
          switch (pCurCh->Type)
          {
-            case ATYPE_AI_20mA     : {pCurCh->MidValue = pCurCh->Code * AI_4_20;   break;}
-            case ATYPE_AI_20mA_Z   : {pCurCh->MidValue = pCurCh->Code * AI_4_20_Z; break;}
-            case ATYPE_AI_5mA      : {pCurCh->MidValue = pCurCh->Code * AI_0_5;    break;}
-            case ATYPE_AI_pm10V    : {pCurCh->MidValue = pCurCh->Code * AI_10_10 - 6.6666;   break;}
-            case ATYPE_AI_01V      : {pCurCh->MidValue = pCurCh->Code * AI_0_01;   break;}
-            case ATYPE_AI_36V      : {pCurCh->MidValue = pCurCh->Code * AI_0_36;   break;}
-            case ATYPE_AI_120V     : {pCurCh->MidValue = pCurCh->Code * AI_0_120;  break;}
-            case ATYPE_AI_D300V    : {pCurCh->MidValue = pCurCh->Code * AI_DC_300; break;}
-            case ATYPE_AI_TCM100   : {pCurCh->MidValue = pCurCh->Code * AI_TCP100 + 1.854;   break;}
-            case ATYPE_AI_TCP100_A : {pCurCh->MidValue = pCurCh->Code * AI_TCP100_A + 1.854; break;}
-            case ATYPE_AI_A300V    : {pCurCh->MidValue = pCurCh->Code * AI_AC_300; break;}
+            case ATYPE_AI_20mA     : {pCurCh->MidValue = static_cast<float>(pCurCh->Code * AI_4_20);   break;}
+            case ATYPE_AI_20mA_Z   : {pCurCh->MidValue = static_cast<float>(pCurCh->Code * AI_4_20_Z); break;}
+            case ATYPE_AI_5mA      : {pCurCh->MidValue = static_cast<float>(pCurCh->Code * AI_0_5);    break;}
+            case ATYPE_AI_pm10V    : {pCurCh->MidValue = static_cast<float>(pCurCh->Code * AI_10_10 - 6.6666);   break;}
+            case ATYPE_AI_01V      : {pCurCh->MidValue = static_cast<float>(pCurCh->Code * AI_0_01);   break;}
+            case ATYPE_AI_36V      : {pCurCh->MidValue = static_cast<float>(pCurCh->Code * AI_0_36);   break;}
+            case ATYPE_AI_120V     : {pCurCh->MidValue = static_cast<float>(pCurCh->Code * AI_0_120);  break;}
+            case ATYPE_AI_D300V    : {pCurCh->MidValue = static_cast<float>(pCurCh->Code * AI_DC_300); break;}
+            case ATYPE_AI_TCM100   : {pCurCh->MidValue = static_cast<float>(pCurCh->Code * AI_TCP100 + 1.854);   break;}
+            case ATYPE_AI_TCP100_A : {pCurCh->MidValue = static_cast<float>(pCurCh->Code * AI_TCP100_A + 1.854); break;}
+            case ATYPE_AI_A300V    : {pCurCh->MidValue = static_cast<float>(pCurCh->Code * AI_AC_300); break;}
             default                : {break;}
          }
 
@@ -320,17 +321,17 @@ void CxLogDev_MA::ConvAiToParam()
       {
          switch (pCurCh->Type)
          {
-            case ATYPE_AI_20mA     : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/(pCurCh->MaxMid - pCurCh->MinMid))*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;  break;}
-            case ATYPE_AI_20mA_Z   : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/(pCurCh->MaxMid - pCurCh->MinMid))*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;  break;}
-            case ATYPE_AI_5mA      : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/5)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;    break;}
-            case ATYPE_AI_pm10V    : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/20)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal*2; break;}
-            case ATYPE_AI_01V      : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/0.1)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;  break;}
-            case ATYPE_AI_36V      : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/36)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;   break;}
-            case ATYPE_AI_120V     : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/120)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;  break;}
-            case ATYPE_AI_D300V    : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/300)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;  break;}
-            case ATYPE_AI_A300V    : { pCurCh->PhisValue = ((pCurCh->MidValue - pCurCh->MinMid)/300)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal;  break;}
-            case ATYPE_AI_TCM100   : { pCurCh->PhisValue = K - (float)sqrt(K2 + (float)(pCurCh->MidValue/R0-1.0)/B); break;}
-            case ATYPE_AI_TCP100_A : { pCurCh->PhisValue = K - (float)sqrt(K2 + (float)(pCurCh->MidValue/R0-1.0)/B); break;}
+            case ATYPE_AI_20mA     : { pCurCh->PhisValue = static_cast<float>(((pCurCh->MidValue - pCurCh->MinMid)/(pCurCh->MaxMid - pCurCh->MinMid))*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal);  break;}
+            case ATYPE_AI_20mA_Z   : { pCurCh->PhisValue = static_cast<float>(((pCurCh->MidValue - pCurCh->MinMid)/(pCurCh->MaxMid - pCurCh->MinMid))*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal);  break;}
+            case ATYPE_AI_5mA      : { pCurCh->PhisValue = static_cast<float>(((pCurCh->MidValue - pCurCh->MinMid)/5)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal);    break;}
+            case ATYPE_AI_pm10V    : { pCurCh->PhisValue = static_cast<float>(((pCurCh->MidValue - pCurCh->MinMid)/20)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal*2); break;}
+            case ATYPE_AI_01V      : { pCurCh->PhisValue = static_cast<float>(((pCurCh->MidValue - pCurCh->MinMid)/0.1)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal);  break;}
+            case ATYPE_AI_36V      : { pCurCh->PhisValue = static_cast<float>(((pCurCh->MidValue - pCurCh->MinMid)/36)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal);   break;}
+            case ATYPE_AI_120V     : { pCurCh->PhisValue = static_cast<float>(((pCurCh->MidValue - pCurCh->MinMid)/120)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal);  break;}
+            case ATYPE_AI_D300V    : { pCurCh->PhisValue = static_cast<float>(((pCurCh->MidValue - pCurCh->MinMid)/300)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal);  break;}
+            case ATYPE_AI_A300V    : { pCurCh->PhisValue = static_cast<float>(((pCurCh->MidValue - pCurCh->MinMid)/300)*(pCurCh->MaxVal - pCurCh->MinVal) + pCurCh->MinVal);  break;}
+            case ATYPE_AI_TCM100   : { pCurCh->PhisValue = static_cast<float>(K - (float)sqrt(K2 + (float)(pCurCh->MidValue/R0-1.0)/B)); break;}
+            case ATYPE_AI_TCP100_A : { pCurCh->PhisValue = static_cast<float>(K - (float)sqrt(K2 + (float)(pCurCh->MidValue/R0-1.0)/B)); break;}
             default                : { break; }
          }
 
