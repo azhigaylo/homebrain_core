@@ -85,7 +85,7 @@ bool CxQueue::send( const void *pItemToQueue, int32_t msg_size )
    return result;
 }
 
-bool CxQueue::timedSend( const void *pItemToQueue, int32_t msg_size, int64_t time )
+bool CxQueue::timedSend( const void *pItemToQueue, int32_t msg_size, int32_t time )
 {
    bool result = false;
    const timespec abs_timeout = {(time/1000000000), (time % 1000000000)};

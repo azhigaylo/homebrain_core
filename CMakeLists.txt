@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7.2)
+cmake_minimum_required(VERSION 3.4.0)
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
@@ -35,7 +35,6 @@ if(CMAKE_COMPILER_IS_GNUCXX)
     enable_cxx_compiler_flag_if_supported(-Werror=shadow)
     enable_cxx_compiler_flag_if_supported(-Werror=cast-align)
     enable_cxx_compiler_flag_if_supported(-Werror=write-strings)
-    enable_cxx_compiler_flag_if_supported(-Werror=conversion)
     enable_cxx_compiler_flag_if_supported(-Werror=inconsistent-missing-override)
 else()
     message(FATAL_ERROR "not supported compiler '${CMAKE_CXX_COMPILER_ID}' ")

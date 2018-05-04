@@ -43,9 +43,9 @@ void IxDriver::task_run( )
 }
 //------------------------------------------------------------------------------
 
-uint64_t IxDriver::get_time()
+int64_t IxDriver::get_time()
 {
-   return static_cast<uint64_t>(difftime(time(NULL), startTime));
+   return static_cast<int64_t>(difftime(time(NULL), startTime));
 }
 
 //------------------------------------------------------------------------------

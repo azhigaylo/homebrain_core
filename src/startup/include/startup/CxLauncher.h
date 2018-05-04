@@ -90,8 +90,6 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
 
       virtual bool processEvent( pTEvent pEvent );     // form IxEventConsumer
 
-      //static void sigHandler( int sig );
-
       // work with scheduler
       void scheduler_start(){}                         // only for RTOS
       void scheduler_stop(){}                          // only for RTOS

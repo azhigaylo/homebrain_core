@@ -4,6 +4,9 @@
 //------------------------------------------------------------------------------
 #include <signal.h>
 #include <time.h>
+
+#include "common/ptypes.h"
+#include "common/utils.h"
 //------------------------------------------------------------------------------
 
 #define configMAX_TIMER_NAME_LEN 50
@@ -17,7 +20,7 @@ class CxSysTimer         // class of virtual timer's
 {
   public:
 
-    CxSysTimer( const char *name, uint64_t period, bool cyclic );
+    CxSysTimer( const char *name, int64_t period, bool cyclic );
     ~CxSysTimer();
 
     void StartTimer();        // start timer

@@ -77,7 +77,7 @@ bool CxInterfaceManager::set_interface( IxInterface * pNewInterface )
 
    printDebug("CxInterfaceManager/%s: Interface = %s registred ", __FUNCTION__, pNewInterface->getInterfaceName());
 
-  return result;
+   return result;
 }
 
 IxInterface *CxInterfaceManager::get_interface( const char *name )
@@ -87,13 +87,13 @@ IxInterface *CxInterfaceManager::get_interface( const char *name )
    for( uint8_t itr = 0; itr < CONNECTION_LIST.count(); itr++ )
    {
       pIxInterface pInterface = CONNECTION_LIST[itr].pInterface;
-
+ 
       if (pInterface != 0)
       {
          const char *nameInterf = pInterface->getInterfaceName();
 
          if( 0 == strcmp( name, nameInterf ) )
-         {
+         { 
            return pInterface;
          }
       }

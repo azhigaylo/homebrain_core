@@ -30,7 +30,7 @@ CxLogDev_MA::CxLogDev_MA( const char *logDevName, const char *usedInterface, TAI
    pIxInterface pInterface = pInterfaceManager->get_interface( usedInterface );
    pModBusMaster = dynamic_cast<CxModBusMaster*>(pInterface);
 
-   printDebug("CxLogDev_MA/%s: pModBusMaster=%i", __FUNCTION__, pModBusMaster);
+   printDebug("CxLogDev_MA/%s: pModBusMaster=0x%lx", __FUNCTION__, pModBusMaster);
 }
 
 CxLogDev_MA::~CxLogDev_MA()

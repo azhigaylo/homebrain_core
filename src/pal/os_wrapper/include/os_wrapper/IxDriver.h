@@ -40,13 +40,13 @@ class IxDriver
     void task_run();
 
     // get time in s from thread start
-    uint64_t get_time();
+    int64_t get_time();
 
   protected:
 
     virtual void CommandProcessor( uint16_t ComID, void *data ) = 0;
     virtual void ThreadProcessor ( );
-	 void sendMsg( uint16_t ComID, void *data );
+	  void sendMsg( uint16_t ComID, void *data );
 
     // we hide it because everybody should inherit it !
     IxDriver( const char *pcName );

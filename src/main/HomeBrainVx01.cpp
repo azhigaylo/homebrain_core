@@ -15,6 +15,8 @@ CxLauncher *pLauncher = 0;
 
 void mainSigHandler( int /*sig*/ )
 {
+	printWarning("MAIN/%s: exit request detected...", __FUNCTION__);
+
    if (0 != pLauncher)
    {
       delete pLauncher;

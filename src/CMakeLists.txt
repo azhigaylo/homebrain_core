@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7.2)
+cmake_minimum_required(VERSION 3.4.0)
 
 add_subdirectory(driver)
 add_subdirectory(framework)
@@ -6,7 +6,7 @@ add_subdirectory(pal)
 add_subdirectory(project)
 add_subdirectory(startup)
 
-find_package(Boost REQUIRED)
+#find_package()
 
 add_executable(${PROJECT_NAME}
     ${CMAKE_CURRENT_SOURCE_DIR}/main/HomeBrainVx01.cpp

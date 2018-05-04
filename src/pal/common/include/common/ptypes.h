@@ -1,6 +1,8 @@
 #ifndef _PTYPES_H
 #define _PTYPES_H
 
+#include <sys/types.h>
+
 #ifndef int8_t
    typedef signed char        int8_t;
 #endif
@@ -26,11 +28,7 @@
 #endif
 
 #ifndef int64_t
-   typedef long int           int64_t;
-#endif
-
-#ifndef uint64_t
-   typedef unsigned long int uint64_t;
+   //typedef long int           int64_t;
 #endif
 
 #endif /* _PTYPES_H */

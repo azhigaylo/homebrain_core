@@ -29,6 +29,9 @@ CxUsoProcessor::~CxUsoProcessor( )
    {
       free( sUsedInterface );
    }
+
+   // delete my own task
+   task_delete( );
 }
 
 //------------------------------------------------------------------------------
@@ -83,7 +86,8 @@ void CxUsoProcessor::TaskProcessor()
       }
 
       // there was situation where CPU was loaded by this process
-      // because in situation when we have communication error with all uso modules on this port cpu was not locked on the communication task
+      // because in situation when we have communication error with
+      // all uso modules on this port cpu was not locked on the communication task
       if (errCounter == LOGDEV_LIST.count())
       {
          sleep_mcs(200000);

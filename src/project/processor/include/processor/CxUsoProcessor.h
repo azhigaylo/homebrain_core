@@ -27,7 +27,6 @@ class CxUsoProcessor : public IxRunnable
 
       virtual void TaskProcessor();
 
-
    private:
 
       char *sUsedInterface;

@@ -23,12 +23,13 @@ class IxRunnable
   protected:
 
     // get time in s from thread start
-    uint64_t get_time();
+    int64_t get_time();
 
     char pcTaskName[configMAX_TASK_NAME_LEN];
 
     pthread_t thread;
     time_t    start_time;
+    bool      interrupt;
 
     // we hide it because everybody should inherit it !
     IxRunnable( const char *pcName );

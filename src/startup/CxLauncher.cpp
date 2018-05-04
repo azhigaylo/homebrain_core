@@ -38,9 +38,9 @@ void CxLauncher::load_driver( const char *sDrvName )
       dcb.BaudRate = IniFileParser.ReadInt( cgfname, sDrvName, "baudrate", 115200 );
       dcb.Parity   = static_cast<uint8_t>(IniFileParser.ReadInt( cgfname, sDrvName, "parity", 0 ));
 
-      printDebug("CxLauncher/%s: %s name = %s", __FUNCTION__, sDrvName, serialName);
-      printDebug("CxLauncher/%s: %s path = %s", __FUNCTION__, sDrvName, serialPath);
-      printDebug("CxLauncher/%s: %s baudrate = %d", __FUNCTION__, sDrvName, dcb.BaudRate);
+      printDebug("CxLauncher::%s: %s name = %s", __FUNCTION__, sDrvName, serialName);
+      printDebug("CxLauncher::%s: %s path = %s", __FUNCTION__, sDrvName, serialPath);
+      printDebug("CxLauncher::%s: %s baudrate = %d", __FUNCTION__, sDrvName, dcb.BaudRate);
 
       CxSerialDriver *pDriver = new CxSerialDriver( serialName, serialPath, &dcb );
       pDriver->task_run();
@@ -60,7 +60,7 @@ void CxLauncher::load_all_drivers()
       do
       {
          load_driver( sDriverItem );
-         printDebug("CxLauncher/%s: sDriverItem = %s", __FUNCTION__, sDriverItem);
+         printDebug("CxLauncher::%s: sDriverItem = %s", __FUNCTION__, sDriverItem);
          sDriverItem = strsep(&sDrivers, " ");
       }
       while( NULL != sDriverItem );
@@ -88,7 +88,7 @@ void CxLauncher::start_sys_interface( const char *sIntName )
          char* sDriver = IniFileParser.ReadString( cgfname, const_cast<char*>(sIntName), "driver" );
          sDriver = strdup(sDriver);
 
-         printDebug("CxLauncher/%s: %s =  %s/%s/%s", __FUNCTION__, sIntName, sType, sName, sDriver);
+         printDebug("CxLauncher::%s: %s =  %s/%s/%s", __FUNCTION__, sIntName, sType, sName, sDriver);
 
          // MB_MASTER interfaces
          if( 0 == strcmp(sType, "mb_master"))
@@ -216,6 +216,7 @@ void CxLauncher::close_activities()
       if( NULL != pPrc )
       {
          delete pPrc;
+         pPrc = NULL;
       }
    }
    // here will be deleted not only InterfaceManager, will be deleted all interfaces
@@ -283,34 +284,23 @@ void CxLauncher::TaskProcessor()
       }
       case ST_L_DRIVERS_START :
       {
-         printDebug("CxLauncher/%s: System startup...", __FUNCTION__);
+         printDebug("CxLauncher::%s: start all drivers...", __FUNCTION__);
          load_all_drivers( );                                                    // load all drivers
          LauncherState = ST_L_SYS_THREAD_START;                                  // put in next state
          break;
       }
       case ST_L_SYS_THREAD_START :
       {
-         printDebug("CxLauncher/%s: create all instances of classes...", __FUNCTION__);
+         printDebug("CxLauncher::%s: start all interfaces...", __FUNCTION__);
          start_all_interface();
-         LauncherState = ST_L_SYS_WAIT_CONNECTION;                                // put in next state
-         break;
-      }
-      case ST_L_SYS_WAIT_CONNECTION:
-      {
-         if( bDataConnectReady == true )
-         {
-            LauncherState = ST_L_LOG_DEVICE_START;                                // put in next state
-         }
-         else
-         {
-            sleep_mcs(10);
-         }
+         LauncherState = ST_L_LOG_DEVICE_START;                                // put in next state
          break;
       }
       case ST_L_LOG_DEVICE_START :
       {
-         printDebug("CxLauncher/%s: start all interface and logical device...", __FUNCTION__);
+         printDebug("CxLauncher::%s: start all logical devices...", __FUNCTION__);
          start_all_logdev();
+         printDebug("CxLauncher::%s: start uso processing...", __FUNCTION__);
          startUsoProcessors();
 
          LauncherState = ST_L_NORMAL_WORK;                                             // put in next state
@@ -331,7 +321,7 @@ bool CxLauncher::processEvent( pTEvent pEvent )
    // value event processing
    if( pEvent->eventType == event_pool::EVENT_DATA_CONNECTED )
    {
-      printDebug("CxLauncher/%s: CxLauncher DataConnectReady received", __FUNCTION__);
+      printDebug("CxLauncher::%s: CxLauncher DataConnectReady received", __FUNCTION__);
       bDataConnectReady = true;
       return true;
    }

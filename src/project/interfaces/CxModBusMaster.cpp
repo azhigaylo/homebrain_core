@@ -67,7 +67,7 @@ uint16_t CxModBusMaster::GetRegister( uint8_t address, uint16_t reg_start, uint1
       {
          memcpy( pResponce, mbResponce.OutputBuf, sizeResponce );
       }
-      reg_num = mbResponce.Header.counter / (uint8_t)(sizeof(uint16_t));
+      reg_num = static_cast<uint8_t>(mbResponce.Header.counter / (uint8_t)(sizeof(uint16_t)));
    }
 
    return reg_num;

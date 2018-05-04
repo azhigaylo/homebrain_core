@@ -14,7 +14,7 @@
 uint32_t CxSysTimer::timer_sigID = SIGRTMIN;
 //------------------------------------------------------------------------------
 
-CxSysTimer::CxSysTimer( const char *name, uint64_t period, bool cyclic ):
+CxSysTimer::CxSysTimer( const char *name, int64_t period, bool cyclic ):
      expCount( 0 )
    , timerid ( 0 )
 {

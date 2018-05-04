@@ -29,7 +29,7 @@ CxLogDev_ExtMod::CxLogDev_ExtMod( const char *logDevName, const char *usedInterf
    pIxInterface pInterface = pInterfaceManager->get_interface( usedInterface );
    pModBusMaster = dynamic_cast<CxModBusMaster*>(pInterface);
 
-   printDebug("CxLogDev_ExtMod/%s: pModBusMaster=%i", __FUNCTION__, pModBusMaster);
+   printDebug("CxLogDev_ExtMod/%s: pModBusMaster=0x%lx", __FUNCTION__, pModBusMaster);
 }
 
 CxLogDev_ExtMod::~CxLogDev_ExtMod()

@@ -20,7 +20,7 @@ class CxQueue
     ~CxQueue();
 
     bool send       (const void *pItemToQueue, int32_t msg_size);
-    bool timedSend  (const void *pItemToQueue, int32_t msg_size, int64_t time);
+    bool timedSend  (const void *pItemToQueue, int32_t msg_size, int32_t time);
     int32_t receive (void *pItemFromQueue, int32_t msg_size);
     int32_t occupancy( );
 

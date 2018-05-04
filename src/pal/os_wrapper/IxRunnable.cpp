@@ -17,6 +17,7 @@ using namespace std;
 IxRunnable::IxRunnable( const char *pcName ):
     thread( 0 )
    ,start_time(time(NULL))
+   ,interrupt(false)
 {
    strncpy( pcTaskName, const_cast<char*>(pcName), configMAX_TASK_NAME_LEN );
 }
@@ -43,17 +44,15 @@ void IxRunnable::task_delete( )
 {
    if (thread != 0)
    {
-      pthread_cancel(thread);
+	  interrupt = true;
 
       pthread_join(thread, NULL);
-
-      printDebug("IxRunnable/%s: thread=%s deleted", __FUNCTION__, pcTaskName);
    }
 }
 
-uint64_t IxRunnable::get_time()
+int64_t IxRunnable::get_time()
 {
-   return static_cast<uint64_t>(difftime(time(NULL), start_time));
+   return static_cast<int64_t>(difftime(time(NULL), start_time));
 }
 
 int32_t IxRunnable::create_thread( )
@@ -65,14 +64,14 @@ int32_t IxRunnable::create_thread( )
    int s = pthread_attr_setstacksize(&attr, 1048576);
    if (s != 0)
    {
-      printError("IxRunnable/%s: thread=%s pthread_attr_setstacksize error!!!", __FUNCTION__, pcTaskName);
+      printError("IxRunnable::%s: thread=%s pthread_attr_setstacksize error!!!", __FUNCTION__, pcTaskName);
    }
 
    task_result = pthread_create(&thread, &attr, thRunnableFunction, this);
 
    if (task_result != 0)
    {
-      printError("IxRunnable/%s: thread=%s error!!!", __FUNCTION__, pcTaskName);
+      printError("IxRunnable::%s: thread=%s error!!!", __FUNCTION__, pcTaskName);
    }
    else
    {
@@ -90,15 +89,15 @@ void * IxRunnable::thRunnableFunction( void *args )
 
 void IxRunnable::run()
 {
-  while(true)
+  while(!interrupt)
   {
     TaskProcessor();
   }
+  printError("IxRunnable::%s: thread=%s was finished...", __FUNCTION__, pcTaskName);
 }
 
 void IxRunnable::TaskProcessor()
 {
    thread = 0;
-   printError("IxRunnable/%s: thread=%s not implemented, EXIT!!!", __FUNCTION__, pcTaskName);
-   pthread_exit(0);
+   printError("IxRunnable::%s: thread=%s not implemented, EXIT!!!", __FUNCTION__, pcTaskName);
 }
