@@ -19,6 +19,7 @@ CxThreadIO::CxThreadIO(  const char *taskName,  const char *drvName ):
   ,outQueue      ( strcat(strncpy( pcDrvName, const_cast<char*>(drvName), sizeof(pcDrvName) ), "_in"),  10, sizeof(TCommand), true )
   ,initAttempt   ( 0 )
   ,threadIOState ( ST_IO_UNKNOWN )
+  ,interrupt_comm( false )
 {
    strncpy( pcDrvName, const_cast<char*>(drvName), sizeof(pcDrvName) );
    strcat(strncpy( pcCommThreadName, const_cast<char*>(taskName), sizeof(pcCommThreadName) ), "_com");
@@ -99,21 +100,20 @@ void *CxThreadIO::thRunnableCommFunction_ThreadIO( void *args )
 
 void CxThreadIO::run_comm()
 {
-  while(true)
+  while(false == interrupt_comm)
   {
     CheckDrvCommand();
   }
+  printDebug("CxThreadIO/%s: thread=%s was finished", __FUNCTION__, pcCommThreadName);
 }
 
 void CxThreadIO::comm_task_delete( )
 {
    if (commThreadID != 0)
    {
-      pthread_cancel(commThreadID);
+      interrupt_comm = true;
 
-      pthread_join(thread, NULL);
-
-      printDebug("CxThreadIO/%s: thread=%s deleted", __FUNCTION__, pcCommThreadName);
+      pthread_join(commThreadID, NULL);
    }
 }
 

@@ -29,18 +29,14 @@ CxStaticPool *CxStaticPool::getInstance()
       }
    }
 
-   return theInstance;
+   return CxStaticPool::theInstance;
 }
 
 void CxStaticPool::delInstance()
 {
    if(CxStaticPool::theInstance != 0)
    {
-      sRecNumb = 0;
-      pHead    = 0;
-      memset( staticpool, 0, configSTATICPOOL_SIZE );
-
-      delete this;
+      delete CxStaticPool::theInstance;
    }
 }
 

@@ -98,6 +98,6 @@ void IxRunnable::run()
 
 void IxRunnable::TaskProcessor()
 {
-   thread = 0;
    printError("IxRunnable::%s: thread=%s not implemented, EXIT!!!", __FUNCTION__, pcTaskName);
+   pthread_exit(0);
 }

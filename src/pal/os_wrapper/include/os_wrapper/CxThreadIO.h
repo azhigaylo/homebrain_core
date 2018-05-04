@@ -60,6 +60,8 @@ class CxThreadIO : public IxRunnable
 
      TThreadIOState threadIOState;
 
+     bool     interrupt_comm;
+
      CxThreadIO( const CxThreadIO & );
      CxThreadIO & operator=( const CxThreadIO & );
 

@@ -84,6 +84,9 @@ class IxDriver
     char      pcDrvName[configMAX_DRIVER_NAME_LEN];
     char      pcCommThreadName[configMAX_DRIVER_NAME_LEN];
 
+    bool      interrupt_work;
+    bool      interrupt_comm;
+
  }; typedef IxDriver *pIxDriver;
 
 //------------------------------------------------------------------------------

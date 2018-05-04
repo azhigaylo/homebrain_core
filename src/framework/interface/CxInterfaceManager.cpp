@@ -25,13 +25,13 @@ CxInterfaceManager::CxInterfaceManager( ):
 
 CxInterfaceManager * CxInterfaceManager::getInstance( )
 {
-   if(theInstance == 0)
+   if(CxInterfaceManager::theInstance == 0)
    {
       CxMutexLocker locker(&CxInterfaceManager::singlInterfaceLock);
 
-      if(theInstance == 0)
+      if(CxInterfaceManager::theInstance == 0)
       {
-         theInstance = new CxInterfaceManager;
+          CxInterfaceManager::theInstance = new CxInterfaceManager;
       }
    }
 
@@ -42,22 +42,9 @@ void CxInterfaceManager::delInstance()
 {
    if(CxInterfaceManager::theInstance != 0)
    {
-      CxMutexLocker locker(&CxInterfaceManager::singlInterfaceLock);
-
-      for( uint8_t itr = 0; itr < CONNECTION_LIST.count(); itr++ )
-      {
-         pIxInterface pInterface = CONNECTION_LIST[itr].pInterface;
-
-         if (pInterface != 0)
-         {
-            printDebug("CxInterfaceManager/%s: try to remove interface = %s...", __FUNCTION__, pInterface->getInterfaceName());
-            delete pInterface;
-         }
-      }
-      // clean up list
-      CONNECTION_LIST.clear();
+       CxInterfaceManager::theInstance->clr_interface_list();
       // remove singleton item
-      delete this;
+      delete CxInterfaceManager::theInstance;
    }
 }
 
@@ -87,16 +74,34 @@ IxInterface *CxInterfaceManager::get_interface( const char *name )
    for( uint8_t itr = 0; itr < CONNECTION_LIST.count(); itr++ )
    {
       pIxInterface pInterface = CONNECTION_LIST[itr].pInterface;
- 
+
       if (pInterface != 0)
       {
          const char *nameInterf = pInterface->getInterfaceName();
 
          if( 0 == strcmp( name, nameInterf ) )
-         { 
+         {
            return pInterface;
          }
       }
    }
    return 0;
+}
+
+void CxInterfaceManager::clr_interface_list()
+{
+    CxMutexLocker locker(&CxInterfaceManager::singlInterfaceLock);
+
+    for( uint8_t itr = 0; itr < CONNECTION_LIST.count(); itr++ )
+    {
+       pIxInterface pInterface = CONNECTION_LIST[itr].pInterface;
+
+       if (pInterface != 0)
+       {
+          printDebug("CxInterfaceManager/%s: try to remove interface = %s...", __FUNCTION__, pInterface->getInterfaceName());
+          delete pInterface;
+       }
+    }
+    // clean up list
+    CONNECTION_LIST.clear();
 }

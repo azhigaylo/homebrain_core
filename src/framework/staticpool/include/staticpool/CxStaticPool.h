@@ -23,7 +23,7 @@ class CxStaticPool
    public:
 
       static CxStaticPool *getInstance();
-      void delInstance();
+      static void delInstance();
 
       void *pStaticMalloc( unsigned short xSize );
 

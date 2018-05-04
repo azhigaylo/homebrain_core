@@ -24,7 +24,7 @@ class CxInterfaceManager
    public:
 
       static CxInterfaceManager * getInstance();
-      void delInstance();
+      static void delInstance();
 
       bool set_interface( IxInterface * pNewInterface );
       IxInterface *get_interface( const char *name );
@@ -33,6 +33,8 @@ class CxInterfaceManager
 
       CxInterfaceManager( );
       ~CxInterfaceManager( ){}
+
+      void clr_interface_list();
 
       uint16_t interfaceCounter;
       CxList<TInterfaceItem> CONNECTION_LIST;

@@ -205,9 +205,6 @@ void CxLauncher::close_activities()
 {
    printDebug("HomeBrainVx01/%s: close_activities...", __FUNCTION__ );
 
-   // delete my own task
-   task_delete( );
-
    // close uso processors
    for( uint8_t itr = 0; itr < ProcessorList.count(); itr++ )
    {
@@ -219,6 +216,7 @@ void CxLauncher::close_activities()
          pPrc = NULL;
       }
    }
+
    // here will be deleted not only InterfaceManager, will be deleted all interfaces
    pCxInterfaceManager pInterfaceMan = CxInterfaceManager::getInstance();
    pInterfaceMan->delInstance();

@@ -25,7 +25,7 @@ class CxLogDeviceManager
  public:
 
    static CxLogDeviceManager * getInstance();
-   void delInstance();
+   static void delInstance();
 
    bool set_logdev( IxLogDevice * pLogDev );
    IxLogDevice *get_logdev( const char *name );
@@ -37,6 +37,8 @@ class CxLogDeviceManager
 
    CxLogDeviceManager( );
    ~CxLogDeviceManager(){}
+
+   void clr_logdev_list();
 
    CxVector<TLogDevListItem> LOGDEV_LIST;
    uint16_t logDevCounter;

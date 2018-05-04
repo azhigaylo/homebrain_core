@@ -30,24 +30,24 @@ CxEventDispatcher::CxEventDispatcher():
 
 CxEventDispatcher * CxEventDispatcher::getInstance( )
 {
-   if(theInstance == 0)
+   if(CxEventDispatcher::theInstance == 0)
    {
       CxMutexLocker locker(&CxEventDispatcher::singlEventLock);
 
-      if(theInstance == 0)
+      if(CxEventDispatcher::theInstance == 0)
       {
-         theInstance = new CxEventDispatcher();
+          CxEventDispatcher::theInstance = new CxEventDispatcher();
       }
    }
 
-  return theInstance;
+  return CxEventDispatcher::theInstance;
 }
 
 void CxEventDispatcher::delInstance()
 {
-   if(theInstance != 0)
+   if(CxEventDispatcher::theInstance != 0)
    {
-      delete theInstance;
+      delete CxEventDispatcher::theInstance;
    }
 }
 
@@ -81,11 +81,14 @@ bool CxEventDispatcher::setEvent( TEvent Event )
 
 TEvent CxEventDispatcher::getEvent()
 {
-   TEvent Event = { event_pool::EVENT_DUMMY, 0, NULL };
+   TEvent dummy_event = { event_pool::EVENT_DUMMY, 0, NULL };
+   TEvent       event = { event_pool::EVENT_DUMMY, 0, NULL };
 
-   EventPool.receive( &Event, sizeof(TEvent) );
-
-   return Event;
+   if (-1 != EventPool.receive( &event, sizeof(TEvent) ))
+   {
+       return event;
+   }
+   return dummy_event;
 }
 
 //------------------------------------------------------------------------------

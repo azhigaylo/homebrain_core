@@ -41,24 +41,9 @@ void CxLogDeviceManager::delInstance()
 {
    if(CxLogDeviceManager::theInstance != 0)
    {
-      if( logDevCounter == LOGDEV_LIST.count() )
-      {
-         CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
-
-         for( uint8_t itr = 0; itr < logDevCounter; itr++ )
-         {
-            IxLogDevice *pDevice = LOGDEV_LIST[itr].pLogDevice;
-            if( NULL != pDevice )
-            {
-               printDebug("CxLogDeviceManager/%s: try to remove LogDev = %s...", __FUNCTION__, pDevice->getDeviceName());
-               delete pDevice;
-            }
-         }
-      }
-      // clean up list
-      LOGDEV_LIST.clear();
+      CxLogDeviceManager::theInstance->clr_logdev_list();
       // remove singleton item
-      delete this;
+      delete CxLogDeviceManager::theInstance;
    }
 }
 
@@ -128,6 +113,26 @@ IxLogDevice *CxLogDeviceManager::get_logdev_by_number( uint16_t numb )
    }
 
   return 0;
+}
+
+void CxLogDeviceManager::clr_logdev_list()
+{
+  if( logDevCounter == LOGDEV_LIST.count() )
+  {
+     CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
+
+     for( uint8_t itr = 0; itr < logDevCounter; itr++ )
+     {
+        IxLogDevice *pDevice = LOGDEV_LIST[itr].pLogDevice;
+        if( NULL != pDevice )
+        {
+           printDebug("CxLogDeviceManager/%s: try to remove LogDev = %s...", __FUNCTION__, pDevice->getDeviceName());
+           delete pDevice;
+        }
+     }
+  }
+  // clean up list
+  LOGDEV_LIST.clear();
 }
 
 void CxLogDeviceManager::process_all( )

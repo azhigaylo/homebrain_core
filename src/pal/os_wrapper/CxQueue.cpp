@@ -103,7 +103,20 @@ int32_t CxQueue::receive( void *pItemFromQueue, int32_t msg_size )
 
   if( xQueue != -1 )
   {
-      bytes_read = static_cast<int32_t>(mq_receive(xQueue, reinterpret_cast<char*>(pItemFromQueue), msg_size, NULL));
+      fd_set fds;
+      FD_ZERO(&fds);
+      FD_SET(xQueue, &fds);
+
+      struct timeval tv;
+      tv.tv_sec = 1;
+      tv.tv_usec = 0;
+
+      const int ret = select(xQueue+1, &fds, NULL, NULL, &tv);
+      //Check if our file descriptor has received data.
+      if (ret > 0 && FD_ISSET(xQueue, &fds))
+      {
+        bytes_read = static_cast<int32_t>(mq_receive(xQueue, reinterpret_cast<char*>(pItemFromQueue), msg_size, NULL));
+      }
   }
   return bytes_read;
 }

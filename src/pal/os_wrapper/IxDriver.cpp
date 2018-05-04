@@ -19,6 +19,8 @@ IxDriver::IxDriver( const char *pcName ):
   ,inQueue       ( strcat(strncpy( pcDrvName, const_cast<char*>(pcName), sizeof(pcDrvName) ), "_in"), 10, sizeof(TCommand), true )
   ,outQueue      ( strcat(strncpy( pcDrvName, const_cast<char*>(pcName), sizeof(pcDrvName) ), "_out"), 10, sizeof(TCommand), true )
   ,initAttempt   ( 0 )
+  ,interrupt_work( false )
+  ,interrupt_comm( false )
 {
    strncpy( pcDrvName, const_cast<char*>(pcName), sizeof(pcDrvName) );
    strcat(strncpy( pcCommThreadName, const_cast<char*>(pcName), sizeof(pcDrvName) ), "_com");
@@ -107,11 +109,8 @@ void IxDriver::task_delete( )
 {
    if (workThreadID != 0)
    {
-      pthread_join(workThreadID, NULL);
-
-      pthread_cancel(workThreadID);
-
-      printDebug("IxDriver/%s: thread=%s deleted", __FUNCTION__, pcDrvName);
+       interrupt_work = true;
+       pthread_join(workThreadID, NULL);
    }
 }
 
@@ -119,9 +118,8 @@ void IxDriver::comm_task_delete( )
 {
    if (commThreadID != 0)
    {
-      pthread_cancel(commThreadID);
-
-      printDebug("IxDriver/%s: thread=%s deleted", __FUNCTION__, pcCommThreadName);
+      interrupt_comm = true;
+      pthread_join(commThreadID, NULL);
    }
 }
 
@@ -129,20 +127,22 @@ void IxDriver::comm_task_delete( )
 
 void IxDriver::run()
 {
-  while(true)
+  while(false == interrupt_work)
   {
     DrvProcessor();
-	sleep_mcs(10);
+    sleep_mcs(10);
   }
+  printDebug("IxDriver/%s: thread=%s was finished", __FUNCTION__, pcDrvName);
 }
 
 void IxDriver::run_comm()
 {
-  while(true)
+  while(false == interrupt_comm)
   {
     CommProcessor();
-	 sleep_mcs(10);
+    sleep_mcs(10);
   }
+  printDebug("IxDriver/%s: thread=%s was finished", __FUNCTION__, pcCommThreadName);
 }
 
 void * IxDriver::thRunnableFunction_IxDriver( void *args )
@@ -216,7 +216,6 @@ void IxDriver::CommProcessor( )
 
 void IxDriver::ThreadProcessor( )
 {
-   workThreadID = 0;
    printError("IxDriver/%s: thread=%s not implemented, EXIT!!!", __FUNCTION__, pcDrvName);
    pthread_exit(0);
 }

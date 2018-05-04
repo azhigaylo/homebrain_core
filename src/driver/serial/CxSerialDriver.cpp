@@ -22,7 +22,10 @@ CxSerialDriver::CxSerialDriver( const char *drvName, const char *ttyPath, DCB *p
    memset( &txBuffer, 0, sizeof txBuffer );
    memset( &rxBuffer, 0, sizeof rxBuffer );
 
-   ttyConfig( ttyPath );
+   if (false == ttyConfig( ttyPath ))
+   {
+       throw std::runtime_error("not able to open serial device...");
+   }
 }
 
 bool CxSerialDriver::ttyConfig(const char *ttyPath)
@@ -34,7 +37,7 @@ bool CxSerialDriver::ttyConfig(const char *ttyPath)
 
    if (-1 == fdTTY)
    {
-      printError ("CxSerialDriver/%s: fdTTY=%i, erro=%d", __FUNCTION__, fdTTY, errno);
+      printError ("CxSerialDriver/%s: ttyPath=%s, erro=%d", __FUNCTION__, ttyPath, errno);
    }
    else
    {
