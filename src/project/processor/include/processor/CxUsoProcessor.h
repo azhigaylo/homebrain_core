@@ -10,8 +10,6 @@
 #include "devctrl/IxLogDevice.h"
 #include "devctrl/CxLogDeviceManager.h"
 //------------------------------------------------------------------------------
-#define logDevItemsSize 5
-//------------------------------------------------------------------------------
 
 class CxUsoProcessor : public IxRunnable
 {

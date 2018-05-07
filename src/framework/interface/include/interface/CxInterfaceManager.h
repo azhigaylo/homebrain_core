@@ -7,8 +7,6 @@
 #include "os_wrapper/CxMutex.h"
 #include "IxInterface.h"
 //------------------------------------------------------------------------------
-#define interfaceListSize 5
-//------------------------------------------------------------------------------
 
 struct TInterfaceItem
 {

@@ -13,8 +13,7 @@
 CxUsoProcessor::CxUsoProcessor( const char * sPrcName, const char *sInterfaceNmae ) :
     IxRunnable     ( sPrcName )
    ,sUsedInterface ( 0 )
-   ,logDevCounter  ( 0 )
-   ,LOGDEV_LIST    ( logDevItemsSize )
+   ,LOGDEV_LIST    ( )
 {
    sUsedInterface = strdup(sInterfaceNmae);
 
@@ -43,7 +42,6 @@ bool CxUsoProcessor::set_logdev( IxLogDevice *pLogDev )
 
    LOGDEV_LIST.push_back( logDevListItemTmp );
 
-   logDevCounter++;
    printDebug("CxUsoProcessor/%s: LogDev = %s add OK ", __FUNCTION__, pLogDev->getDeviceName());
 
    return true;
@@ -58,31 +56,27 @@ char *CxUsoProcessor::get_interfacename( )const
 
 void CxUsoProcessor::TaskProcessor()
 {
-   if( logDevCounter == LOGDEV_LIST.size() )
+   uint16_t errCounter = 0;
+
+   for( uint8_t itr = 0; itr < LOGDEV_LIST.size(); itr++ )
    {
-      uint16_t errCounter = 0;
+      IxLogDevice *pDevice = LOGDEV_LIST[itr].pLogDevice;
 
-      for( uint8_t itr = 0; itr < logDevCounter; itr++ )
+      if( NULL != pDevice )
       {
-         IxLogDevice *pDevice = LOGDEV_LIST[itr].pLogDevice;
-
-         if( NULL != pDevice )
+         if (false == pDevice->Process())
          {
-            if (false == pDevice->Process())
-            {
-               errCounter++;
-            }
+            errCounter++;
          }
       }
+   }
 
-      // there was situation where CPU was loaded by this process
-      // because in situation when we have communication error with
-      // all uso modules on this port cpu was not locked on the communication task
-      if (errCounter == LOGDEV_LIST.size())
-      {
-         sleep_mcs(200000);
-      }
-
+   // there was situation where CPU was loaded by this process
+   // because in situation when we have communication error with
+   // all uso modules on this port cpu was not locked on the communication task
+   if (errCounter == LOGDEV_LIST.size())
+   {
+      sleep_mcs(200000);
    }
 
    sleep_mcs(50);

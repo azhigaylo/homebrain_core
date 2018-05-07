@@ -248,7 +248,7 @@ CxLauncher::CxLauncher( const char* cgf_name ):
   ,bDataConnectReady ( false )
   ,IniFileParser     ( )
   ,UsoCfgLoader      ()
-  ,ProcessorList     ( 5 )
+  ,ProcessorList     ()
 {
    strncpy( cgfname, const_cast<char*>(cgf_name), sizeof(cgfname) );
 
@@ -266,8 +266,6 @@ void CxLauncher::Start()
 {
    // create thread
    task_run( );
-   // start RTOS scheduler
-   scheduler_start();
 }
 
 // FSM process

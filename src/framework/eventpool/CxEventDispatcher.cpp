@@ -17,7 +17,7 @@ CxMutex CxEventDispatcher::singlEventLock("singlEventLocker");
 
 CxEventDispatcher::CxEventDispatcher():
     IxRunnable ( "EVENT_TASK" )
-   ,NotificationPool( configNOTIFICATION_POOL_SIZE )
+   ,NotificationPool( )
    ,EventPool( "event_queue", configEVENT_POOL_SIZE, sizeof(TEvent), true )
    ,lastFreeEventId( event_pool::EVENT_LAST_EVENT )
 {
@@ -131,16 +131,9 @@ bool CxEventDispatcher::setNotification( TEvent event, pTIxEventConsumer pIxEven
    TNotificationUnit NotificationUnit = { event, pIxEventConsumer };
 
    CxMutexLocker locker(&CxEventDispatcher::singlEventLock);
-
-   if( NotificationPool.size() < configNOTIFICATION_POOL_SIZE )
-   {
-     // work with pool
-     NotificationPool.push_back( NotificationUnit );
-
-     printDebug("CxEventDispatcher/%s: subscribe on event = %i ", __FUNCTION__, event.eventType);
-     return true;
-   }
-   return false;
+   NotificationPool.push_back( NotificationUnit );
+   printDebug("CxEventDispatcher/%s: subscribe on event = %i ", __FUNCTION__, event.eventType);
+   return true;
 }
 
 bool CxEventDispatcher::clrNotification(TEvent /*event*/, pTIxEventConsumer /*pIxEventConsumer*/)

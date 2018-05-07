@@ -14,8 +14,6 @@
 #include "IxEventProducer.h"
 //------------------------------------------------------------------------------
 #define configEVENT_POOL_SIZE         (10)      // in event
-#define configNOTIFICATION_POOL_SIZE  (50)      // in notification unit
-//------------------------------------------------------------------------------
 
 #pragma pack ( 1 )
 struct TNotificationUnit

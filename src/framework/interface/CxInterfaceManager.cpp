@@ -18,7 +18,7 @@ CxMutex CxInterfaceManager::singlInterfaceLock("singlInterfaceLocker");
 
 CxInterfaceManager::CxInterfaceManager( ):
    interfaceCounter( 0 )
-  ,CONNECTION_LIST ( interfaceListSize )
+  ,CONNECTION_LIST ( )
 {
 
 }

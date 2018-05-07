@@ -90,10 +90,6 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
 
       virtual bool processEvent( pTEvent pEvent );     // form IxEventConsumer
 
-      // work with scheduler
-      void scheduler_start(){}                         // only for RTOS
-      void scheduler_stop(){}                          // only for RTOS
-
       char cgfname[configMAX_NAME_NAME_LEN];
 
  }; typedef CxLauncher *pCxLauncher;

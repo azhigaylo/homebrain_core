@@ -16,8 +16,7 @@ CxMutex CxLogDeviceManager::singlDeviceLock("singlDeviceLocker");
 //------------------------------------------------------------------------------
 
 CxLogDeviceManager::CxLogDeviceManager( ):
-    LOGDEV_LIST   ( logDevListSize )
-   ,logDevCounter ( 0 )
+    LOGDEV_LIST ( )
 {
 
 }
@@ -55,13 +54,12 @@ bool CxLogDeviceManager::set_logdev( IxLogDevice * pLogDev )
    CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
 
    // add pointer on logdev in vector
-   logDevListItemTmp.number  = (char)logDevCounter;
+   logDevListItemTmp.number  = (char)LOGDEV_LIST.size();
    logDevListItemTmp.pLogDevice = pLogDev;
 
    LOGDEV_LIST.push_back( logDevListItemTmp );
 
    // counter increment
-   logDevCounter++;
    printDebug("CxLogDeviceManager/%s: LogDev = %s registred ", __FUNCTION__, pLogDev->getDeviceName());
 
    return true;
@@ -71,76 +69,66 @@ IxLogDevice * CxLogDeviceManager::get_logdev( const char *name )
 {
    CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
 
-   if( logDevCounter == LOGDEV_LIST.size() )
+   for( uint8_t itr = 0; itr < LOGDEV_LIST.size(); itr++ )
    {
-      for( uint8_t itr = 0; itr < logDevCounter; itr++ )
+      IxLogDevice *pDevice = LOGDEV_LIST[itr].pLogDevice;
+      if( NULL != pDevice )
       {
-         IxLogDevice *pDevice = LOGDEV_LIST[itr].pLogDevice;
-         if( NULL != pDevice )
+         const char* devName = pDevice->getDeviceName( );
+         if( 0 == strcmp( name, devName ) )
          {
-           const char* devName = pDevice->getDeviceName( );
-           if( 0 == strcmp( name, devName ) )
-           {
-             return pDevice;
-           }
+            return pDevice;
          }
       }
    }
 
-  return 0;
+   return 0;
 }
 
 IxLogDevice *CxLogDeviceManager::get_logdev_by_number( uint16_t numb )
 {
    CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
 
-   if( logDevCounter == LOGDEV_LIST.size() )
+   if (numb < LOGDEV_LIST.size())
    {
-      if (numb < logDevCounter)
-      {
-         IxLogDevice *pDevice = LOGDEV_LIST[numb].pLogDevice;
+      IxLogDevice *pDevice = LOGDEV_LIST[numb].pLogDevice;
 
-         return pDevice;
-      }
+      return pDevice;
    }
 
-  return 0;
+   return 0;
 }
 
 void CxLogDeviceManager::clr_logdev_list()
 {
-  if( logDevCounter == LOGDEV_LIST.size() )
-  {
-     CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
+   CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
 
-     for( uint8_t itr = 0; itr < logDevCounter; itr++ )
-     {
-        IxLogDevice *pDevice = LOGDEV_LIST[itr].pLogDevice;
-        if( NULL != pDevice )
-        {
-           printDebug("CxLogDeviceManager/%s: try to remove LogDev = %s...", __FUNCTION__, pDevice->getDeviceName());
-           delete pDevice;
-        }
-     }
-  }
-  // clean up list
-  LOGDEV_LIST.clear();
+   for( uint8_t itr = 0; itr < LOGDEV_LIST.size(); itr++ )
+   {
+      IxLogDevice *pDevice = LOGDEV_LIST[itr].pLogDevice;
+      if( NULL != pDevice )
+      {
+         printDebug("CxLogDeviceManager/%s: try to remove LogDev = %s...", __FUNCTION__, pDevice->getDeviceName());
+         delete pDevice;
+      }
+   }
+
+   // clean up list
+   LOGDEV_LIST.clear();
 }
 
 void CxLogDeviceManager::process_all( )
 {
    CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
 
-   if( logDevCounter == LOGDEV_LIST.size() )
+   for( uint8_t itr = 0; itr < LOGDEV_LIST.size(); itr++ )
    {
-      for( uint8_t itr = 0; itr < logDevCounter; itr++ )
-      {
-         IxLogDevice *pDevice = LOGDEV_LIST[itr].pLogDevice;
+      IxLogDevice *pDevice = LOGDEV_LIST[itr].pLogDevice;
 
-         if( NULL != pDevice )
-         {
-            pDevice->Process();
-         }
+      if( NULL != pDevice )
+      {
+         pDevice->Process();
       }
    }
+
 }

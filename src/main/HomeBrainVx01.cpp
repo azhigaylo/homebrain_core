@@ -1,5 +1,6 @@
 #include <iostream>
 #include <getopt.h>
+#include <signal.h>
 
 #include "common/slog.h"
 #include "common/utils.h"
@@ -10,26 +11,20 @@ using namespace std;
 using namespace event_pool;
 
 //------------------------------------------------------------------------------
-CxLauncher *pLauncher = 0;
+static volatile bool terination_flag = false;
 //------------------------------------------------------------------------------
 
 void mainSigHandler( int /*sig*/ )
 {
-	printWarning("MAIN/%s: exit request detected...", __FUNCTION__);
+   printWarning("\nMAIN/%s: exit request detected...", __FUNCTION__);
 
-   if (0 != pLauncher)
-   {
-      delete pLauncher;
-      pLauncher = 0;
-   }
+   terination_flag = true;
 }
 
 int main(int argc, char* argv[])
 {
    // establish handler for SIGTERM signal
-   struct sigaction sa;
-   sa.sa_handler = mainSigHandler;
-   sigaction( SIGINT, &sa, 0);
+   signal(SIGINT, mainSigHandler);
 
    try
    {
@@ -63,10 +58,12 @@ int main(int argc, char* argv[])
        printDebug("MAIN/%s: started with debug level = %i", __FUNCTION__, debug);
        printDebug("MAIN/%s: started with cfg = %s", __FUNCTION__, sCfg);
 
-       pLauncher = new CxLauncher(sCfg);
+       CxLauncher *pLauncher = new CxLauncher(sCfg);
        pLauncher->Start();
 
-       while (pLauncher){sleep_mcs(200000);}
+       while (!terination_flag){sleep_mcs(200000);}
+
+       delete pLauncher;
 
        printDebug("MAIN/%s: Launcher thread finished...", __FUNCTION__);
    }

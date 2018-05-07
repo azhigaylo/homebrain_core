@@ -46,7 +46,7 @@ void CxUsoCfgLoader::Load( const char* cfg_path )
 
 void CxUsoCfgLoader::OpenExtModuleConfig( const char* cfg_path )
 {
-   const char *sExtModName = "ExtMod.lnk";
+   const char *sExtModName = "ExtMod.bin";
 
    printDebug("CxUsoCfgLoader/%s: cfg_path = %s", __FUNCTION__, cfg_path);
 
@@ -146,7 +146,7 @@ void CxUsoCfgLoader::OpenExtModuleConfig( const char* cfg_path )
 
 void CxUsoCfgLoader::OpenAnalModuleConfig( const char* cfg_path )
 {
-   const char *sDevMaName = "uso.cnf";
+   const char *sDevMaName = "uso.bin";
    const char *sDummyName  = "LogDev_MA_";
 
    printDebug("CxUsoCfgLoader/%s: cfg_path = %s", __FUNCTION__, cfg_path);

@@ -9,8 +9,6 @@
 #include "os_wrapper/CxMutex.h"
 #include "IxLogDevice.h"
 //------------------------------------------------------------------------------
-#define logDevListSize 30
-//------------------------------------------------------------------------------
 
 #pragma pack ( 1 )
 struct TLogDevListItem
@@ -42,7 +40,6 @@ class CxLogDeviceManager
    void clr_logdev_list();
 
    std::vector<TLogDevListItem> LOGDEV_LIST;
-   uint16_t logDevCounter;
    TLogDevListItem logDevListItemTmp;
 
    static CxMutex singlDeviceLock;
