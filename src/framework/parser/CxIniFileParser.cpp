@@ -25,7 +25,7 @@ CxIniFileParser::CxIniFileParser():
 
 CxIniFileParser::~CxIniFileParser()
 {
-
+	printDebug("CxIniFileParser::%s: deleted...", __FUNCTION__);
 }
 
 bool CxIniFileParser::ParseBuffer(const char *pBuff, int32_t dwLen)

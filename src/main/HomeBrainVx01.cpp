@@ -60,19 +60,15 @@ int main(int argc, char* argv[])
           }
        }
 
-       printWarning("MAIN/%s: started with debug level = %i", __FUNCTION__, debug);
-       printWarning("MAIN/%s: started with cfg = %s", __FUNCTION__, sCfg);
+       printDebug("MAIN/%s: started with debug level = %i", __FUNCTION__, debug);
+       printDebug("MAIN/%s: started with cfg = %s", __FUNCTION__, sCfg);
 
        pLauncher = new CxLauncher(sCfg);
        pLauncher->Start();
 
-       pLauncher->task_join();
+       while (pLauncher){sleep_mcs(200000);}
 
-       if (0 != pLauncher)
-       {
-          delete pLauncher;
-          pLauncher = 0;
-       }
+       printDebug("MAIN/%s: Launcher thread finished...", __FUNCTION__);
    }
    catch (const std::exception& e)
    {

@@ -91,6 +91,10 @@ bool CxSerialDriver::ttyConfig(const char *ttyPath)
       {
          printError ("CxSerialDriver/%s: error %d from tcsetattr", __FUNCTION__, errno);
       }
+      else
+      {
+    	  result = true;
+      }
    }
    else
    {
@@ -105,6 +109,8 @@ CxSerialDriver::~CxSerialDriver()
    {
       close (fdTTY);
    }
+
+   driver_stop();
 }
 
 void CxSerialDriver::startTimer()
@@ -173,20 +179,34 @@ void CxSerialDriver::ThreadProcessor( )
 {
    if (0 != fdTTY)
    {
-      uint16_t rxLenght = static_cast<uint16_t>(read( fdTTY, rxBuffer.buffer, sizeof(rxBuffer.buffer)));
+      fd_set fds;
+      FD_ZERO(&fds);
+      FD_SET(fdTTY, &fds);
 
-      printDebug("CxSerialDriver/%s: tty rec %d byte: %d %d %d %d %d %d %d %d %d %d %d %d %d", __FUNCTION__, rxLenght, rxBuffer.buffer[0],  rxBuffer.buffer[1],  rxBuffer.buffer[2],  rxBuffer.buffer[3],
-                                                                                                       rxBuffer.buffer[4],  rxBuffer.buffer[5],  rxBuffer.buffer[6],  rxBuffer.buffer[7],
-                                                                                                       rxBuffer.buffer[8],  rxBuffer.buffer[9],  rxBuffer.buffer[10], rxBuffer.buffer[11],
-                                                                                                       rxBuffer.buffer[12], rxBuffer.buffer[13]);
-      CxMutexLocker locker( &singlSerialLock );
+      struct timeval tv;
+      tv.tv_sec = 1;
+      tv.tv_usec = 0;
 
-      // stop timeout timer
-      stopTimer();
+      const int ret = select(fdTTY+1, &fds, NULL, NULL, &tv);
+      //Check if our file descriptor has received data.
+      if (ret > 0 && FD_ISSET(fdTTY, &fds))
+      {
+         uint16_t rxLenght = static_cast<uint16_t>(read( fdTTY, rxBuffer.buffer, sizeof(rxBuffer.buffer)));
 
-      rxBuffer.msgSize = rxLenght;
+         printDebug("CxSerialDriver/%s: tty rec %d byte: %d %d %d %d %d %d %d %d %d %d %d %d %d", __FUNCTION__, rxLenght,
+                         rxBuffer.buffer[0],  rxBuffer.buffer[1],  rxBuffer.buffer[2],  rxBuffer.buffer[3],
+                         rxBuffer.buffer[4],  rxBuffer.buffer[5],  rxBuffer.buffer[6],  rxBuffer.buffer[7],
+                         rxBuffer.buffer[8],  rxBuffer.buffer[9],  rxBuffer.buffer[10], rxBuffer.buffer[11],
+                         rxBuffer.buffer[12], rxBuffer.buffer[13]);
+         CxMutexLocker locker( &singlSerialLock );
 
-      sendMsg( CM_INP_DATA, &rxBuffer );
+         // stop timeout timer
+         stopTimer();
+
+         rxBuffer.msgSize = rxLenght;
+
+         sendMsg( CM_INP_DATA, &rxBuffer );
+      }
    }
 
    sleep_mcs(100);

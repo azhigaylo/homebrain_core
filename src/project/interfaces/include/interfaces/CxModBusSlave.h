@@ -18,7 +18,7 @@ class CxModBusSlave : public CxThreadIO, public CxInterface
    public:
 
       CxModBusSlave( const char *interfaceName, const char *drvName );
-      ~CxModBusSlave(){}
+      virtual ~CxModBusSlave();
 
       virtual int32_t open  ( );
       virtual int32_t close ( );

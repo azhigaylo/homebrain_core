@@ -45,6 +45,7 @@ void CxInterfaceManager::delInstance()
        CxInterfaceManager::theInstance->clr_interface_list();
       // remove singleton item
       delete CxInterfaceManager::theInstance;
+      printDebug("CxInterfaceManager/%s: instance deleted", __FUNCTION__);
    }
 }
 

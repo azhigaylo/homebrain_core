@@ -19,7 +19,7 @@ void CxLauncher::load_debug()
 }
 
 //------------------------------------------------------------------------------
-
+CxSerialDriver *pDriver = 0;
 void CxLauncher::load_driver( const char *sDrvName )
 {
    // start serial driver SERIAL_1
@@ -42,8 +42,8 @@ void CxLauncher::load_driver( const char *sDrvName )
       printDebug("CxLauncher::%s: %s path = %s", __FUNCTION__, sDrvName, serialPath);
       printDebug("CxLauncher::%s: %s baudrate = %d", __FUNCTION__, sDrvName, dcb.BaudRate);
 
-      CxSerialDriver *pDriver = new CxSerialDriver( serialName, serialPath, &dcb );
-      pDriver->task_run();
+      pDriver = new CxSerialDriver( serialName, serialPath, &dcb );
+      pDriver->driver_run();
    }
 
 }
@@ -225,6 +225,8 @@ void CxLauncher::close_activities()
    pCxLogDeviceManager pLogDeviceMan = CxLogDeviceManager::getInstance();
    pLogDeviceMan->delInstance();
 
+   if ( 0 != pDriver) delete pDriver;
+
    pTCxEventDispatcher pEventDispatcher = CxEventDispatcher::getInstance();
    pEventDispatcher->delInstance();
 
@@ -243,6 +245,7 @@ CxLauncher::CxLauncher( const char* cgf_name ):
   ,pLogDeviceManager ( CxLogDeviceManager::getInstance() )
   ,bDataConnectReady ( false )
   ,IniFileParser     ( )
+  ,UsoCfgLoader      ()
   ,ProcessorList     ( 5 )
 {
    strncpy( cgfname, const_cast<char*>(cgf_name), sizeof(cgfname) );
@@ -254,6 +257,7 @@ CxLauncher::CxLauncher( const char* cgf_name ):
 CxLauncher::~CxLauncher( )
 {
    close_activities();
+   printDebug("CxLauncher::%s: all activities closed...", __FUNCTION__);
 }
 
 void CxLauncher::Start()

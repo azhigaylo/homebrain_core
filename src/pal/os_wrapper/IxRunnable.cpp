@@ -24,7 +24,7 @@ IxRunnable::IxRunnable( const char *pcName ):
 
 IxRunnable::~IxRunnable( )
 {
-   task_delete();
+   task_stop();
 }
 
 void IxRunnable::task_run( )
@@ -40,12 +40,11 @@ void IxRunnable::task_join( )
    }
 }
 
-void IxRunnable::task_delete( )
+void IxRunnable::task_stop()
 {
    if (thread != 0)
    {
-	  interrupt = true;
-
+      interrupt = true;
       pthread_join(thread, NULL);
    }
 }

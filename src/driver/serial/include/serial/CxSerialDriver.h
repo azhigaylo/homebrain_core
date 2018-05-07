@@ -64,7 +64,7 @@ class CxSerialDriver : public IxDriver, public CxSysTimer
 
       virtual void CommandProcessor( uint16_t ComID, void *data );
       virtual void ThreadProcessor ( );
-	   virtual void sigHandler();
+      virtual void sigHandler();
 
       bool ttyConfig( const char *ttyPath );
 

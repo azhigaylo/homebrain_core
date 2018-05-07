@@ -12,7 +12,7 @@
 #include "common/utils.h"
 #include "os_wrapper/CxMutex.h"
 //------------------------------------------------------------------------------
-#define configSTATICPOOL_SIZE ( 20480 )     // in byte
+#define configSTATICPOOL_SIZE ( 60000 )     // in byte
 //------------------------------------------------------------------------------
 
 

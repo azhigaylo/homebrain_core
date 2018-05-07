@@ -37,6 +37,7 @@ void CxStaticPool::delInstance()
    if(CxStaticPool::theInstance != 0)
    {
       delete CxStaticPool::theInstance;
+      printDebug("CxStaticPool/%s: instance deleted", __FUNCTION__);
    }
 }
 

@@ -31,7 +31,7 @@ CxUsoProcessor::~CxUsoProcessor( )
    }
 
    // delete my own task
-   task_delete( );
+   task_stop( );
 }
 
 //------------------------------------------------------------------------------

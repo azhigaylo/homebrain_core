@@ -35,9 +35,10 @@ class IxDriver
 {
   public:
 
-    ~IxDriver();
+    virtual ~IxDriver();
 
-    void task_run();
+    void driver_run();
+    void driver_stop();
 
     // get time in s from thread start
     int64_t get_time();
@@ -46,10 +47,13 @@ class IxDriver
 
     virtual void CommandProcessor( uint16_t ComID, void *data ) = 0;
     virtual void ThreadProcessor ( );
-	  void sendMsg( uint16_t ComID, void *data );
+    void sendMsg( uint16_t ComID, void *data );
 
     // we hide it because everybody should inherit it !
     IxDriver( const char *pcName );
+
+    void task_delete( );
+    void comm_task_delete( );
 
     uint16_t DrvID;                       // this is CRC of drivers name
     uint16_t ConsumerID;                  // consumer ID which is connected currently to this driver.
@@ -58,9 +62,6 @@ class IxDriver
 
     int32_t create_thread( );
     int32_t create_comm_thread( );
-
-    void task_delete( );
-    void comm_task_delete( );
 
     void run( );
     void run_comm( );

@@ -26,6 +26,11 @@ CxEventDispatcher::CxEventDispatcher():
    task_run( );
 }
 
+CxEventDispatcher::~CxEventDispatcher( )
+{
+   task_stop();
+}
+
 //------------------------------------------------------------------------------
 
 CxEventDispatcher * CxEventDispatcher::getInstance( )
@@ -48,6 +53,7 @@ void CxEventDispatcher::delInstance()
    if(CxEventDispatcher::theInstance != 0)
    {
       delete CxEventDispatcher::theInstance;
+      printDebug("CxEventDispatcher/%s: instance deleted", __FUNCTION__);
    }
 }
 

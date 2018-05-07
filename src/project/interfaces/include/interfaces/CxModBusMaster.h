@@ -19,7 +19,7 @@ class CxModBusMaster : public CxThreadIO, public CxInterface, public IxEventProd
    public:
 
       CxModBusMaster( const char *interfaceName, const char *drvName );
-      ~CxModBusMaster(){}
+      virtual ~CxModBusMaster();
 
       virtual int32_t open  ( );
       virtual int32_t close ( );

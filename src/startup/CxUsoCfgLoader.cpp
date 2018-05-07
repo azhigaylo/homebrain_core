@@ -25,7 +25,7 @@ CxUsoCfgLoader::CxUsoCfgLoader( ):
 
 CxUsoCfgLoader::~CxUsoCfgLoader()
 {
-
+    printDebug("CxUsoCfgLoader::%s: deleted...", __FUNCTION__);
 }
 
 void CxUsoCfgLoader::Load( const char* cfg_path )

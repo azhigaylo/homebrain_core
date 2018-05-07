@@ -51,7 +51,7 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
       void Start();
 
       CxLauncher( const char* cgf_name );
-      ~CxLauncher();
+      virtual ~CxLauncher();
 
    private:
       // current state os launcher

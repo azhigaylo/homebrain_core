@@ -30,19 +30,28 @@ IxDriver::IxDriver( const char *pcName ):
 
 IxDriver::~IxDriver()
 {
-   task_delete();
-   comm_task_delete();
-
-   printDebug("IxDriver/%s: driver=%s deleted", __FUNCTION__, pcDrvName);
+   driver_stop();
 }
 
 //------------------------------------------------------------------------------
 
-void IxDriver::task_run( )
+void IxDriver::driver_run( )
 {
    create_thread();
    create_comm_thread();
 }
+
+void IxDriver::driver_stop( )
+{
+   comm_task_delete();
+   printDebug("IxDriver/%s: driver=%s comm_task deleted", __FUNCTION__, pcDrvName);
+
+   task_delete();
+   printDebug("IxDriver/%s: driver=%s task deleted", __FUNCTION__, pcDrvName);
+}
+
+
+
 //------------------------------------------------------------------------------
 
 int64_t IxDriver::get_time()

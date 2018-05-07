@@ -22,6 +22,12 @@ CxModBusMaster::CxModBusMaster( const char *interfaceName, const char *drvName )
    memset( &commbuf, 0, sizeof commbuf );
 }
 
+CxModBusMaster::~CxModBusMaster()
+{
+   close( );
+}
+
+
 int32_t CxModBusMaster::open( )
 {
    Start();
@@ -30,7 +36,7 @@ int32_t CxModBusMaster::open( )
 
 int32_t CxModBusMaster::close( )
 {
-   printWarning("CxModBusMaster/%s: CxModBusMaster close not implemented", __FUNCTION__);
+   Stop();
    return 0;
 }
 

@@ -18,17 +18,17 @@ class CxThreadIO : public IxRunnable
       ST_IO_NORMAL_WORK
   };
 
-  public:
-
-     ~CxThreadIO();
-
   protected:
 
      // we hide it because everybody should inherit it !
      CxThreadIO( const char *taskName,  const char *drvName );
+     virtual ~CxThreadIO();
 
      // start all parts of system task
      void Start();
+     // stop all parts of system task
+     void Stop();
+
      void sendMsg( uint16_t ComID, void *data );
 
      virtual void CommandProcessor( uint16_t ComID, void *data ) = 0;

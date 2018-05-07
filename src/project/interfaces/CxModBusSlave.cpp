@@ -17,6 +17,11 @@ CxModBusSlave::CxModBusSlave( const char *interfaceName, const char *drvName ):
    memset( &commbuf, 0, sizeof commbuf );
 }
 
+CxModBusSlave::~CxModBusSlave()
+{
+   close( );
+}
+
 int32_t CxModBusSlave::open( )
 {
    Start();
@@ -25,7 +30,7 @@ int32_t CxModBusSlave::open( )
 
 int32_t CxModBusSlave::close( )
 {
-   printWarning("CxModBusSlave/%s: CxModBusSlave close not implemented", __FUNCTION__);
+   Stop();
    return 0;
 }
 

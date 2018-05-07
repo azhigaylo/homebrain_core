@@ -27,8 +27,7 @@ CxThreadIO::CxThreadIO(  const char *taskName,  const char *drvName ):
 
 CxThreadIO::~CxThreadIO( )
 {
-   comm_task_delete();
-   printDebug("CxThreadIO/%s: OI thread=%s deleted", __FUNCTION__, pcTaskName);
+  Stop();
 }
 
 //------------------------------------------------------------------------------
@@ -39,6 +38,13 @@ void CxThreadIO::Start()
   create_comm_thread();
 
   task_run( );
+}
+
+void CxThreadIO::Stop()
+{
+   comm_task_delete();
+   task_stop( );
+   printDebug("CxThreadIO/%s: OI thread=%s deleted", __FUNCTION__, pcTaskName);
 }
 
 void CxThreadIO::sendMsg( uint16_t ComID, void *data )

@@ -14,11 +14,11 @@ class IxRunnable
 {
   public:
 
-    ~IxRunnable();
+    virtual ~IxRunnable();
 
     void task_run();
     void task_join();
-    void task_delete();
+    void task_stop();
 
   protected:
 

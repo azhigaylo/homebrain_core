@@ -44,6 +44,7 @@ void CxLogDeviceManager::delInstance()
       CxLogDeviceManager::theInstance->clr_logdev_list();
       // remove singleton item
       delete CxLogDeviceManager::theInstance;
+      printDebug("CxLogDeviceManager/%s: instance deleted", __FUNCTION__);
    }
 }
 

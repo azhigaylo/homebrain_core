@@ -59,7 +59,7 @@ class CxEventDispatcher : public IxRunnable
 	static CxEventDispatcher* theInstance;
 
     CxEventDispatcher();
-    virtual ~CxEventDispatcher( ){}
+    virtual ~CxEventDispatcher( );
 
 };
 typedef CxEventDispatcher *pTCxEventDispatcher;
