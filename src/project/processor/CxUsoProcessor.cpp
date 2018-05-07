@@ -18,12 +18,12 @@ CxUsoProcessor::CxUsoProcessor( const char * sPrcName, const char *sInterfaceNma
 {
    sUsedInterface = strdup(sInterfaceNmae);
 
-   printDebug("CxUsoProcessor/%s: Processor for %s created ", __FUNCTION__, sUsedInterface );
+   printDebug("CxUsoProcessor/%s: Processor for %s created", __FUNCTION__, sUsedInterface );
 }
 
 CxUsoProcessor::~CxUsoProcessor( )
 {
-   printDebug("CxUsoProcessor/%s: Processor for %s removed ", __FUNCTION__, sUsedInterface );
+   printDebug("CxUsoProcessor/%s: Processor for %s removed", __FUNCTION__, sUsedInterface );
 
    if (0 != sUsedInterface)
    {
@@ -38,25 +38,15 @@ CxUsoProcessor::~CxUsoProcessor( )
 
 bool CxUsoProcessor::set_logdev( IxLogDevice *pLogDev )
 {
-   bool result = false;
-
    // add pointer on logdev in vector
    TLogDevListItem logDevListItemTmp = {static_cast<int8_t>(logDevCounter), pLogDev};
 
-   result = LOGDEV_LIST.add( logDevListItemTmp );
+   LOGDEV_LIST.push_back( logDevListItemTmp );
 
-   // counter increment
-   if( true == result )
-   {
-      logDevCounter++;
-      printDebug("CxUsoProcessor/%s: LogDev = %s add OK ", __FUNCTION__, pLogDev->getDeviceName());
-   }
-   else
-   {
-      printError("CxUsoProcessor/%s: LogDev = %s add error ", __FUNCTION__, pLogDev->getDeviceName());
-   }
+   logDevCounter++;
+   printDebug("CxUsoProcessor/%s: LogDev = %s add OK ", __FUNCTION__, pLogDev->getDeviceName());
 
-   return result;
+   return true;
 }
 
 char *CxUsoProcessor::get_interfacename( )const
@@ -68,7 +58,7 @@ char *CxUsoProcessor::get_interfacename( )const
 
 void CxUsoProcessor::TaskProcessor()
 {
-   if( logDevCounter == LOGDEV_LIST.count() )
+   if( logDevCounter == LOGDEV_LIST.size() )
    {
       uint16_t errCounter = 0;
 
@@ -88,7 +78,7 @@ void CxUsoProcessor::TaskProcessor()
       // there was situation where CPU was loaded by this process
       // because in situation when we have communication error with
       // all uso modules on this port cpu was not locked on the communication task
-      if (errCounter == LOGDEV_LIST.count())
+      if (errCounter == LOGDEV_LIST.size())
       {
          sleep_mcs(200000);
       }

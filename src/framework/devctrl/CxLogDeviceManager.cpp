@@ -52,35 +52,26 @@ void CxLogDeviceManager::delInstance()
 
 bool CxLogDeviceManager::set_logdev( IxLogDevice * pLogDev )
 {
-   bool result = false;
-
    CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
 
    // add pointer on logdev in vector
    logDevListItemTmp.number  = (char)logDevCounter;
    logDevListItemTmp.pLogDevice = pLogDev;
 
-   result = LOGDEV_LIST.add( logDevListItemTmp );
+   LOGDEV_LIST.push_back( logDevListItemTmp );
 
    // counter increment
-   if( true == result )
-   {
-     logDevCounter++;
-     printDebug("CxLogDeviceManager/%s: LogDev = %s registred ", __FUNCTION__, pLogDev->getDeviceName());
-   }
-   else
-   {
-     printError("CxLogDeviceManager/%s: LogDev = %s registartion error ", __FUNCTION__, pLogDev->getDeviceName());
-   }
+   logDevCounter++;
+   printDebug("CxLogDeviceManager/%s: LogDev = %s registred ", __FUNCTION__, pLogDev->getDeviceName());
 
-   return result;
+   return true;
 }
 
 IxLogDevice * CxLogDeviceManager::get_logdev( const char *name )
 {
    CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
 
-   if( logDevCounter == LOGDEV_LIST.count() )
+   if( logDevCounter == LOGDEV_LIST.size() )
    {
       for( uint8_t itr = 0; itr < logDevCounter; itr++ )
       {
@@ -103,7 +94,7 @@ IxLogDevice *CxLogDeviceManager::get_logdev_by_number( uint16_t numb )
 {
    CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
 
-   if( logDevCounter == LOGDEV_LIST.count() )
+   if( logDevCounter == LOGDEV_LIST.size() )
    {
       if (numb < logDevCounter)
       {
@@ -118,7 +109,7 @@ IxLogDevice *CxLogDeviceManager::get_logdev_by_number( uint16_t numb )
 
 void CxLogDeviceManager::clr_logdev_list()
 {
-  if( logDevCounter == LOGDEV_LIST.count() )
+  if( logDevCounter == LOGDEV_LIST.size() )
   {
      CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
 
@@ -140,7 +131,7 @@ void CxLogDeviceManager::process_all( )
 {
    CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
 
-   if( logDevCounter == LOGDEV_LIST.count() )
+   if( logDevCounter == LOGDEV_LIST.size() )
    {
       for( uint8_t itr = 0; itr < logDevCounter; itr++ )
       {

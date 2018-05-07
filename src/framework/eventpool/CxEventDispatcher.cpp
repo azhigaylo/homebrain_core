@@ -7,7 +7,6 @@
 //------------------------------------------------------------------------------
 #include "common/slog.h"
 #include "common/utils.h"
-#include "os_wrapper/CxMutexLocker.h"
 #include "eventpool/CxEventDispatcher.h"
 //------------------------------------------------------------------------------
 using namespace event_pool;
@@ -19,7 +18,6 @@ CxMutex CxEventDispatcher::singlEventLock("singlEventLocker");
 CxEventDispatcher::CxEventDispatcher():
     IxRunnable ( "EVENT_TASK" )
    ,NotificationPool( configNOTIFICATION_POOL_SIZE )
-   ,sNotificationUnitRecNumb( 0 )
    ,EventPool( "event_queue", configEVENT_POOL_SIZE, sizeof(TEvent), true )
    ,lastFreeEventId( event_pool::EVENT_LAST_EVENT )
 {
@@ -61,13 +59,13 @@ void CxEventDispatcher::delInstance()
 
 bool CxEventDispatcher::NotificationPoolIsEmpty()
 {
-   if( sNotificationUnitRecNumb > 0 ) return false;
+   if( NotificationPool.size() > 0 ) return false;
     else return true;;
 }
 
 unsigned short CxEventDispatcher::GetNotificationRecNumb()const
 {
-   return( sNotificationUnitRecNumb );
+   return( NotificationPool.size() );
 }
 
 eEventType CxEventDispatcher::getVirtualEvent()
@@ -112,11 +110,11 @@ void CxEventDispatcher::Dispatch()
 
    CxMutexLocker locker(&CxEventDispatcher::singlEventLock);
 
-   if( (sNotificationUnitRecNumb > 0) && (curentEvent.eventType != event_pool::EVENT_DUMMY) )
+   if( (NotificationPool.size() > 0) && (curentEvent.eventType != event_pool::EVENT_DUMMY) )
    {
       TNotificationUnit NotificationUnit;
 
-      for( unsigned short element = 0; element < sNotificationUnitRecNumb; element++ )
+      for( unsigned short element = 0; element < NotificationPool.size(); element++ )
       {
         NotificationUnit = NotificationPool[element];
         if( NotificationUnit.event.eventType == curentEvent.eventType )
@@ -134,11 +132,10 @@ bool CxEventDispatcher::setNotification( TEvent event, pTIxEventConsumer pIxEven
 
    CxMutexLocker locker(&CxEventDispatcher::singlEventLock);
 
-   if( sNotificationUnitRecNumb < configNOTIFICATION_POOL_SIZE )
+   if( NotificationPool.size() < configNOTIFICATION_POOL_SIZE )
    {
      // work with pool
-     NotificationPool.add( NotificationUnit );
-     sNotificationUnitRecNumb++;
+     NotificationPool.push_back( NotificationUnit );
 
      printDebug("CxEventDispatcher/%s: subscribe on event = %i ", __FUNCTION__, event.eventType);
      return true;

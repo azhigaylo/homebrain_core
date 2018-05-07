@@ -51,28 +51,26 @@ void CxInterfaceManager::delInstance()
 
 bool CxInterfaceManager::set_interface( IxInterface * pNewInterface )
 {
-   bool result = false;
-
    CxMutexLocker locker(&CxInterfaceManager::singlInterfaceLock);
 
    TInterfaceItem connectionItem;
 
    connectionItem.ID = static_cast<uint16_t>(rand());
    connectionItem.pInterface = pNewInterface;
-   result = CONNECTION_LIST.add( connectionItem );
+   CONNECTION_LIST.push_back( connectionItem );
 
    interfaceCounter++;
 
    printDebug("CxInterfaceManager/%s: Interface = %s registred ", __FUNCTION__, pNewInterface->getInterfaceName());
 
-   return result;
+   return true;
 }
 
 IxInterface *CxInterfaceManager::get_interface( const char *name )
 {
    CxMutexLocker locker(&CxInterfaceManager::singlInterfaceLock);
 
-   for( uint8_t itr = 0; itr < CONNECTION_LIST.count(); itr++ )
+   for( uint8_t itr = 0; itr < CONNECTION_LIST.size(); itr++ )
    {
       pIxInterface pInterface = CONNECTION_LIST[itr].pInterface;
 
@@ -93,7 +91,7 @@ void CxInterfaceManager::clr_interface_list()
 {
     CxMutexLocker locker(&CxInterfaceManager::singlInterfaceLock);
 
-    for( uint8_t itr = 0; itr < CONNECTION_LIST.count(); itr++ )
+    for( uint8_t itr = 0; itr < CONNECTION_LIST.size(); itr++ )
     {
        pIxInterface pInterface = CONNECTION_LIST[itr].pInterface;
 

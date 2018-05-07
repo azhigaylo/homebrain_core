@@ -2,10 +2,13 @@
 #define _CX_EVENT_PROCESSOR
 
 //------------------------------------------------------------------------------
+#include <vector>
+
 #include "common/ptypes.h"
-#include "staticpool/CxVector.h"
 #include "os_wrapper/CxQueue.h"
 #include "os_wrapper/IxRunnable.h"
+#include "os_wrapper/CxMutexLocker.h"
+
 #include "CxEvent.h"
 #include "IxEventConsumer.h"
 #include "IxEventProducer.h"
@@ -44,8 +47,7 @@ class CxEventDispatcher : public IxRunnable
 
  private:
 
-    CxVector<TNotificationUnit> NotificationPool;
-    unsigned short sNotificationUnitRecNumb;  // number of element in notification pool
+    std::vector<TNotificationUnit> NotificationPool;
     CxQueue EventPool;
     eEventType lastFreeEventId;
 

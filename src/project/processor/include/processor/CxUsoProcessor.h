@@ -3,9 +3,9 @@
 
 //------------------------------------------------------------------------------
 #include <unistd.h>
+#include <vector>
 
 #include "common/ptypes.h"
-#include "staticpool/CxVector.h"
 #include "os_wrapper/IxRunnable.h"
 #include "devctrl/IxLogDevice.h"
 #include "devctrl/CxLogDeviceManager.h"
@@ -31,7 +31,7 @@ class CxUsoProcessor : public IxRunnable
 
       char *sUsedInterface;
       uint16_t logDevCounter;
-      CxVector<TLogDevListItem> LOGDEV_LIST;
+      std::vector<TLogDevListItem> LOGDEV_LIST;
 };
 
 //------------------------------------------------------------------------------

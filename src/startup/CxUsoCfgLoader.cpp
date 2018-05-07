@@ -46,12 +46,15 @@ void CxUsoCfgLoader::Load( const char* cfg_path )
 
 void CxUsoCfgLoader::OpenExtModuleConfig( const char* cfg_path )
 {
-   const char *sExtModName = "/ExtMod.lnk";
+   const char *sExtModName = "ExtMod.lnk";
+
+   printDebug("CxUsoCfgLoader/%s: cfg_path = %s", __FUNCTION__, cfg_path);
 
    // allocate memory for name str
-   char *sExtModConfig = (char*)malloc(strnlen(const_cast<char*>(cfg_path),200) + strnlen(const_cast<char*>(sExtModName),50));
+   char *sExtModConfig = (char*)malloc(strnlen(cfg_path,200) + strnlen(sExtModName,50));
+   memset(sExtModConfig, 0, strnlen(cfg_path,200) + strnlen(sExtModName,50));
    // copy path
-   strncpy( sExtModConfig, const_cast<char*>(cfg_path), strnlen(const_cast<char*>(cfg_path),200) );
+   strncpy( sExtModConfig, cfg_path, strnlen(cfg_path,200) );
    // copy name
    strcat(sExtModConfig, sExtModName);
 
@@ -143,13 +146,16 @@ void CxUsoCfgLoader::OpenExtModuleConfig( const char* cfg_path )
 
 void CxUsoCfgLoader::OpenAnalModuleConfig( const char* cfg_path )
 {
-   const char *sDevMaName = "/uso.cnf";
+   const char *sDevMaName = "uso.cnf";
    const char *sDummyName  = "LogDev_MA_";
 
+   printDebug("CxUsoCfgLoader/%s: cfg_path = %s", __FUNCTION__, cfg_path);
+
    // allocate memory for name str
-   char *sDevMaConfig = (char*)malloc(strnlen(const_cast<char*>(cfg_path),200) + strnlen(const_cast<char*>(sDevMaName),50));
+   char *sDevMaConfig = (char*)malloc(strnlen(cfg_path,200) + strnlen(sDevMaName,50));
+   memset(sDevMaConfig, 0, strnlen(cfg_path,200) + strnlen(sDevMaName,50));
    // copy path
-   strncpy( sDevMaConfig, const_cast<char*>(cfg_path), strnlen(const_cast<char*>(cfg_path),200) );
+   strncpy( sDevMaConfig, cfg_path, strnlen(cfg_path,200) );
    // copy name
    strcat(sDevMaConfig, sDevMaName);
 

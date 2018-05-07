@@ -15,7 +15,6 @@ add_library(${PROJECT_NAME} STATIC
      ${CMAKE_CURRENT_SOURCE_DIR}/interface/CxInterface.cpp
      ${CMAKE_CURRENT_SOURCE_DIR}/interface/CxInterfaceManager.cpp
      ${CMAKE_CURRENT_SOURCE_DIR}/parser/CxIniFileParser.cpp
-     ${CMAKE_CURRENT_SOURCE_DIR}/staticpool/CxStaticPool.cpp
     )
 
 target_include_directories(${PROJECT_NAME}
@@ -23,7 +22,6 @@ target_include_directories(${PROJECT_NAME}
     PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/eventpool/include
     PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/interface/include
     PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/parser/include
-    PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/staticpool/include
     )
 
 target_link_libraries(${PROJECT_NAME}

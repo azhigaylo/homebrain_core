@@ -2,10 +2,11 @@
 #define _CX_LOG_DEV_MANAGER
 
 //------------------------------------------------------------------------------
+#include <vector>
+
 #include "common/slog.h"
 #include "common/utils.h"
 #include "os_wrapper/CxMutex.h"
-#include "staticpool/CxVector.h"
 #include "IxLogDevice.h"
 //------------------------------------------------------------------------------
 #define logDevListSize 30
@@ -40,7 +41,7 @@ class CxLogDeviceManager
 
    void clr_logdev_list();
 
-   CxVector<TLogDevListItem> LOGDEV_LIST;
+   std::vector<TLogDevListItem> LOGDEV_LIST;
    uint16_t logDevCounter;
    TLogDevListItem logDevListItemTmp;
 

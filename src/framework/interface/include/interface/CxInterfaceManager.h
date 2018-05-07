@@ -2,7 +2,8 @@
 #define _CX_INTERFACE_MANAGER
 
 //------------------------------------------------------------------------------
-#include "staticpool/CxList.h"
+#include <vector>
+
 #include "os_wrapper/CxMutex.h"
 #include "IxInterface.h"
 //------------------------------------------------------------------------------
@@ -37,7 +38,7 @@ class CxInterfaceManager
       void clr_interface_list();
 
       uint16_t interfaceCounter;
-      CxList<TInterfaceItem> CONNECTION_LIST;
+      std::vector<TInterfaceItem> CONNECTION_LIST;
 
       static CxMutex singlInterfaceLock;
       static CxInterfaceManager* theInstance;

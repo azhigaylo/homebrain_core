@@ -3,10 +3,10 @@
 
 //------------------------------------------------------------------------------
 #include <signal.h>
+#include <vector>
 //------------------------------------------------------------------------------
 #include "os_wrapper/IxRunnable.h"
 
-#include "staticpool/CxVector.h"
 #include "processor/CxUsoProcessor.h"
 #include "eventpool/IxEventConsumer.h"
 #include "parser/CxIniFileParser.h"
@@ -67,7 +67,7 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
       // project loader
       CxUsoCfgLoader UsoCfgLoader;
       // list for each uso processors
-      CxVector<CxUsoProcessor*> ProcessorList;
+      std::vector<CxUsoProcessor*> ProcessorList;
 
       void load_driver( const char *sDrvName );
       void start_sys_interface( const char *sIntName );

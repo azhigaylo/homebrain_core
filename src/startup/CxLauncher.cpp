@@ -1,4 +1,7 @@
 //------------------------------------------------------------------------------
+#include <string.h>
+#include <stdlib.h>
+
 #include "common/utils.h"
 
 #include "serial/CxSerialDriver.h"
@@ -59,8 +62,8 @@ void CxLauncher::load_all_drivers()
 
       do
       {
-         load_driver( sDriverItem );
          printDebug("CxLauncher::%s: sDriverItem = %s", __FUNCTION__, sDriverItem);
+         load_driver( sDriverItem );
          sDriverItem = strsep(&sDrivers, " ");
       }
       while( NULL != sDriverItem );
@@ -97,7 +100,7 @@ void CxLauncher::start_sys_interface( const char *sIntName )
             pModBusMaster->open();
             // for each user interface we will create thread for independent processing
             CxUsoProcessor *pUsoProcessor = new CxUsoProcessor( "uso_processor", sName );
-            ProcessorList.add( pUsoProcessor );
+            ProcessorList.push_back( pUsoProcessor );
          }
 
          // MB_SLAVE interfaces
@@ -164,7 +167,7 @@ void CxLauncher::startUsoProcessors()
 {
    pCxLogDeviceManager pLogDeviceMan = CxLogDeviceManager::getInstance();
 
-   for( uint8_t itr = 0; itr < ProcessorList.count(); itr++ )
+   for( uint8_t itr = 0; itr < ProcessorList.size(); itr++ )
    {
       CxUsoProcessor *pPrc = ProcessorList[itr];
 
@@ -187,7 +190,7 @@ void CxLauncher::startUsoProcessors()
    }
 
    // start all tasks
-   for( uint8_t itr = 0; itr < ProcessorList.count(); itr++ )
+   for( uint8_t itr = 0; itr < ProcessorList.size(); itr++ )
    {
       CxUsoProcessor *pPrc = ProcessorList[itr];
 
@@ -206,7 +209,7 @@ void CxLauncher::close_activities()
    printDebug("HomeBrainVx01/%s: close_activities...", __FUNCTION__ );
 
    // close uso processors
-   for( uint8_t itr = 0; itr < ProcessorList.count(); itr++ )
+   for( uint8_t itr = 0; itr < ProcessorList.size(); itr++ )
    {
       CxUsoProcessor *pPrc = ProcessorList[itr];
 
@@ -217,21 +220,20 @@ void CxLauncher::close_activities()
       }
    }
 
-   // here will be deleted not only InterfaceManager, will be deleted all interfaces
-   pCxInterfaceManager pInterfaceMan = CxInterfaceManager::getInstance();
-   pInterfaceMan->delInstance();
+   ProcessorList.clear();
 
    // here will be deleted not only LogDeviceManager, will be deleted all logical devices
    pCxLogDeviceManager pLogDeviceMan = CxLogDeviceManager::getInstance();
    pLogDeviceMan->delInstance();
 
+   // here will be deleted not only InterfaceManager, will be deleted all interfaces
+   pCxInterfaceManager pInterfaceMan = CxInterfaceManager::getInstance();
+   pInterfaceMan->delInstance();
+
    if ( 0 != pDriver) delete pDriver;
 
    pTCxEventDispatcher pEventDispatcher = CxEventDispatcher::getInstance();
    pEventDispatcher->delInstance();
-
-   pTCxStaticPool pStaticPool = CxStaticPool::getInstance();
-   pStaticPool->delInstance();
 }
 
 //------------------------------------------------------------------------------
