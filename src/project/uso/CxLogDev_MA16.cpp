@@ -52,6 +52,7 @@ bool CxLogDev_MA::Process()
       // if error count less than retry_comm_count - do request
       if (commError < retry_comm_count)
       {
+            printDebug("CxLogDev_ExtMod/%s: logdev=%s", __FUNCTION__, getDeviceName());
             if (true == ReadRegisters())
             {
                CheckAndSetOutput();

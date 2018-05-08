@@ -108,8 +108,8 @@ int32_t CxQueue::receive( void *pItemFromQueue, int32_t msg_size )
       FD_SET(xQueue, &fds);
 
       struct timeval tv;
-      tv.tv_sec = 1;
-      tv.tv_usec = 0;
+      tv.tv_sec = 0;
+      tv.tv_usec = 100000;
 
       const int ret = select(xQueue+1, &fds, NULL, NULL, &tv);
       //Check if our file descriptor has received data.

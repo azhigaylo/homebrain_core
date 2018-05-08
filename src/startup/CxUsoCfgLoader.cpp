@@ -48,8 +48,6 @@ void CxUsoCfgLoader::OpenExtModuleConfig( const char* cfg_path )
 {
    const char *sExtModName = "ExtMod.bin";
 
-   printDebug("CxUsoCfgLoader/%s: cfg_path = %s", __FUNCTION__, cfg_path);
-
    // allocate memory for name str
    char *sExtModConfig = (char*)malloc(strnlen(cfg_path,200) + strnlen(sExtModName,50));
    memset(sExtModConfig, 0, strnlen(cfg_path,200) + strnlen(sExtModName,50));
@@ -78,10 +76,15 @@ void CxUsoCfgLoader::OpenExtModuleConfig( const char* cfg_path )
 
             for(uint8_t modNum=0; modNum < totalMod; modNum++)
             {
-               //
                if (-1 != read( ID,(char*)&CMODHEADER, sizeof(TMODHEADER)))
                {
-                  printDebug("CxUsoCfgLoader/%s: find module modNum=%d: %d %d %d %d %d", __FUNCTION__, modNum, CMODHEADER.Adress, CMODHEADER.PortN, CMODHEADER.EMODpoint, CMODHEADER.RRecNumb, CMODHEADER.WRecNumb );
+                  printDebug("CxUsoCfgLoader/%s: find module modNum=%d: %d %d %d %d %d", __FUNCTION__,
+                                                                                         modNum,
+                                                                                         CMODHEADER.Adress,
+                                                                                         CMODHEADER.PortN,
+                                                                                         CMODHEADER.EMODpoint,
+                                                                                         CMODHEADER.RRecNumb,
+                                                                                         CMODHEADER.WRecNumb );
                   // read linked data
                   uint32_t linkedSize = static_cast<uint32_t>((CMODHEADER.RRecNumb*sizeof(TLinkedReg) + CMODHEADER.WRecNumb*sizeof(TLinkedReg)));
                   TLinkedReg *pLinkedReg = new TLinkedReg[CMODHEADER.RRecNumb + CMODHEADER.WRecNumb];
@@ -149,8 +152,6 @@ void CxUsoCfgLoader::OpenAnalModuleConfig( const char* cfg_path )
    const char *sDevMaName = "uso.bin";
    const char *sDummyName  = "LogDev_MA_";
 
-   printDebug("CxUsoCfgLoader/%s: cfg_path = %s", __FUNCTION__, cfg_path);
-
    // allocate memory for name str
    char *sDevMaConfig = (char*)malloc(strnlen(cfg_path,200) + strnlen(sDevMaName,50));
    memset(sDevMaConfig, 0, strnlen(cfg_path,200) + strnlen(sDevMaName,50));
@@ -187,8 +188,12 @@ void CxUsoCfgLoader::OpenAnalModuleConfig( const char* cfg_path )
                // read module description
                if (-1 != read( ID,(char*)&CommonC, sizeof(CommonC.ContAI_USO)))
                {
-                  printDebug("CxUsoCfgLoader/%s: find module modNum=%d: %d %d %d", __FUNCTION__, modNum, CommonC.ContAI_USO.Adress, CommonC.ContAI_USO.USOpoint, CommonC.ContAI_USO.ChanN );
-
+                  printDebug("CxUsoCfgLoader/%s: find module modNum=%d: %d %d %d %d", __FUNCTION__,
+                                                                                      modNum,
+                                                                                      CommonC.ContAI_USO.Adress,
+                                                                                      CommonC.ContAI_USO.PortN,
+                                                                                      CommonC.ContAI_USO.USOpoint,
+                                                                                      CommonC.ContAI_USO.ChanN );
                   // read channel description
                   uint32_t linkedSize = static_cast<uint32_t>(CommonC.ContAI_USO.ChanN * sizeof(CommonC.AioChannel));
                   TAioChannel *pAioChannel = new TAioChannel[CommonC.ContAI_USO.ChanN];

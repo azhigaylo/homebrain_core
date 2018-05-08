@@ -76,7 +76,7 @@ void CxUsoProcessor::TaskProcessor()
    // all uso modules on this port cpu was not locked on the communication task
    if (errCounter == LOGDEV_LIST.size())
    {
-      sleep_mcs(200000);
+       sleep_mcs(200000);
    }
 
    sleep_mcs(50);

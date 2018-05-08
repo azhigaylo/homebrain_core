@@ -50,18 +50,19 @@ bool CxLogDev_ExtMod::Process()
       // if error count less than retry_comm_count - do request
       if (commError < retry_comm_count)
       {
-            if (true == ReadWriteRegisters())
-            {
-               // set status for that USO
-               setExtModStatus( USO_Status_OK );
+          printDebug("CxLogDev_ExtMod/%s: logdev=%s", __FUNCTION__, getDeviceName());
+          if (true == ReadWriteRegisters())
+          {
+             // set status for that USO
+             setExtModStatus( USO_Status_OK );
 
-               commError = 0;
-               result = true;
-            }
-            else
-            {
-               commError++;           // increment error counter
-            }
+             commError = 0;
+             result = true;
+          }
+          else
+          {
+             commError++;           // increment error counter
+          }
       }
       else
       {

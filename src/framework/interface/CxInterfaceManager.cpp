@@ -70,6 +70,8 @@ IxInterface *CxInterfaceManager::get_interface( const char *name )
 {
    CxMutexLocker locker(&CxInterfaceManager::singlInterfaceLock);
 
+   printDebug("CxInterfaceManager/%s: request for = %s ", __FUNCTION__, name);
+
    for( uint8_t itr = 0; itr < CONNECTION_LIST.size(); itr++ )
    {
       pIxInterface pInterface = CONNECTION_LIST[itr].pInterface;
