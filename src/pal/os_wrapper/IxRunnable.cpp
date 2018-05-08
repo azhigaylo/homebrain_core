@@ -92,7 +92,7 @@ void IxRunnable::run()
   {
     TaskProcessor();
   }
-  printError("IxRunnable::%s: thread=%s was finished...", __FUNCTION__, pcTaskName);
+  printError("IxRunnable::%s: thread=%s was finished", __FUNCTION__, pcTaskName);
 }
 
 void IxRunnable::TaskProcessor()

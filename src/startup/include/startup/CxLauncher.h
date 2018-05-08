@@ -6,6 +6,7 @@
 #include <vector>
 //------------------------------------------------------------------------------
 #include "os_wrapper/IxRunnable.h"
+#include "os_wrapper/IxDriver.h"
 
 #include "processor/CxUsoProcessor.h"
 #include "eventpool/IxEventConsumer.h"
@@ -68,6 +69,8 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
       CxUsoCfgLoader UsoCfgLoader;
       // list for each uso processors
       std::vector<CxUsoProcessor*> ProcessorList;
+      // list for every driver in the system
+      std::vector<IxDriver*> DriverList;
 
       void load_driver( const char *sDrvName );
       void start_sys_interface( const char *sIntName );

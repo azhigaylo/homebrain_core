@@ -108,7 +108,7 @@ void CxLogDeviceManager::clr_logdev_list()
       IxLogDevice *pDevice = LOGDEV_LIST[itr].pLogDevice;
       if( NULL != pDevice )
       {
-         printDebug("CxLogDeviceManager/%s: try to remove LogDev = %s...", __FUNCTION__, pDevice->getDeviceName());
+         printDebug("CxLogDeviceManager/%s: try to remove LogDev = %s", __FUNCTION__, pDevice->getDeviceName());
          delete pDevice;
       }
    }

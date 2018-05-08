@@ -99,7 +99,7 @@ void CxInterfaceManager::clr_interface_list()
 
        if (pInterface != 0)
        {
-          printDebug("CxInterfaceManager/%s: try to remove interface = %s...", __FUNCTION__, pInterface->getInterfaceName());
+          printDebug("CxInterfaceManager/%s: try to remove interface = %s", __FUNCTION__, pInterface->getInterfaceName());
           delete pInterface;
        }
     }

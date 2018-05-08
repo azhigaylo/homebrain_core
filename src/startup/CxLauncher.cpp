@@ -22,7 +22,6 @@ void CxLauncher::load_debug()
 }
 
 //------------------------------------------------------------------------------
-CxSerialDriver *pDriver = 0;
 void CxLauncher::load_driver( const char *sDrvName )
 {
    // start serial driver SERIAL_1
@@ -45,7 +44,8 @@ void CxLauncher::load_driver( const char *sDrvName )
       printDebug("CxLauncher::%s: %s path = %s", __FUNCTION__, sDrvName, serialPath);
       printDebug("CxLauncher::%s: %s baudrate = %d", __FUNCTION__, sDrvName, dcb.BaudRate);
 
-      pDriver = new CxSerialDriver( serialName, serialPath, &dcb );
+      CxSerialDriver *pDriver = new CxSerialDriver( serialName, serialPath, &dcb );
+      DriverList.push_back( pDriver );
       pDriver->driver_run();
    }
 
@@ -209,6 +209,7 @@ void CxLauncher::close_activities()
    printDebug("HomeBrainVx01/%s: close_activities...", __FUNCTION__ );
 
    // close uso processors
+   printDebug("HomeBrainVx01/%s: close interface processors...", __FUNCTION__ );
    for( uint8_t itr = 0; itr < ProcessorList.size(); itr++ )
    {
       CxUsoProcessor *pPrc = ProcessorList[itr];
@@ -216,22 +217,34 @@ void CxLauncher::close_activities()
       if( NULL != pPrc )
       {
          delete pPrc;
-         pPrc = NULL;
       }
    }
 
-   ProcessorList.clear();
-
    // here will be deleted not only LogDeviceManager, will be deleted all logical devices
+   printDebug("HomeBrainVx01/%s: close logdevices and manager...", __FUNCTION__ );
    pCxLogDeviceManager pLogDeviceMan = CxLogDeviceManager::getInstance();
    pLogDeviceMan->delInstance();
 
    // here will be deleted not only InterfaceManager, will be deleted all interfaces
+   printDebug("HomeBrainVx01/%s: close interfaces and manager...", __FUNCTION__ );
    pCxInterfaceManager pInterfaceMan = CxInterfaceManager::getInstance();
    pInterfaceMan->delInstance();
 
-   if ( 0 != pDriver) delete pDriver;
+   // close drivers
+   printDebug("HomeBrainVx01/%s: close drivers...", __FUNCTION__ );
+   for( uint8_t itr = 0; itr < DriverList.size(); itr++ )
+   {
+       IxDriver *pDrv = DriverList[itr];
 
+       if( NULL != pDrv )
+       {
+          delete pDrv;
+       }
+   }
+   DriverList.clear();
+
+   // close event pool
+   printDebug("HomeBrainVx01/%s: close event processing...", __FUNCTION__ );
    pTCxEventDispatcher pEventDispatcher = CxEventDispatcher::getInstance();
    pEventDispatcher->delInstance();
 }
@@ -249,6 +262,7 @@ CxLauncher::CxLauncher( const char* cgf_name ):
   ,IniFileParser     ( )
   ,UsoCfgLoader      ()
   ,ProcessorList     ()
+  ,DriverList        ()
 {
    strncpy( cgfname, const_cast<char*>(cgf_name), sizeof(cgfname) );
 
