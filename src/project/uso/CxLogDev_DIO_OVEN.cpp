@@ -102,19 +102,19 @@ bool CxLogDev_DIO_OVEN::CheckAndSetOutput()
       for (uint8_t i=0; i<dev_settings.chanNumb; i++, pCurCh++)
       {
          // set status
-         if (0 != pCurCh->Number)
+         if (0 != pCurCh->PointNumb)
          {
             switch (GetChannelType(pCurCh))
             {
                case CT_DISCRET_OUT :
                {
-                  if (STATUS_SETNEW == dataProvider.getDStatus(pCurCh->Number))
+                  if (STATUS_SETNEW == dataProvider.getDStatus(pCurCh->PointNumb))
                   {
-                    TDPOINT & d_point = dataProvider.getDPoint( pCurCh->Number );
+                    TDPOINT & d_point = dataProvider.getDPoint( pCurCh->PointNumb );
 
                     if (true == pModBusMaster->SetRegister( dev_settings.address, i, static_cast<uint16_t>(d_point.value) ))
                     {
-                       dataProvider.setDStatus( pCurCh->Number, STATUS_PROCESSED );
+                       dataProvider.setDStatus( pCurCh->PointNumb, STATUS_PROCESSED );
                        result = true;
                     }
                   }
@@ -147,12 +147,10 @@ bool CxLogDev_DIO_OVEN::ReadRegisters()
       {
          if (CT_DISCRET_IN == GetChannelType(pCurCh))
          {
-            pCurCh->Code = ConvertMBint( mbResponce[i]);
+             // process register data
+             // TODO
          }
       }
-
-      // process register data
-      // TODO
 
       result = true;
    }
@@ -194,14 +192,14 @@ void CxLogDev_DIO_OVEN::setUsoStatus( uint16_t status )
       for (uint8_t i=0; i<dev_settings.chanNumb; i++, pCurCh++)
       {
          // set status
-         if (0 != pCurCh->Number)
+         if (0 != pCurCh->PointNumb)
          {
             switch (GetChannelType(pCurCh))
             {
                case CT_DISCRET_IN  :
                case CT_DISCRET_OUT :
                {
-                  dataProvider.setDPoint(pCurCh->Number, STATUS_UNKNOWN);
+                  dataProvider.setDPoint(pCurCh->PointNumb, STATUS_UNKNOWN);
                   break;
                }
                default : break;

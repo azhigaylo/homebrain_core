@@ -12,6 +12,7 @@
 #include "common/utils.h"
 #include "uso/USODefinition.h"
 #include "uso/CxLogDev_MA16.h"
+#include "uso/CxLogDev_DIO_OVEN.h"
 #include "uso/CxLogDev_ExtMod.h"
 #include "startup/CxUsoCfgLoader.h"
 
@@ -39,6 +40,8 @@ void CxUsoCfgLoader::Load( const char* cfg_path )
       OpenExtModuleConfig( sUsoCgf_path );
 
       OpenAnalModuleConfig( sUsoCgf_path );
+
+      OpenDioModuleConfig( sUsoCgf_path );
 
       free (sUsoCgf_path);
    }
@@ -168,8 +171,6 @@ void CxUsoCfgLoader::OpenAnalModuleConfig( const char* cfg_path )
       {
          printDebug("CxUsoCfgLoader/%s: load %s", __FUNCTION__, sDevMaConfig);
 
-         int8_t nmb_AI_moduls = 0, nmb_DIDO_moduls = 0, nmb_MUK_moduls = 0, nmb_LO1111_moduls = 0;
-
          union
          {
             TConfigFileSP ConfigFileSP; TAioChannel AioChannel; TDioChannel DioChannel; TContAI_USO ContAI_USO; TContDIDO_USO ContDIDO_USO; TContMUK_USO ContMUK_USO; TContLO1111_USO ContLO1111_USO;
@@ -177,10 +178,7 @@ void CxUsoCfgLoader::OpenAnalModuleConfig( const char* cfg_path )
 
          if (-1 != read( ID,(char*)&CommonC, sizeof(CommonC.ConfigFileSP)) )
          {
-            nmb_AI_moduls   = CommonC.ConfigFileSP.nmb_AI_moduls;
-            nmb_DIDO_moduls = CommonC.ConfigFileSP.nmb_DIDO_moduls;
-            nmb_MUK_moduls  = CommonC.ConfigFileSP.nmb_MUK_moduls;
-            nmb_LO1111_moduls = CommonC.ConfigFileSP.nmb_LO1111_moduls;
+           int8_t nmb_AI_moduls   = CommonC.ConfigFileSP.nmb_AI_moduls;
 
            // create AI module
            for (uint8_t modNum=0; modNum<nmb_AI_moduls; modNum++)
@@ -225,19 +223,92 @@ void CxUsoCfgLoader::OpenAnalModuleConfig( const char* cfg_path )
                   printError("CxUsoCfgLoader/%s: read %s, error=%s", __FUNCTION__, sDevMaConfig, strerror(errno));
                }
             }
-           // another modules
+         }
+         close( ID );
+      }
+      else
+      {
+         printDebug("CxUsoCfgLoader/%s: open %s, error=%s", __FUNCTION__, sDevMaConfig, strerror(errno));
+      }
+
+      free(sDevMaConfig);
+   }
+}
+
+
+void CxUsoCfgLoader::OpenDioModuleConfig( const char* cfg_path )
+{
+   const char *sDevMaName = "uso.bin";
+   const char *sDummyName  = "LogDev_DIO_";
+
+   // allocate memory for name str
+   char *sDevMaConfig = (char*)malloc(strnlen(cfg_path,200) + strnlen(sDevMaName,50));
+   memset(sDevMaConfig, 0, strnlen(cfg_path,200) + strnlen(sDevMaName,50));
+   // copy path
+   strncpy( sDevMaConfig, cfg_path, strnlen(cfg_path,200) );
+   // copy name
+   strcat(sDevMaConfig, sDevMaName);
+
+   if (0 != sDevMaConfig)
+   {
+      int ID = open( sDevMaConfig, O_RDONLY );
+
+      if( -1 != ID )
+      {
+         printDebug("CxUsoCfgLoader/%s: load %s", __FUNCTION__, sDevMaConfig);
+
+         union
+         {
+            TConfigFileSP ConfigFileSP; TAioChannel AioChannel; TDioChannel DioChannel; TContAI_USO ContAI_USO; TContDIDO_USO ContDIDO_USO; TContMUK_USO ContMUK_USO; TContLO1111_USO ContLO1111_USO;
+         }CommonC;
+
+         if (-1 != read( ID,(char*)&CommonC, sizeof(CommonC.ConfigFileSP)) )
+         {
+            int8_t nmb_DIDO_moduls = CommonC.ConfigFileSP.nmb_DIDO_moduls;
+
+           // create AI module
            for (uint8_t modNum=0; modNum<nmb_DIDO_moduls; modNum++)
            {
+               // read module description
+               if (-1 != read( ID,(char*)&CommonC, sizeof(CommonC.ContDIDO_USO)))
+               {
+                  printDebug("CxUsoCfgLoader/%s: find module modNum=%d: %d %d %d %d", __FUNCTION__,
+                                                                                      modNum,
+                                                                                      CommonC.ContDIDO_USO.Adress,
+                                                                                      CommonC.ContDIDO_USO.PortN,
+                                                                                      CommonC.ContDIDO_USO.USOpoint,
+                                                                                      CommonC.ContDIDO_USO.ChanN );
+                  // read channel description
+                  uint32_t linkedSize = static_cast<uint32_t>(CommonC.ContDIDO_USO.ChanN * sizeof(CommonC.DioChannel));
+                  TDioChannel *pDioChannel = new TDioChannel[CommonC.ContDIDO_USO.ChanN];
 
-           }
-           for (uint8_t modNum=0; modNum<nmb_MUK_moduls; modNum++)
-           {
+                  if (-1 != read( ID, (char*)pDioChannel, linkedSize))
+                  {
+                     // make a name
+                     char *sCfgName = (char*)malloc(100);
+                     sprintf( sCfgName, "%s%d", sDummyName, modNum);
 
-           }
-           for (uint8_t modNum=0; modNum<nmb_LO1111_moduls; modNum++)
-           {
+                     char *sInterfaceName = (char*)malloc(100);
+                     sprintf( sInterfaceName, "mb_master_%d", CommonC.ContDIDO_USO.PortN);
 
-           }
+                     // create logical device
+                     TDIO_USO contDIO_USO = { CommonC.ContDIDO_USO.Adress, CommonC.ContDIDO_USO.USOpoint, CommonC.ContDIDO_USO.ChanN, pDioChannel };
+
+                     new CxLogDev_DIO_OVEN( sCfgName, sInterfaceName, contDIO_USO);   // this item will be deleted in CxLogDeviceManager::delInstance()
+
+                     free(sCfgName);
+                     free(sInterfaceName);
+                  }
+                  else
+                  {
+                     printDebug("CxUsoCfgLoader/%s: read LinkedReg, error=%s", __FUNCTION__, strerror(errno));
+                  }
+               }
+               else
+               {
+                  printError("CxUsoCfgLoader/%s: read %s, error=%s", __FUNCTION__, sDevMaConfig, strerror(errno));
+               }
+            }
          }
 
          close( ID );

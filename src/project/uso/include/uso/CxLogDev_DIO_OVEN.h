@@ -16,10 +16,9 @@
 
    struct TDioChannel
    {
-      uint8_t  Number;          // number of channel
-      uint8_t  Type;            // channel type
-      uint16_t Code;            // raw data from register
-   };
+      int8_t Type;           // chanel type
+      uint16_t PointNumb;    // storage point for DI3 chanel
+   };// ttl 3 byte
 
    struct TDIO_USO
    {

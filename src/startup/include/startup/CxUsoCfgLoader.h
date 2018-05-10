@@ -62,12 +62,6 @@
      uint16_t StealPointNumb;
    };// ttl  byte
 
-   struct TDioChannel
-   {
-      int8_t Type;           // chanel type
-      uint16_t PointNumb;    // storage point for DI3 chanel
-   };// ttl 3 byte
-
    struct TConfigFileSP
    {
       TPortMode PortMode;
@@ -103,6 +97,7 @@ class CxUsoCfgLoader
 
       void OpenExtModuleConfig( const char* cfg_path );
       void OpenAnalModuleConfig( const char* cfg_path );
+      void OpenDioModuleConfig( const char* cfg_path );
 
       char* sUsoCgf_path;
 
