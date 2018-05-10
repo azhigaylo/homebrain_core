@@ -29,7 +29,7 @@ class CxThreadIO : public IxRunnable
      // stop all parts of system task
      void Stop();
 
-     void sendMsg( uint16_t ComID, void *data );
+     bool sendMsg( uint16_t ComID, void *data );
 
      virtual void CommandProcessor( uint16_t ComID, void *data ) = 0;
      virtual void ThreadProcessor ( );

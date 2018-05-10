@@ -47,8 +47,10 @@ void CxThreadIO::Stop()
    printDebug("CxThreadIO/%s: OI thread=%s deleted", __FUNCTION__, pcTaskName);
 }
 
-void CxThreadIO::sendMsg( uint16_t ComID, void *data )
+bool CxThreadIO::sendMsg( uint16_t ComID, void *data )
 {
+   bool result = true;
+
    TCommand Command = { 0, 0, 0, 0, NULL };
 
    // we should check was client registred or not
@@ -66,7 +68,9 @@ void CxThreadIO::sendMsg( uint16_t ComID, void *data )
    else
    {
       printWarning("CxThreadIO/%s: ComID=%d skipped", __FUNCTION__, ComID);
+      result = false;
    }
+   return result;
 }
 
 

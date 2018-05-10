@@ -71,19 +71,19 @@ uint16_t CxModBusMaster::GetRegister( uint8_t address, uint16_t reg_start, uint1
    memcpy(commbuf.buffer, &mbReadRequest, sizeof mbReadRequest);
 
    // send message to serial driver
-   sendMsg( CM_OUT_DATA, &commbuf );
-
-   sleep_till_resp();
-
-   if ( 0 != sizeResponce)
+   if (true == sendMsg( CM_OUT_DATA, &commbuf ))
    {
-      if (0 != pResponce)
-      {
-         memcpy( pResponce, mbResponce.OutputBuf, sizeResponce );
-      }
-      reg_num = static_cast<uint8_t>(mbResponce.Header.counter / (uint8_t)(sizeof(uint16_t)));
-   }
+      sleep_till_resp();
 
+      if ( 0 != sizeResponce)
+      {
+         if (0 != pResponce)
+         {
+            memcpy( pResponce, mbResponce.OutputBuf, sizeResponce );
+         }
+         reg_num = static_cast<uint8_t>(mbResponce.Header.counter / (uint8_t)(sizeof(uint16_t)));
+      }
+   }
    return reg_num;
 }
 
