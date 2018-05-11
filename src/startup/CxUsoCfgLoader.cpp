@@ -239,7 +239,7 @@ void CxUsoCfgLoader::OpenAnalModuleConfig( const char* cfg_path )
 void CxUsoCfgLoader::OpenDioModuleConfig( const char* cfg_path )
 {
    const char *sDevMaName = "uso.bin";
-   const char *sDummyName  = "LogDev_DIO_";
+   const char *sDummyName  = "LogDev_DIO_OVEN_";
 
    // allocate memory for name str
    char *sDevMaConfig = (char*)malloc(strnlen(cfg_path,200) + strnlen(sDevMaName,50));
