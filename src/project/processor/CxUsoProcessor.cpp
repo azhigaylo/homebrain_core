@@ -22,15 +22,16 @@ CxUsoProcessor::CxUsoProcessor( const char * sPrcName, const char *sInterfaceNma
 
 CxUsoProcessor::~CxUsoProcessor( )
 {
+   // delete my own task
+   task_stop( );
+
+   printDebug("CxUsoProcessor/%s: Processor for %s removed", __FUNCTION__, sUsedInterface );
+
    if (0 != sUsedInterface)
    {
       free( sUsedInterface );
    }
 
-   // delete my own task
-   task_stop( );
-
-   printDebug("CxUsoProcessor/%s: Processor for %s removed", __FUNCTION__, sUsedInterface );
 }
 
 //------------------------------------------------------------------------------

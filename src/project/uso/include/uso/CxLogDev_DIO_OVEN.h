@@ -4,6 +4,7 @@
 //------------------------------------------------------------------------------
 #include <unistd.h>
 #include <termios.h>
+#include <string>
 
 #include "common/ptypes.h"
 #include "common/utils.h"
@@ -46,6 +47,14 @@ class CxLogDev_DIO_OVEN : public CxLogDevice, public CxSysTimer
 
    private :
 
+      enum TDeviceType
+      {
+         DT_UNKNOWN  = 0,
+         DT_INPUT    = 1,
+         DT_OUTPUT   = 2,
+         DT_MIXED    = 3
+      };
+
       enum TChType
       {
          CT_UNUSED      = 0,
@@ -53,16 +62,26 @@ class CxLogDev_DIO_OVEN : public CxLogDevice, public CxSysTimer
          CT_DISCRET_OUT = 2
       };
 
+      enum MBusMaskRegister
+      {
+         discret_output_reg = 0x32,
+         discret_input_reg  = 0x33
+      };
+
       TDIO_USO        dev_settings;       // USO settings address and so on
       uint8_t         commError;          // communication error with USO
       CxDataProvider  &dataProvider;      // reference on the data provider
       CxModBusMaster  *pModBusMaster;     // pointer to the interface
+      TDeviceType     dev_type;           //
 
-      bool CheckAndSetOutput();
-      bool ReadRegisters();
+      bool ProcessDevice();
+      bool ProcessDiDevice();
+      bool ProcessDoDevice();
 
-      TChType GetChannelType( const TDioChannel *pCurCh  );
+      TChType GetChannelType( const TDioChannel *pCurCh );
+      TDeviceType GetDeviceType( TDIO_USO settings );
       void setUsoStatus( uint16_t status );
+      std::string deviceType2Str(TDeviceType d_type);
 
       CxLogDev_DIO_OVEN( const CxLogDev_DIO_OVEN & );
       CxLogDev_DIO_OVEN & operator=( const CxLogDev_DIO_OVEN & );

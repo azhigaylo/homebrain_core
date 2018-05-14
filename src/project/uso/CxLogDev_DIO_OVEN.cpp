@@ -25,12 +25,16 @@ CxLogDev_DIO_OVEN::CxLogDev_DIO_OVEN( const char *logDevName, const char *usedIn
    ,commError      ( 0 )
    ,dataProvider   ( CxDataProvider::getInstance() )
    ,pModBusMaster  ( 0 )
+   ,dev_type       (GetDeviceType(usoSettings))
 {
    pCxInterfaceManager pInterfaceManager = CxInterfaceManager::getInstance();
    pIxInterface pInterface = pInterfaceManager->get_interface( usedInterface );
    pModBusMaster = dynamic_cast<CxModBusMaster*>(pInterface);
 
-   printDebug("CxLogDev_DIO_OVEN/%s: pModBusMaster=0x%lx", __FUNCTION__, pModBusMaster);
+   printDebug("CxLogDev_DIO_OVEN/%s: device type=%s(%d), interface pModBusMaster=0x%lx", __FUNCTION__,
+                                                                                   deviceType2Str(dev_type).c_str(),
+                                                                                   dev_type,
+                                                                                   pModBusMaster);
 }
 
 CxLogDev_DIO_OVEN::~CxLogDev_DIO_OVEN()
@@ -52,10 +56,9 @@ bool CxLogDev_DIO_OVEN::Process()
       // if error count less than retry_comm_count - do request
       if (commError < retry_comm_count)
       {
-            printDebug("CxLogDev_ExtMod/%s: logdev=%s", __FUNCTION__, getDeviceName());
-            if (true == ReadRegisters())
+            printDebug("CxLogDev_DIO_OVEN/%s: logdev=%s", __FUNCTION__, getDeviceName());
+            if (true == ProcessDevice())
             {
-               CheckAndSetOutput();
                // set status for that USO
                setUsoStatus( USO_Status_OK );
 
@@ -90,53 +93,47 @@ void CxLogDev_DIO_OVEN::sigHandler()
 }
 
 //------------------------------------------------------------------------------
-bool CxLogDev_DIO_OVEN::CheckAndSetOutput()
+
+bool CxLogDev_DIO_OVEN::ProcessDevice()
 {
    bool result = false;
 
-   if (0 != dev_settings.channelsPtr)
+   switch(dev_type)
    {
-	   TDioChannel *pCurCh = dev_settings.channelsPtr;
-
-      // set error status for channel
-      for (uint8_t i=0; i<dev_settings.chanNumb; i++, pCurCh++)
+      case DT_INPUT:
       {
-         // set status
-         if (0 != pCurCh->PointNumb)
-         {
-            switch (GetChannelType(pCurCh))
-            {
-               case CT_DISCRET_OUT :
-               {
-                  if (STATUS_SETNEW == dataProvider.getDStatus(pCurCh->PointNumb))
-                  {
-                    TDPOINT & d_point = dataProvider.getDPoint( pCurCh->PointNumb );
-
-                    if (true == pModBusMaster->SetRegister( dev_settings.address, i, static_cast<uint16_t>(d_point.value) ))
-                    {
-                       dataProvider.setDStatus( pCurCh->PointNumb, STATUS_PROCESSED );
-                       result = true;
-                    }
-                  }
-                  break;
-               }
-               default : break;
-            }
-         }
+         result = ProcessDiDevice();
+         break;
       }
+      case DT_OUTPUT:
+      {
+         result = ProcessDoDevice();
+         break;
+      }
+      case DT_MIXED:
+      {
+         if (true == ProcessDiDevice())
+         {
+            result = ProcessDoDevice();
+         }
+         break;
+      }
+      default : break;
    }
-
    return result;
 }
 
-bool CxLogDev_DIO_OVEN::ReadRegisters()
+bool CxLogDev_DIO_OVEN::ProcessDiDevice()
 {
    bool result = false;
-
-   uint16_t mbResponce[dev_settings.chanNumb];
+   uint16_t data_register[5];
 
    // if nothing to set we can do read all MB registers
-   uint16_t reg_num = pModBusMaster->GetRegister( dev_settings.address, 0x52, 1, mbResponce );
+   uint16_t reg_num = pModBusMaster->GetRegister( dev_settings.address, discret_input_reg, 1, data_register );
+
+   printDebug("CxLogDev_DIO_OVEN/%s: logdev=%s, reg 0x33 = %i", __FUNCTION__,
+                                                                getDeviceName(),
+                                                                data_register[0]);
 
    if ((0 != dev_settings.channelsPtr) && (reg_num == 1))
    {
@@ -145,16 +142,80 @@ bool CxLogDev_DIO_OVEN::ReadRegisters()
 
       for(uint8_t i=0; i<dev_settings.chanNumb; i++,pCurCh++)
       {
-         if (CT_DISCRET_IN == GetChannelType(pCurCh))
+         if ((0 != pCurCh->PointNumb) && (CT_DISCRET_IN == GetChannelType(pCurCh)))
          {
-             // process register data
-             // TODO
+            if (data_register[0] && (1<<i))
+            {
+               dataProvider.setDPoint(pCurCh->PointNumb, 1);
+            }
+            else
+            {
+               dataProvider.setDPoint(pCurCh->PointNumb, 0);
+            }
+            dataProvider.setDStatus(pCurCh->PointNumb, STATUS_RELIABLE);
          }
       }
-
       result = true;
    }
 
+   return result;
+}
+
+bool CxLogDev_DIO_OVEN::ProcessDoDevice()
+{
+   bool result = false;
+   uint16_t output_register[5];
+   //uint16_t output_mask = 0;
+
+   // if nothing to set we can do read all MB registers
+   uint16_t reg_num = pModBusMaster->GetRegister( dev_settings.address, discret_output_reg, 1, output_register );
+
+   printDebug("CxLogDev_DIO_OVEN/%s: logdev=%s, reg 0x32 = %d", __FUNCTION__,
+                                                                getDeviceName(),
+                                                                output_register[0]);
+   if (reg_num == 1)
+   {
+      result = true;
+   }
+
+/*
+   if ((0 != dev_settings.channelsPtr) && (reg_num == 1))
+   {
+      // preset output mask
+      output_mask = output_register;
+
+      TDioChannel *pCurCh = dev_settings.channelsPtr;
+      // set error status for channel
+      for (uint8_t i=0; i<dev_settings.chanNumb; i++, pCurCh++)
+      {
+         // set status
+         if ((0 != pCurCh->PointNumb) && (CT_DISCRET_OUT == GetChannelType(pCurCh)))
+         {
+            if (STATUS_SETNEW == dataProvider.getDStatus(pCurCh->PointNumb))
+            {
+               TDPOINT& d_point = dataProvider.getDPoint( pCurCh->PointNumb );
+               dataProvider.setDStatus( pCurCh->PointNumb, STATUS_PROCESSED );
+               if (0 != d_point.value )
+               {
+                   output_mask |= (1 << i);
+               }
+               else
+               {
+                   output_mask &= ~(1 << i);
+               }
+            }
+         }
+      }
+
+      if (true == pModBusMaster->SetRegister( dev_settings.address, discret_output_reg, output_mask ))
+      {
+         printDebug("CxLogDev_DIO_OVEN/%s: logdev=%s, write reg 0x32 = %i", __FUNCTION__,
+                                                                            getDeviceName(),
+                                                                            output_mask);
+         result = true;
+      }
+   }
+*/
    return result;
 }
 
@@ -174,6 +235,58 @@ CxLogDev_DIO_OVEN::TChType CxLogDev_DIO_OVEN::GetChannelType( const TDioChannel 
    }
 
    return chType;
+}
+
+CxLogDev_DIO_OVEN::TDeviceType CxLogDev_DIO_OVEN::GetDeviceType( TDIO_USO settings )
+{
+   TDeviceType result = DT_UNKNOWN;
+   uint8_t output_ch  = 0;
+   uint8_t input_ch   = 0;
+
+   if (0 != settings.channelsPtr)
+   {
+      TDioChannel *pCurCh = settings.channelsPtr;
+      // set error status for channel
+      for (uint8_t i=0; i<settings.chanNumb; i++, pCurCh++)
+      {
+         // set status
+         if (0 != pCurCh->PointNumb)
+         {
+            switch (GetChannelType(pCurCh))
+            {
+               case CT_DISCRET_OUT :
+               {
+                  output_ch++;
+                  break;
+               }
+               case CT_DISCRET_IN :
+               {
+                  input_ch++;
+                  break;
+               }
+               default : break;
+            }
+         }
+      }
+
+      if (0 != output_ch)
+      {
+         if (0 != input_ch)
+         {
+            result = DT_MIXED;
+         }
+         else
+         {
+            result = DT_OUTPUT;
+         }
+      }
+      else
+      {
+         result = DT_INPUT;
+      }
+   }
+
+   return result;
 }
 
 void CxLogDev_DIO_OVEN::setUsoStatus( uint16_t status )
@@ -207,5 +320,19 @@ void CxLogDev_DIO_OVEN::setUsoStatus( uint16_t status )
          }
       }
    }
+}
+
+std::string CxLogDev_DIO_OVEN::deviceType2Str(TDeviceType d_type)
+{
+   std::string str;
+
+   switch (d_type)
+   {
+      case DT_UNKNOWN : { str = "DT_UNKNOWN" ; break;}
+      case DT_INPUT   : { str = "DT_INPUT";    break;}
+      case DT_OUTPUT  : { str = "DT_OUTPUT";   break;}
+      case DT_MIXED   : { str = "DT_MIXED";    break;}
+   }
+   return str;
 }
 

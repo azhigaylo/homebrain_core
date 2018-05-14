@@ -46,9 +46,10 @@ bool CxSerialDriver::ttyConfig(const char *ttyPath)
 
    if (tcgetattr (fdTTY, &tty) == 0)
    {
-      cfsetospeed( &tty, internalDCB.BaudRate );
-      cfsetispeed( &tty, internalDCB.BaudRate );
+      cfsetospeed( &tty, B38400 );
+      cfsetispeed( &tty, B38400 );
 
+      printDebug ("CxSerialDriver/%s: fdTTY=%i, internalDCB.BaudRate = %i", __FUNCTION__, fdTTY, internalDCB.BaudRate);
       //set bits per byte
       switch (internalDCB.ByteSize)
       {
