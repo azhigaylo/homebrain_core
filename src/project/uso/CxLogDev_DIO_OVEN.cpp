@@ -126,14 +126,15 @@ bool CxLogDev_DIO_OVEN::ProcessDevice()
 bool CxLogDev_DIO_OVEN::ProcessDiDevice()
 {
    bool result = false;
-   uint16_t data_register[5];
+   uint16_t mbResponce[5];
+   uint16_t data_register = 0;
 
    // if nothing to set we can do read all MB registers
-   uint16_t reg_num = pModBusMaster->GetRegister( dev_settings.address, discret_input_reg, 1, data_register );
+   uint16_t reg_num = pModBusMaster->GetRegister( dev_settings.address, discret_input_reg, 1, mbResponce );
 
-   printDebug("CxLogDev_DIO_OVEN/%s: logdev=%s, reg 0x33 = %i", __FUNCTION__,
-                                                                getDeviceName(),
-                                                                data_register[0]);
+   data_register = ConvertMBint(mbResponce[0]);
+
+   printDebug("CxLogDev_DIO_OVEN/%s: logdev=%s, reg 0x33 = %i", __FUNCTION__, getDeviceName(), data_register);
 
    if ((0 != dev_settings.channelsPtr) && (reg_num == 1))
    {
@@ -144,7 +145,7 @@ bool CxLogDev_DIO_OVEN::ProcessDiDevice()
       {
          if ((0 != pCurCh->PointNumb) && (CT_DISCRET_IN == GetChannelType(pCurCh)))
          {
-            if (data_register[0] && (1<<i))
+            if (data_register & (1<<i))
             {
                dataProvider.setDPoint(pCurCh->PointNumb, 1);
             }
@@ -164,26 +165,20 @@ bool CxLogDev_DIO_OVEN::ProcessDiDevice()
 bool CxLogDev_DIO_OVEN::ProcessDoDevice()
 {
    bool result = false;
-   uint16_t output_register[5];
-   //uint16_t output_mask = 0;
+   uint16_t mbResponce[5];
+   uint16_t initial_mask = 0;
+   uint16_t output_mask  = 0;
 
    // if nothing to set we can do read all MB registers
-   uint16_t reg_num = pModBusMaster->GetRegister( dev_settings.address, discret_output_reg, 1, output_register );
+   uint16_t reg_num = pModBusMaster->GetRegister( dev_settings.address, discret_output_reg, 1, mbResponce );
 
-   printDebug("CxLogDev_DIO_OVEN/%s: logdev=%s, reg 0x32 = %d", __FUNCTION__,
-                                                                getDeviceName(),
-                                                                output_register[0]);
-   if (reg_num == 1)
-   {
-      result = true;
-   }
+   // preset output mask
+   initial_mask = output_mask = ConvertMBint(mbResponce[0]);
 
-/*
+   printDebug("CxLogDev_DIO_OVEN/%s: logdev=%s, reg 0x32 = %d", __FUNCTION__, getDeviceName(), output_mask);
+
    if ((0 != dev_settings.channelsPtr) && (reg_num == 1))
    {
-      // preset output mask
-      output_mask = output_register;
-
       TDioChannel *pCurCh = dev_settings.channelsPtr;
       // set error status for channel
       for (uint8_t i=0; i<dev_settings.chanNumb; i++, pCurCh++)
@@ -207,15 +202,16 @@ bool CxLogDev_DIO_OVEN::ProcessDoDevice()
          }
       }
 
-      if (true == pModBusMaster->SetRegister( dev_settings.address, discret_output_reg, output_mask ))
+      if (initial_mask != output_mask )
       {
-         printDebug("CxLogDev_DIO_OVEN/%s: logdev=%s, write reg 0x32 = %i", __FUNCTION__,
-                                                                            getDeviceName(),
-                                                                            output_mask);
-         result = true;
+          if (true == pModBusMaster->SetRegister( dev_settings.address, discret_output_reg, output_mask ))
+          {
+             printDebug("CxLogDev_DIO_OVEN/%s: logdev=%s, write reg 0x32 = %i", __FUNCTION__, getDeviceName(), output_mask);
+             result = true;
+          }
       }
    }
-*/
+
    return result;
 }
 

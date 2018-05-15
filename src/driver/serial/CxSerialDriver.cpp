@@ -41,15 +41,27 @@ bool CxSerialDriver::ttyConfig(const char *ttyPath)
    }
    else
    {
-      printDebug ("CxSerialDriver/%s: fdTTY=%i", __FUNCTION__, fdTTY);
+      printDebug ("CxSerialDriver/%s: fdTTY=%i, internalDCB.BaudRate = %i", __FUNCTION__, fdTTY, internalDCB.BaudRate);
    }
 
    if (tcgetattr (fdTTY, &tty) == 0)
    {
-      cfsetospeed( &tty, B38400 );
-      cfsetispeed( &tty, B38400 );
+      speed_t tty_speed = B9600;
 
-      printDebug ("CxSerialDriver/%s: fdTTY=%i, internalDCB.BaudRate = %i", __FUNCTION__, fdTTY, internalDCB.BaudRate);
+      switch (internalDCB.BaudRate)
+      {
+         case 2400   : {tty_speed = B2400;   break;}
+         case 9600   : {tty_speed = B9600;   break;}
+         case 19200  : {tty_speed = B19200;  break;}
+         case 38400  : {tty_speed = B38400;  break;}
+         case 57600  : {tty_speed = B57600;  break;}
+         case 115200 : {tty_speed = B115200; break;}
+         default     : {tty_speed = B9600;   break;}
+      }
+
+      cfsetospeed( &tty, tty_speed );
+      cfsetispeed( &tty, tty_speed );
+
       //set bits per byte
       switch (internalDCB.ByteSize)
       {

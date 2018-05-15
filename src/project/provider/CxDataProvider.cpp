@@ -174,7 +174,7 @@ TAPOINT & CxDataProvider::getAPoint( uint16_t number )
    return APOINT[number];
 }
 
-void CxDataProvider::setAPoint( uint16_t number, float value )
+void CxDataProvider::setAPoint( uint16_t number, double value )
 {
    CxMutexLocker locker(&CxDataProvider::analogDataProviderMutex);
 

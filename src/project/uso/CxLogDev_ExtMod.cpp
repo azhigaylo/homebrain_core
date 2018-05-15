@@ -104,47 +104,47 @@ bool CxLogDev_ExtMod::ReadWriteRegisters()
          {
             case WordToApoint :
             {
-               result = getWordToApoint ( pCurLinkedReg );
+               result = convertWordToApoint ( pCurLinkedReg );
                break;
             }
             case LongToApoint:
             {
-               result = getLongToApoint ( pCurLinkedReg );
+               result = convertLongToApoint ( pCurLinkedReg );
                break;
             }
             case FloatToApoint:
             {
-               result = getFloatToApoint( pCurLinkedReg );
+               result = convertFloatToApoint( pCurLinkedReg );
                break;
             }
             case HRegToDpoint:
             {
-               result = getHRegToDpoint ( pCurLinkedReg );
+               result = convertHRegToDpoint ( pCurLinkedReg );
                break;
             }
             case LRegToDpoint:
             {
-               result = getLRegToDpoint ( pCurLinkedReg );
+               result = convertLRegToDpoint ( pCurLinkedReg );
                break;
             }
             case ApointToWord:
             {
-               result =  setApointToWord( pCurLinkedReg );
+               result = convertApointToWord( pCurLinkedReg );
                break;
             }
             case ApointToLong:
             {
-               result =  setApointToLong( pCurLinkedReg );
+               result = convertApointToLong( pCurLinkedReg );
                break;
             }
             case ApointToFloat:
             {
-               result =  setApointToFloat( pCurLinkedReg );
+               result = convertApointToFloat( pCurLinkedReg );
                break;
             }
             case DpointToReg:
             {
-               result =  setDpointToReg( pCurLinkedReg );
+               result = convertDpointToReg( pCurLinkedReg );
                break;
             }
             default : break;
@@ -162,7 +162,7 @@ bool CxLogDev_ExtMod::ReadWriteRegisters()
 }
 
 //------------------------------------------------------------------------------
-bool CxLogDev_ExtMod::getWordToApoint (  const TLinkedReg* pLinkedReg  )
+bool CxLogDev_ExtMod::convertWordToApoint (  const TLinkedReg* pLinkedReg  )
 {
    bool result = false;
    uint16_t mbResponce[5];
@@ -172,18 +172,18 @@ bool CxLogDev_ExtMod::getWordToApoint (  const TLinkedReg* pLinkedReg  )
    {
       uint16_t responce = ConvertMBint( mbResponce[0] );
 
-      float value = static_cast<float>(responce);
+      double value = static_cast<double>(responce);
       dataProvider.setAPoint( pLinkedReg->NPoint, value );
       dataProvider.setAStatus( pLinkedReg->NPoint, STATUS_RELIABLE );
 
-      printDebug("CxLogDev_ExtMod/%s: WordToApoint = %i", __FUNCTION__, responce );
+      printDebug("CxLogDev_ExtMod/%s: APOINT[%i] = %.4lf", __FUNCTION__, pLinkedReg->NPoint, value);
       result = true;
    }
 
    return result;
 }
 
-bool CxLogDev_ExtMod::getLongToApoint (  const TLinkedReg* pLinkedReg  )
+bool CxLogDev_ExtMod::convertLongToApoint (  const TLinkedReg* pLinkedReg  )
 {
    bool result = false;
    uint16_t mbResponce[5];
@@ -195,18 +195,18 @@ bool CxLogDev_ExtMod::getLongToApoint (  const TLinkedReg* pLinkedReg  )
       mbResponce[0] = ConvertMBint( mbResponce[0] );
       mbResponce[1] = ConvertMBint( mbResponce[1] );
 
-      float value = (float)*((long*)mbResponce);
+      double value = (double)*((long*)mbResponce);
       dataProvider.setAPoint( pLinkedReg->NPoint, value );
       dataProvider.setAStatus(pLinkedReg->NPoint, STATUS_RELIABLE );
 
-      printDebug("CxLogDev_ExtMod/%s: LongToApoint = %lu", __FUNCTION__, (long)value );
+      printDebug("CxLogDev_ExtMod/%s: APOINT[%i] = %.4lf", __FUNCTION__, pLinkedReg->NPoint, value);
       result = true;
    }
 
    return result;
 }
 
-bool CxLogDev_ExtMod::getFloatToApoint(  const TLinkedReg* pLinkedReg  )
+bool CxLogDev_ExtMod::convertFloatToApoint(  const TLinkedReg* pLinkedReg  )
 {
    bool result = false;
    uint16_t mbResponce[5];
@@ -217,18 +217,18 @@ bool CxLogDev_ExtMod::getFloatToApoint(  const TLinkedReg* pLinkedReg  )
       mbResponce[0] = ConvertMBint( mbResponce[0] );
       mbResponce[1] = ConvertMBint( mbResponce[1] );
 
-      float value = *((float*)mbResponce);
+      double value = *((float*)mbResponce);
       dataProvider.setAPoint( pLinkedReg->NPoint, value );
       dataProvider.setAStatus( pLinkedReg->NPoint, STATUS_RELIABLE );
 
-      printDebug("CxLogDev_ExtMod/%s: FloatToApoint = %.4f", __FUNCTION__, value );
+      printDebug("CxLogDev_ExtMod/%s: APOINT[%i] = %.4lf", __FUNCTION__, pLinkedReg->NPoint, value);
       result = true;
    }
 
    return result;
 }
 
-bool CxLogDev_ExtMod::getHRegToDpoint (  const TLinkedReg* pLinkedReg  )
+bool CxLogDev_ExtMod::convertHRegToDpoint (  const TLinkedReg* pLinkedReg  )
 {
    bool result = false;
    uint16_t mbResponce[5];
@@ -241,14 +241,14 @@ bool CxLogDev_ExtMod::getHRegToDpoint (  const TLinkedReg* pLinkedReg  )
       dataProvider.setDPoint( pLinkedReg->NPoint, HIGH(responce));
       dataProvider.setDStatus( pLinkedReg->NPoint, STATUS_RELIABLE);
 
-      printDebug("CxLogDev_ExtMod/%s: WordToApoint = %i", __FUNCTION__, responce );
+      printDebug("CxLogDev_ExtMod/%s: DPOINT[%i] = %d", __FUNCTION__, pLinkedReg->NPoint, HIGH(responce));
       result = true;
    }
 
    return result;
 }
 
-bool CxLogDev_ExtMod::getLRegToDpoint (  const TLinkedReg* pLinkedReg  )
+bool CxLogDev_ExtMod::convertLRegToDpoint (  const TLinkedReg* pLinkedReg  )
 {
    bool result = false;
    uint16_t mbResponce[5];
@@ -261,14 +261,14 @@ bool CxLogDev_ExtMod::getLRegToDpoint (  const TLinkedReg* pLinkedReg  )
       dataProvider.setDPoint( pLinkedReg->NPoint, LOW(responce));
       dataProvider.setDStatus( pLinkedReg->NPoint, STATUS_RELIABLE);
 
-      printDebug("CxLogDev_ExtMod/%s: WordToApoint = %i", __FUNCTION__, responce );
+      printDebug("CxLogDev_ExtMod/%s: DPOINT[%i] = %d", __FUNCTION__, pLinkedReg->NPoint, LOW(responce));
       result = true;
    }
 
    return result;
 }
 
-bool CxLogDev_ExtMod::setApointToWord ( const TLinkedReg* pLinkedReg )
+bool CxLogDev_ExtMod::convertApointToWord ( const TLinkedReg* pLinkedReg )
 {
    bool result = true;
 
@@ -292,7 +292,7 @@ bool CxLogDev_ExtMod::setApointToWord ( const TLinkedReg* pLinkedReg )
    return result;
 }
 
-bool CxLogDev_ExtMod::setApointToLong ( const TLinkedReg* pLinkedReg )
+bool CxLogDev_ExtMod::convertApointToLong ( const TLinkedReg* pLinkedReg )
 {
    bool result = true;
 
@@ -318,7 +318,7 @@ bool CxLogDev_ExtMod::setApointToLong ( const TLinkedReg* pLinkedReg )
    return result;
 }
 
-bool CxLogDev_ExtMod::setApointToFloat( const TLinkedReg* pLinkedReg )
+bool CxLogDev_ExtMod::convertApointToFloat( const TLinkedReg* pLinkedReg )
 {
    bool result = true;
 
@@ -344,7 +344,7 @@ bool CxLogDev_ExtMod::setApointToFloat( const TLinkedReg* pLinkedReg )
    return result;
 }
 
-bool CxLogDev_ExtMod::setDpointToReg( const TLinkedReg* pLinkedReg )
+bool CxLogDev_ExtMod::convertDpointToReg( const TLinkedReg* pLinkedReg )
 {
    bool result = true;
 

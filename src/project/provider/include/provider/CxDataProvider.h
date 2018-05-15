@@ -34,7 +34,7 @@ struct TAPOINT
 {
    uint8_t number;
    int8_t  status;
-   float   value;
+   double  value;
 }; typedef TAPOINT *pTAPOINT;
 
 #pragma pack ( )
@@ -60,7 +60,7 @@ class CxDataProvider
       void setSilenceDStatus( uint16_t number, int8_t status );
 
       TAPOINT & getAPoint( uint16_t number );
-      void setAPoint( uint16_t number, float value );
+      void setAPoint( uint16_t number, double value );
       void setAStatus( uint16_t number, int8_t status );
       int8_t getAStatus( uint16_t number );
 

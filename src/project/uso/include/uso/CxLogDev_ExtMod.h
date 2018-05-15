@@ -53,16 +53,16 @@ class CxLogDev_ExtMod : public CxLogDevice, public CxSysTimer
 
       bool ReadWriteRegisters();
 
-      bool getWordToApoint ( const TLinkedReg* pLinkedReg );
-      bool getLongToApoint ( const TLinkedReg* pLinkedReg );
-      bool getFloatToApoint( const TLinkedReg* pLinkedReg );
-      bool getHRegToDpoint ( const TLinkedReg* pLinkedReg );
-      bool getLRegToDpoint ( const TLinkedReg* pLinkedReg );
+      bool convertWordToApoint ( const TLinkedReg* pLinkedReg );
+      bool convertLongToApoint ( const TLinkedReg* pLinkedReg );
+      bool convertFloatToApoint( const TLinkedReg* pLinkedReg );
+      bool convertHRegToDpoint ( const TLinkedReg* pLinkedReg );
+      bool convertLRegToDpoint ( const TLinkedReg* pLinkedReg );
 
-      bool setApointToWord ( const TLinkedReg* pLinkedReg );
-      bool setApointToLong ( const TLinkedReg* pLinkedReg );
-      bool setApointToFloat( const TLinkedReg* pLinkedReg );
-      bool setDpointToReg  ( const TLinkedReg* pLinkedReg );
+      bool convertApointToWord ( const TLinkedReg* pLinkedReg );
+      bool convertApointToLong ( const TLinkedReg* pLinkedReg );
+      bool convertApointToFloat( const TLinkedReg* pLinkedReg );
+      bool convertDpointToReg  ( const TLinkedReg* pLinkedReg );
 
       void setExtModStatus( uint16_t status );
 
