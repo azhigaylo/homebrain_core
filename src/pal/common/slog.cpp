@@ -13,7 +13,8 @@
 using namespace std;
 //-------------------------------------------------------------------------------
 
-int32_t optv = 4;
+static volatile int32_t optv = MSG_ERROR;
+static volatile int32_t dbg_sink = TRACE_SINK_CONSOLE;
 
 DLT_DECLARE_CONTEXT(dlt_context);
 
@@ -86,6 +87,11 @@ void setDbgLevel(int lvl)
    optv = lvl;
 }
 
+void setDbgSink(int sink)
+{
+   dbg_sink = sink;
+}
+
 void initDlt()
 {
    DLT_REGISTER_APP("HB","HomeBrain trace");
@@ -115,7 +121,7 @@ void printError(const char * const fmt,...)
    va_end( vargs );
 
    // send to sink
-   switch (TRACE_SINK)
+   switch (dbg_sink)
    {
       case TRACE_SINK_DLT :
       {
@@ -146,7 +152,7 @@ void printWarning(const char * const fmt, ...)
    va_end( vargs );
 
    // send to sink
-   switch (TRACE_SINK)
+   switch (dbg_sink)
    {
       case TRACE_SINK_DLT :
       {
@@ -176,7 +182,7 @@ void printInfo(const char * const fmt, ...)
    vsnprintf(data,((sizeof(data)) - 1), fmt, vargs);
    va_end( vargs );
    // send to sink
-   switch (TRACE_SINK)
+   switch (dbg_sink)
    {
       case TRACE_SINK_DLT :
       {
@@ -206,7 +212,7 @@ void printDebug(const char * const fmt, ...)
    vsnprintf(data,((sizeof(data)) - 1), fmt, vargs);
    va_end( vargs );
    // send to sink
-   switch (TRACE_SINK)
+   switch (dbg_sink)
    {
       case TRACE_SINK_DLT :
       {

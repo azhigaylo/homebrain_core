@@ -30,9 +30,10 @@ int main(int argc, char* argv[])
    {
        int c = 0;
        int debug = 0;
+       int debug_sink  = 0;
        const char *sCfg = "/home/azhigaylo/.config/home_brain/HBconfig.conf";
 
-       while (-1 != (c = getopt(argc, argv, "c:d:")))
+       while (-1 != (c = getopt(argc, argv, "hc:d:s:")))
        {
           switch (c)
           {
@@ -48,9 +49,24 @@ int main(int argc, char* argv[])
                 setDbgLevel(debug);
                 break;
              }
+             case 's':
+             {
+                debug_sink = atoi(optarg);
+                setDbgSink(debug_sink);
+                break;
+             }
+             case 'h':
+             {
+                printf("-h : help\n");
+                printf("-c : path to config\n");
+                printf("-d : debug level 0-4(err/wr/info/dbg\n");
+                printf("-s : debug sink 0-1(console/dlt\n");
+                return EXIT_SUCCESS;
+             }
              default:
              {
-                break;
+                printf("unsupported option...\n");
+                return EXIT_SUCCESS;
              }
           }
        }
@@ -58,6 +74,7 @@ int main(int argc, char* argv[])
        initDlt();
 
        printDebug("MAIN/%s: started with debug level = %i", __FUNCTION__, debug);
+       printDebug("MAIN/%s: started with debug sink = %i", __FUNCTION__, debug_sink);
        printDebug("MAIN/%s: started with cfg = %s", __FUNCTION__, sCfg);
 
        CxLauncher *pLauncher = new CxLauncher(sCfg);

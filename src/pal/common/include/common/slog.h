@@ -2,6 +2,11 @@
 #define _SLOG_H_
 
 //------------------------------------------------------------------------------
+#define MSG_ERROR    0
+#define MSG_WARNING  1
+#define MSG_INFO     2
+#define MSG_DBG      3
+
 #define TRACE_SINK_CONSOLE 0
 #define TRACE_SINK_DLT     1
 
@@ -12,6 +17,13 @@
  * @param debug level
  */
 void setDbgLevel(int lvl);
+
+/**
+ * set debug level
+ * @param debug level
+ */
+void setDbgSink(int sink);
+
 
 /**
  * init DLT trace component

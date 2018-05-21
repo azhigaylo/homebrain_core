@@ -210,6 +210,10 @@ bool CxLogDev_DIO_OVEN::ProcessDoDevice()
              result = true;
           }
       }
+      else
+      {
+         result = true;
+      }
    }
 
    return result;
