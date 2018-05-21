@@ -4,7 +4,7 @@ project(pal)
 
 message("pal...")
 
-#find_package()
+find_package(AutomotiveDlt 2.15)
 
 add_library(${PROJECT_NAME} STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/common/slog.cpp
@@ -20,6 +20,7 @@ add_library(${PROJECT_NAME} STATIC
     )
 
 target_include_directories(${PROJECT_NAME}
+    PUBLIC  ${AutomotiveDlt_INCLUDE_DIR}
     PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/common/include
     PUBLIC  ${CMAKE_CURRENT_SOURCE_DIR}/os_wrapper/include
     )
@@ -27,5 +28,6 @@ target_include_directories(${PROJECT_NAME}
 target_link_libraries(${PROJECT_NAME}
     pthread
     rt
+    ${AutomotiveDlt_LIBRARY}
     )
 

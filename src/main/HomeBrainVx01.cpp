@@ -55,6 +55,8 @@ int main(int argc, char* argv[])
           }
        }
 
+       initDlt();
+
        printDebug("MAIN/%s: started with debug level = %i", __FUNCTION__, debug);
        printDebug("MAIN/%s: started with cfg = %s", __FUNCTION__, sCfg);
 
@@ -66,10 +68,13 @@ int main(int argc, char* argv[])
        delete pLauncher;
 
        printDebug("MAIN/%s: Launcher thread finished...", __FUNCTION__);
+
+       deinitDlt();
    }
    catch (const std::exception& e)
    {
        printError("MAIN/%s: Error description:", __FUNCTION__, e.what());
+       deinitDlt();
        return EXIT_FAILURE;
    }
 
