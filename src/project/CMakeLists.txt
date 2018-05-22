@@ -12,6 +12,7 @@ add_library(${PROJECT_NAME} STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/interfaces/MBusDB.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/processor/CxUsoProcessor.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/provider/CxDataProvider.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/provider/CxDataServer.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/uso/CxLogDev_ExtMod.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/uso/CxLogDev_MA16.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/uso/CxLogDev_DIO_OVEN.cpp

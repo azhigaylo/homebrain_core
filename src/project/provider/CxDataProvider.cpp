@@ -11,6 +11,7 @@ CxMutex CxDataProvider::analogDataProviderMutex("a_data_mutex");
 //------------------------------------------------------------------------------
 
 CxDataProvider::CxDataProvider()
+   : data_server(8080)
 {
    // clearing discret point
    for( uint8_t point=0; point < d_point_total; point++ )
@@ -26,6 +27,9 @@ CxDataProvider::CxDataProvider()
       APOINT[point].status = 0;
       APOINT[point].value = 0;
    }
+
+   // start listening
+   data_server.listen();
 }
 
 CxDataProvider::~CxDataProvider()
