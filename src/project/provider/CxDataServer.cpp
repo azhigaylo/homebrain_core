@@ -81,6 +81,13 @@ int CxDataSocket::send(const char* buf, int len, int flags)
    return ::send(socketfd, buf, len, flags);
 }
 //------------------------------------------------------------------------------
+CxDataServer::CxDataServer(int port, int backlog, std::string address)
+    : m_port    (port)
+    , m_backlog (backlog)
+    , m_address (address)
+{
+
+}
 
 CxDataServer::~CxDataServer()
 {

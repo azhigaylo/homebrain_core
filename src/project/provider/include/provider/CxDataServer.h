@@ -194,32 +194,6 @@ class CxDataSocket
 class CxDataServer
 {
     public:
-      /**
-       * Constructs a listening socket on the specified port.
-       * The default address is 0.0.0.0 and the default backlog is 10.
-       *
-       * @param the port to listen to
-       */
-      CxDataServer(int port)
-      {
-         m_port = port;
-         m_backlog = 10;
-         m_address = "0.0.0.0";
-      }
-
-      /**
-       * Constructs a listening socket on the specified port with a backlog.
-       * The default address is 0.0.0.0.
-       *
-       * @param the port to listen to
-       * @param the number of backlogs
-       */
-      CxDataServer(int port, int backlog)
-      {
-         m_port = port;
-         m_backlog = backlog;
-         m_address = "0.0.0.0";
-      }
 
       /**
        * Constructs a listening socket on the specified port and address
@@ -227,12 +201,7 @@ class CxDataServer
        * @param the number of backlogs
        * @param the address to bind to
        */
-      CxDataServer(int port, int backlog, std::string address)
-      {
-        m_port = port;
-        m_backlog = backlog;
-        m_address = address;
-      }
+      CxDataServer(int port, int backlog, std::string address);
 
       ~CxDataServer();
 
