@@ -12,7 +12,6 @@
 CxModBusMaster::CxModBusMaster( const char *interfaceName, const char *drvName ):
     CxThreadIO     ( interfaceName, drvName )
    ,CxInterface    ( interfaceName )
-   ,IxEventProducer( )
    ,counter_item   ( 2 )
    ,sizeResponce   ( 0 )
    ,cond_mutex     ( PTHREAD_MUTEX_INITIALIZER )

@@ -3,7 +3,7 @@
 // https://github.com/davidsteinsland/cpp-sockets/tree/master/net
 //------------------------------------------------------------------------------
 
-#include "provider/CxDataServer.h"
+#include "interfaces/CxDataAccessServer.h"
 
 #include <fcntl.h>
 
@@ -80,13 +80,21 @@ int CxDataSocket::send(const char* buf, int len, int flags)
 {
    return ::send(socketfd, buf, len, flags);
 }
-//------------------------------------------------------------------------------
-CxDataServer::CxDataServer(int port, int backlog, std::string address)
-    : m_port    (port)
-    , m_backlog (backlog)
-    , m_address (address)
-{
 
+
+//------------------------------------------------------------------------------
+
+
+CxDataServer::CxDataServer(  const char *interfaceName, int port, std::string address)
+   : CxInterface    ( interfaceName )
+   , IxRunnable     ( interfaceName )
+   , IxEventConsumer( )
+   , m_port    (port)
+   , m_backlog (10)
+   , m_address (address)
+{
+   setNotification( EVENT_DP_NEW_VALUE );
+   setNotification( EVENT_AP_NEW_VALUE );
 }
 
 CxDataServer::~CxDataServer()
@@ -132,4 +140,15 @@ CxDataSocket* CxDataServer::accept()
    int clientfd = ::accept(m_socketfd, (struct sockaddr*)&from, &l);
 
    return new CxDataSocket(clientfd, from);
+}
+
+void CxDataServer::TaskProcessor()
+{
+
+}
+
+bool CxDataServer::processEvent( pTEvent /*pEvent*/ )
+{
+
+   return true;
 }

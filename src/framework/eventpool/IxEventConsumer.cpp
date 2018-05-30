@@ -23,13 +23,6 @@ IxEventConsumer::~IxEventConsumer()
 
 }  // end of destructor
 
-eEventType IxEventConsumer::getUnusedEvent( )
-{
-   CxEventDispatcher *pDispatcher = CxEventDispatcher::getInstance();
-
-   return pDispatcher->getVirtualEvent();
-}
-
 bool IxEventConsumer::setNotification(eEventType event)
 {
    CxEventDispatcher *pDispatcher = CxEventDispatcher::getInstance();

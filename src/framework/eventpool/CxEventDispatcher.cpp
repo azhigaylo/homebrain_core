@@ -68,16 +68,6 @@ unsigned short CxEventDispatcher::GetNotificationRecNumb()const
    return( NotificationPool.size() );
 }
 
-eEventType CxEventDispatcher::getVirtualEvent()
-{
-   CxMutexLocker locker(&CxEventDispatcher::singlEventLock);
-
-   // hot fix
-   lastFreeEventId = (eEventType)((static_cast<int>(lastFreeEventId)) + 1);
-
-   return lastFreeEventId;
-}
-
 bool CxEventDispatcher::setEvent( TEvent Event )
 {
    return EventPool.send( &Event, sizeof(TEvent) );

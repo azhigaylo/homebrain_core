@@ -6,7 +6,6 @@
 #include "os_wrapper/CxMutex.h"
 #include "eventpool/IxEventProducer.h"
 #include "interface/CxInterface.h"
-#include "provider/CxDataServer.h"
 //------------------------------------------------------------------------------
 #define d_point_total 100
 #define a_point_total 100
@@ -70,7 +69,7 @@ class CxDataProvider
       TAPOINT APOINT[a_point_total];
       TDPOINT DPOINT[d_point_total];
 
-      CxDataServer data_server;
+      //CxDataServer data_server;
 
       static CxMutex digitalDataProviderMutex;
       static CxMutex analogDataProviderMutex;

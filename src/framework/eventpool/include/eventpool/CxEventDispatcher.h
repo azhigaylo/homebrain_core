@@ -35,7 +35,6 @@ class CxEventDispatcher : public IxRunnable
     bool NotificationPoolIsEmpty( );
     unsigned short GetNotificationRecNumb( )const;
 
-    eEventType getVirtualEvent();
     bool setEvent( TEvent Event );
     TEvent getEvent( );
 

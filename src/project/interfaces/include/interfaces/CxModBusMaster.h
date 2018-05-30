@@ -11,10 +11,9 @@
 #include "os_wrapper/CxThreadIO.h"
 #include "interface/CxInterface.h"
 #include "serial/CxSerialDriver.h"
-#include "eventpool/IxEventProducer.h"
 //------------------------------------------------------------------------------
 
-class CxModBusMaster : public CxThreadIO, public CxInterface, public IxEventProducer
+class CxModBusMaster : public CxThreadIO, public CxInterface
 {
    public:
 

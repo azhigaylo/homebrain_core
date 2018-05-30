@@ -13,6 +13,14 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
+
+#include "common/ptypes.h"
+#include "common/slog.h"
+#include "common/ptypes.h"
+#include "common/utils.h"
+#include "os_wrapper/IxRunnable.h"
+#include "interface/CxInterface.h"
+#include "eventpool/IxEventConsumer.h"
 //------------------------------------------------------------------------------
 
 class socketaddress
@@ -191,7 +199,7 @@ class CxDataSocket
 
 //------------------------------------------------------------------------------
 
-class CxDataServer
+class CxDataServer :  public CxInterface, public IxRunnable, public IxEventConsumer
 {
     public:
 
@@ -201,7 +209,7 @@ class CxDataServer
        * @param the number of backlogs
        * @param the address to bind to
        */
-      CxDataServer(int port, int backlog, std::string address);
+      CxDataServer( const char *interfaceName, int port, std::string address);
 
       ~CxDataServer();
 
@@ -251,6 +259,9 @@ class CxDataServer
       std::string m_address;
 
       int m_socketfd;
+
+      virtual void TaskProcessor();
+      virtual bool processEvent( pTEvent pEvent );
 };
 
 #endif // _CX_DATA_SERVER
