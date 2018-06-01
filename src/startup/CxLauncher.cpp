@@ -3,11 +3,11 @@
 #include <stdlib.h>
 
 #include "common/utils.h"
-
+#include "eventpool/CxEventDispatcher.h"
 #include "serial/CxSerialDriver.h"
 #include "interfaces/CxModBusMaster.h"
 #include "interfaces/CxModBusSlave.h"
-#include "eventpool/CxEventDispatcher.h"
+#include "interfaces/CxDataAccessServer.h"
 #include "devctrl/CxLogDeviceManager.h"
 
 #include "startup/CxLauncher.h"
@@ -110,10 +110,11 @@ void CxLauncher::start_sys_interface( const char *sIntName )
             pModBusSlave->open();
          }
 
-         // DATA_CNCT interfaces
-         if( 0 == strcmp(sType, "dtaconnect"))
+         // POINT_SERVER interfaces
+         if( 0 == strcmp(sType, "socket_server"))
          {
-
+            CxDataServer *pDataServer = new CxDataServer( sName, 8096, "127.0.0.1" );  // this item will be deleted in CxInterfaceManager::delInstance()
+            pDataServer->open();
          }
 
          free(sType);

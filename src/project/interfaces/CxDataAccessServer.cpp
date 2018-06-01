@@ -7,6 +7,9 @@
 
 #include <fcntl.h>
 
+#include "common/slog.h"
+#include "common/utils.h"
+
 //------------------------------------------------------------------------------
 
 #define DEFAULT_SOCKET_BUFFER 1024
@@ -99,7 +102,23 @@ CxDataServer::CxDataServer(  const char *interfaceName, int port, std::string ad
 
 CxDataServer::~CxDataServer()
 {
+   server_close();
    close();
+}
+
+int32_t CxDataServer::open( )
+{
+   // start task processing
+   task_run();
+   // start porp listening
+   listen();
+   return 0;
+}
+
+int32_t CxDataServer::close( )
+{
+   task_stop();
+   return 0;
 }
 
 int CxDataServer::listen()
@@ -114,21 +133,23 @@ int CxDataServer::listen()
    int yes = 1;
    if (::setsockopt(m_socketfd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(int)) != 0)
    {
-      close();
+      server_close();
       return errno;
    }
 
    if (::bind(m_socketfd, (struct sockaddr*)&addr, sizeof(struct sockaddr)) != 0)
    {
-      close();
+      server_close();
       return errno;
    }
 
    if (::listen(m_socketfd, m_backlog) != 0)
    {
-      close();
+      server_close();
       return errno;
    }
+
+   printDebug("CxDataServer/%s: start listening...", __FUNCTION__);
 
    return 0;
 }
@@ -137,14 +158,25 @@ CxDataSocket* CxDataServer::accept()
 {
    struct sockaddr_in from;
    socklen_t l = sizeof(from);
+
+   printDebug("CxDataServer/%s: wait for connection...", __FUNCTION__);
+
    int clientfd = ::accept(m_socketfd, (struct sockaddr*)&from, &l);
+
+   printDebug("CxDataServer/%s: client accepted...", __FUNCTION__);
 
    return new CxDataSocket(clientfd, from);
 }
 
 void CxDataServer::TaskProcessor()
 {
+   CxDataSocket* client = accept();
 
+   if (!client->valid())
+   {
+        delete client;
+    }
+   sleep_mcs(500);
 }
 
 bool CxDataServer::processEvent( pTEvent /*pEvent*/ )

@@ -15,9 +15,6 @@
 
 
 #include "common/ptypes.h"
-#include "common/slog.h"
-#include "common/ptypes.h"
-#include "common/utils.h"
 #include "os_wrapper/IxRunnable.h"
 #include "interface/CxInterface.h"
 #include "eventpool/IxEventConsumer.h"
@@ -206,12 +203,14 @@ class CxDataServer :  public CxInterface, public IxRunnable, public IxEventConsu
       /**
        * Constructs a listening socket on the specified port and address
        * @param the port to listen to
-       * @param the number of backlogs
        * @param the address to bind to
        */
       CxDataServer( const char *interfaceName, int port, std::string address);
 
-      ~CxDataServer();
+      virtual ~CxDataServer();
+
+      virtual int32_t open  ( );
+      virtual int32_t close ( );
 
       /**
        * Creates the listening socket and binds to the current port and address
@@ -228,7 +227,7 @@ class CxDataServer :  public CxInterface, public IxRunnable, public IxEventConsu
       /**
        * Closes the listening socket
        */
-      void close() const
+      void server_close() const
       {
         if (m_socketfd == -1) return;
         ::close(m_socketfd);
@@ -262,6 +261,11 @@ class CxDataServer :  public CxInterface, public IxRunnable, public IxEventConsu
 
       virtual void TaskProcessor();
       virtual bool processEvent( pTEvent pEvent );
+
+    private:
+      CxDataServer( const CxDataServer & );
+      CxDataServer & operator=( const CxDataServer & );
+
 };
 
 #endif // _CX_DATA_SERVER

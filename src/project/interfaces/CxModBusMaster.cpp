@@ -26,7 +26,6 @@ CxModBusMaster::~CxModBusMaster()
    close( );
 }
 
-
 int32_t CxModBusMaster::open( )
 {
    Start();
