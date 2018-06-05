@@ -16,10 +16,26 @@
 
 //------------------------------------------------------------------------------
 
+CxDataSocket::CxDataSocket(int socket_fd, struct sockaddr_in addr)
+   : IxRunnable ("socket_connection")
+   , socketfd   (socket_fd)
+   , address    (addr)
+{
+   sockaddr = new socketaddress(addr);
+
+   set_blocking();
+
+   // start task processing
+   task_run();
+
+   printDebug("CxDataSocket/%s: created...", __FUNCTION__);
+}
+
 CxDataSocket::~CxDataSocket()
 {
    delete sockaddr;
    close();
+   printDebug("CxDataSocket/%s: removed...", __FUNCTION__);
 }
 
 void CxDataSocket::set_blocking()
@@ -34,39 +50,13 @@ void CxDataSocket::set_unblocking()
    fcntl(socketfd, F_SETFL, O_NONBLOCK);
 }
 
-int CxDataSocket::read(std::string& msg)
+void CxDataSocket::close()
 {
-   int bytes_total = 0;
-   char buffer[DEFAULT_SOCKET_BUFFER];
-
-   int bytes_read = recv(socketfd, buffer, DEFAULT_SOCKET_BUFFER, 0);
-
-   if (bytes_read <= 0)
+   if (-1 != socketfd)
    {
-      return bytes_read;
+       ::close(socketfd);
+       task_stop();
    }
-
-   msg.append(std::string(buffer, 0, bytes_read));
-   bytes_total += bytes_read;
-
-   // set non-blocking.
-   set_unblocking();
-
-   while (bytes_read > 0)
-   {
-      memset(buffer, 0, DEFAULT_SOCKET_BUFFER);
-      bytes_read = recv(socketfd, buffer, DEFAULT_SOCKET_BUFFER, 0);
-
-      if (bytes_read < 0) break;
-
-      msg.append(std::string(buffer, 0, bytes_read));
-      bytes_total += bytes_read;
-   }
-
-   // set back to blocking
-   set_blocking();
-
-   return bytes_total;
 }
 
 int CxDataSocket::read(char* buf, int len)
@@ -74,17 +64,16 @@ int CxDataSocket::read(char* buf, int len)
    return ::recv(socketfd, buf, len, 0);
 }
 
-int CxDataSocket::send(std::string data)
-{
-   return send(data.c_str(), data.length(), 0);
-}
-
 int CxDataSocket::send(const char* buf, int len, int flags)
 {
    return ::send(socketfd, buf, len, flags);
 }
 
+void CxDataSocket::TaskProcessor()
+{
 
+   sleep_mcs(500);
+}
 //------------------------------------------------------------------------------
 
 
@@ -102,7 +91,6 @@ CxDataServer::CxDataServer(  const char *interfaceName, int port, std::string ad
 
 CxDataServer::~CxDataServer()
 {
-   server_close();
    close();
 }
 
@@ -118,6 +106,9 @@ int32_t CxDataServer::open( )
 int32_t CxDataServer::close( )
 {
    task_stop();
+   server_close();
+   closeConnections();
+
    return 0;
 }
 
@@ -158,25 +149,77 @@ CxDataSocket* CxDataServer::accept()
 {
    struct sockaddr_in from;
    socklen_t l = sizeof(from);
+   CxDataSocket* pConnection = nullptr;
 
    printDebug("CxDataServer/%s: wait for connection...", __FUNCTION__);
 
-   int clientfd = ::accept(m_socketfd, (struct sockaddr*)&from, &l);
+   fd_set fds;
+   FD_ZERO(&fds);
+   FD_SET(m_socketfd, &fds);
 
-   printDebug("CxDataServer/%s: client accepted...", __FUNCTION__);
+   struct timeval timeout;
+   timeout.tv_sec  = 1;
+   timeout.tv_usec = 0;
 
-   return new CxDataSocket(clientfd, from);
+   const int ret = select(m_socketfd+1, &fds, NULL, NULL, &timeout);
+
+   //Check if our file descriptor has received data.
+   if (ret > 0 && FD_ISSET(m_socketfd, &fds))
+   {
+       int clientfd = ::accept(m_socketfd, (struct sockaddr*)&from, &l);
+
+       printDebug("CxDataServer/%s: client accepted...", __FUNCTION__);
+
+       pConnection = new CxDataSocket(clientfd, from);
+   }
+
+   return pConnection;
 }
 
 void CxDataServer::TaskProcessor()
 {
    CxDataSocket* client = accept();
 
-   if (!client->valid())
+   if (nullptr != client)
    {
-        delete client;
-    }
+       if (!client->valid())
+       {
+          printDebug("CxDataServer/%s: -------client invalid, try to remove them----", __FUNCTION__);
+          delete client;
+       }
+       else
+       {
+           m_connection_list.push_back( client );
+       }
+   }
+
+   checkConnections();
+
    sleep_mcs(500);
+}
+
+void CxDataServer::checkConnections()
+{
+   for( std::vector<CxDataSocket*>::iterator it = m_connection_list.begin(); it != m_connection_list.end(); it++ )
+   {
+      if (false == (*it)->valid())
+      {
+         printDebug("CxDataServer/%s: -------client invalid, try to remove them----", __FUNCTION__);
+         delete *it;
+         m_connection_list.erase(it);
+         break;
+      }
+   }
+}
+
+void CxDataServer::closeConnections()
+{
+   for( std::vector<CxDataSocket*>::iterator it = m_connection_list.begin(); it != m_connection_list.end(); it++  )
+   {
+      delete *it;
+   }
+
+   m_connection_list.clear();
 }
 
 bool CxDataServer::processEvent( pTEvent /*pEvent*/ )

@@ -6,6 +6,7 @@
 #include <string>
 #include <cstring>
 #include <cerrno>
+#include <vector>
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -91,11 +92,9 @@ class socketaddress
 
 //------------------------------------------------------------------------------
 
-class CxDataSocket
+class CxDataSocket : public IxRunnable
 {
    public:
-      CxDataSocket() {}
-
       /**
        * Creates a socket instance based upon an already existing
        * socket file descriptor and sockaddr_in structure.
@@ -103,21 +102,8 @@ class CxDataSocket
        * @param the socket file descriptor
        * @param the address structure
        */
-      CxDataSocket(int socket_fd, struct sockaddr_in addr)
-      : socketfd(socket_fd)
-      , address (addr)
-      {
-         sockaddr = new socketaddress(addr);
-      }
-
+      CxDataSocket(int socket_fd, struct sockaddr_in addr);
       ~CxDataSocket();
-
-      /**
-       * Reads all data being sent from the client. The function will block until there's
-       * data, and then read the rest if any.
-       * @param the string object to save the data into
-       */
-      int read(std::string&);
 
       /**
        * Reads a specified amount of data into a character pointer
@@ -125,12 +111,6 @@ class CxDataSocket
        * @param the length of the character buffer
        */
       int read(char*, int);
-
-      /**
-       * Sends a string to the client
-       * @param the string to send
-       */
-      int send(std::string);
 
       /**
        * Sends an array of charactes to the client, with a specified start and end index
@@ -153,45 +133,37 @@ class CxDataSocket
       /**
        * Closes the socket connection
        */
-      void close() const
-      {
-        if (socketfd == -1) return;
-        ::close(socketfd);
-      }
-
+      void close();
       /**
        * Checks whether the socket is valid
        * @return true if the socket is valid, false otherwise
        */
-      bool valid() const
-      {
-        return socketfd != -1;
-      }
+      bool valid() const { return socketfd != -1;}
 
       /**
        * Gets the socket file descriptor
        * @return the socket file descriptor
        */
-      int get_socket() const
-      {
-        return socketfd;
-      }
+      int get_socket() const { return socketfd; }
 
       /**
        * Gets the socketaddress instance of the socket, which contains
        * information about the socket's address and port
        * @return the socketaddress instance
        */
-      socketaddress* get_socketaddress() const
-      {
-        return sockaddr;
-      }
+      socketaddress* get_socketaddress() const { return sockaddr; }
 
     protected:
 
       int socketfd;
       struct sockaddr_in address;
       socketaddress* sockaddr;
+
+      virtual void TaskProcessor();
+
+    private:
+      CxDataSocket( const CxDataSocket & );
+      CxDataSocket & operator=( const CxDataSocket & );
 };
 
 //------------------------------------------------------------------------------
@@ -227,29 +199,19 @@ class CxDataServer :  public CxInterface, public IxRunnable, public IxEventConsu
       /**
        * Closes the listening socket
        */
-      void server_close() const
-      {
-        if (m_socketfd == -1) return;
-        ::close(m_socketfd);
-      }
+      void server_close() const { if (-1 != m_socketfd) ::close(m_socketfd); }
 
       /**
        * Checks whether or not the socket is valid
        * @return true the socket is valid, false otherwise
        */
-      bool valid() const
-      {
-        return m_socketfd != -1;
-      }
+      bool valid() const { return m_socketfd != -1; }
 
       /**
        * Gets the socket file descriptor
        * @return the socket file descriptor
        */
-      int get_socket() const
-      {
-        return m_socketfd;
-      }
+      int get_socket() const { return m_socketfd; }
 
     protected:
 
@@ -266,6 +228,10 @@ class CxDataServer :  public CxInterface, public IxRunnable, public IxEventConsu
       CxDataServer( const CxDataServer & );
       CxDataServer & operator=( const CxDataServer & );
 
+      void checkConnections();
+      void closeConnections();
+
+      std::vector<CxDataSocket*> m_connection_list;
 };
 
 #endif // _CX_DATA_SERVER
