@@ -5,6 +5,7 @@
 
 #include "interfaces/CxDataAccessServer.h"
 
+#include <poll.h>
 #include <fcntl.h>
 
 #include "common/slog.h"
@@ -22,8 +23,6 @@ CxDataSocket::CxDataSocket(int socket_fd, struct sockaddr_in addr)
    , address    (addr)
 {
    sockaddr = new socketaddress(addr);
-
-   set_blocking();
 
    // start task processing
    task_run();
@@ -56,6 +55,7 @@ void CxDataSocket::close()
    {
        ::close(socketfd);
        task_stop();
+       socketfd = -1;
    }
 }
 
@@ -71,8 +71,28 @@ int CxDataSocket::send(const char* buf, int len, int flags)
 
 void CxDataSocket::TaskProcessor()
 {
+    // use the poll system call to be notified about socket status changes
+    struct pollfd pfd;
+    pfd.fd = socketfd;
+    pfd.events = POLLIN | POLLHUP | POLLRDNORM;
+    pfd.revents = 0;
 
-   sleep_mcs(500);
+    // call poll with a timeout of 100 ms
+    if (poll(&pfd, 1, 300) > 0)
+    {
+        // if result > 0, this means that there is either data available on the
+        // socket, or the socket has been closed
+        char buffer[32];
+        if (0 != ::recv(socketfd, buffer, sizeof(buffer), 0)) // MSG_PEEK | MSG_DONTWAIT
+        {
+           printDebug("CxDataServer/%s: ------got new data------", __FUNCTION__);
+        }
+        else
+        {
+            // if recv returns zero, that means the connection has been closed
+            close();
+        }
+    }
 }
 //------------------------------------------------------------------------------
 

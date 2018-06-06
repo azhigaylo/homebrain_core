@@ -162,6 +162,7 @@ class CxDataSocket : public IxRunnable
       virtual void TaskProcessor();
 
     private:
+
       CxDataSocket( const CxDataSocket & );
       CxDataSocket & operator=( const CxDataSocket & );
 };
