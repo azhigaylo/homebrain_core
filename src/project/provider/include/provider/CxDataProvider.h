@@ -7,8 +7,8 @@
 #include "eventpool/IxEventProducer.h"
 #include "interface/CxInterface.h"
 //------------------------------------------------------------------------------
-#define d_point_total 100
-#define a_point_total 100
+#define d_point_total 1000
+#define a_point_total 1000
 
 //---------points status----------
 #define STATUS_UNKNOWN           0  // "UNKNOWN" - link with host - error
@@ -23,19 +23,19 @@
 
 #pragma pack ( 1 )
 
-struct TDPOINT
-{
-   uint8_t  number;
-   int8_t   status;
-   uint16_t value;
-}; typedef TDPOINT *pTDPOINT;
+    struct TDPOINT
+    {
+       uint16_t number;
+       int8_t   status;
+       uint16_t value;
+    }; typedef TDPOINT *pTDPOINT;
 
-struct TAPOINT
-{
-   uint8_t number;
-   int8_t  status;
-   double  value;
-}; typedef TAPOINT *pTAPOINT;
+    struct TAPOINT
+    {
+       uint16_t number;
+       int8_t   status;
+       double   value;
+    }; typedef TAPOINT *pTAPOINT;
 
 #pragma pack ( )
 

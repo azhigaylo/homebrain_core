@@ -13,14 +13,14 @@ CxMutex CxDataProvider::analogDataProviderMutex("a_data_mutex");
 CxDataProvider::CxDataProvider()
 {
    // clearing discret point
-   for( uint8_t point=0; point < d_point_total; point++ )
+   for( uint16_t point=0; point < d_point_total; point++ )
    {
       DPOINT[point].number = point;
       DPOINT[point].status = 0;
       DPOINT[point].value = 0;
    }
    // clearing analog point
-   for( uint8_t point=0; point < a_point_total; point++ )
+   for( uint16_t point=0; point < a_point_total; point++ )
    {
       APOINT[point].number = point;
       APOINT[point].status = 0;

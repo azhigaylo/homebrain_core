@@ -10,7 +10,7 @@
 
 #include "common/slog.h"
 #include "common/utils.h"
-
+#include "interfaces/DataDB.h"
 //------------------------------------------------------------------------------
 
 #define DEFAULT_SOCKET_BUFFER 1024
