@@ -14,10 +14,10 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-
 #include "common/ptypes.h"
 #include "os_wrapper/IxRunnable.h"
 #include "interface/CxInterface.h"
+#include "interfaces/DataDB.h"
 #include "eventpool/IxEventConsumer.h"
 //------------------------------------------------------------------------------
 
@@ -92,7 +92,7 @@ class socketaddress
 
 //------------------------------------------------------------------------------
 
-class CxDataSocket : public IxRunnable
+class CxDataClient : public IxRunnable, public IxEventConsumer
 {
    public:
       /**
@@ -102,8 +102,8 @@ class CxDataSocket : public IxRunnable
        * @param the socket file descriptor
        * @param the address structure
        */
-      CxDataSocket(int socket_fd, struct sockaddr_in addr);
-      ~CxDataSocket();
+      CxDataClient(int socket_fd, struct sockaddr_in addr);
+      ~CxDataClient();
 
       /**
        * Reads a specified amount of data into a character pointer
@@ -160,16 +160,24 @@ class CxDataSocket : public IxRunnable
       socketaddress* sockaddr;
 
       virtual void TaskProcessor();
+      virtual bool processEvent( pTEvent pEvent );
 
     private:
 
-      CxDataSocket( const CxDataSocket & );
-      CxDataSocket & operator=( const CxDataSocket & );
+      CxDataClient( const CxDataClient & );
+      CxDataClient & operator=( const CxDataClient & );
+
+      int recv_timeout(int s, int timeout);
+      void process_client_rq(const TClientRequest& rq);
+      void process_get_d_point(uint16_t start_point, uint16_t number_point);
+      void process_get_a_point(uint16_t start_point, uint16_t number_point);
+      void process_set_d_point(uint16_t start_point, const TDPOINT& dp);
+      void process_set_a_point(uint16_t start_point, const TAPOINT& ap);
 };
 
 //------------------------------------------------------------------------------
 
-class CxDataServer :  public CxInterface, public IxRunnable, public IxEventConsumer
+class CxDataServer :  public CxInterface, public IxRunnable
 {
     public:
 
@@ -195,7 +203,7 @@ class CxDataServer :  public CxInterface, public IxRunnable, public IxEventConsu
        * Accepts a new incomming client (blocking call).
        * @return A client socket instance
        */
-      CxDataSocket* accept();
+      CxDataClient* accept();
 
       /**
        * Closes the listening socket
@@ -223,7 +231,6 @@ class CxDataServer :  public CxInterface, public IxRunnable, public IxEventConsu
       int m_socketfd;
 
       virtual void TaskProcessor();
-      virtual bool processEvent( pTEvent pEvent );
 
     private:
       CxDataServer( const CxDataServer & );
@@ -232,7 +239,7 @@ class CxDataServer :  public CxInterface, public IxRunnable, public IxEventConsu
       void checkConnections();
       void closeConnections();
 
-      std::vector<CxDataSocket*> m_connection_list;
+      std::vector<CxDataClient*> m_connection_list;
 };
 
 #endif // _CX_DATA_SERVER

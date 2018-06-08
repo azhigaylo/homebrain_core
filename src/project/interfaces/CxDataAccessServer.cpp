@@ -7,49 +7,57 @@
 
 #include <poll.h>
 #include <fcntl.h>
+#include <sys/time.h>
+#include <sys/types.h>
 
 #include "common/slog.h"
 #include "common/utils.h"
-#include "interfaces/DataDB.h"
 //------------------------------------------------------------------------------
 
 #define DEFAULT_SOCKET_BUFFER 1024
 
 //------------------------------------------------------------------------------
 
-CxDataSocket::CxDataSocket(int socket_fd, struct sockaddr_in addr)
+CxDataClient::CxDataClient(int socket_fd, struct sockaddr_in addr)
    : IxRunnable ("socket_connection")
+   , IxEventConsumer( )
    , socketfd   (socket_fd)
    , address    (addr)
 {
    sockaddr = new socketaddress(addr);
 
+   setNotification( EVENT_DP_NEW_VALUE );
+   setNotification( EVENT_AP_NEW_VALUE );
+
    // start task processing
    task_run();
 
-   printDebug("CxDataSocket/%s: created...", __FUNCTION__);
+   printDebug("CxDataClient/%s: created...", __FUNCTION__);
 }
 
-CxDataSocket::~CxDataSocket()
+CxDataClient::~CxDataClient()
 {
+   clrNotification( EVENT_DP_NEW_VALUE );
+   clrNotification( EVENT_AP_NEW_VALUE );
+
    delete sockaddr;
    close();
-   printDebug("CxDataSocket/%s: removed...", __FUNCTION__);
+   printDebug("CxDataClient/%s: removed...", __FUNCTION__);
 }
 
-void CxDataSocket::set_blocking()
+void CxDataClient::set_blocking()
 {
    int opts = fcntl(socketfd, F_GETFL);
    opts = opts & (~O_NONBLOCK);
    fcntl(socketfd, F_SETFL, opts);
 }
 
-void CxDataSocket::set_unblocking()
+void CxDataClient::set_unblocking()
 {
    fcntl(socketfd, F_SETFL, O_NONBLOCK);
 }
 
-void CxDataSocket::close()
+void CxDataClient::close()
 {
    if (-1 != socketfd)
    {
@@ -59,17 +67,117 @@ void CxDataSocket::close()
    }
 }
 
-int CxDataSocket::read(char* buf, int len)
+int CxDataClient::read(char* buf, int len)
 {
    return ::recv(socketfd, buf, len, 0);
 }
 
-int CxDataSocket::send(const char* buf, int len, int flags)
+int CxDataClient::send(const char* buf, int len, int flags)
 {
    return ::send(socketfd, buf, len, flags);
 }
 
-void CxDataSocket::TaskProcessor()
+int CxDataClient::recv_timeout(int s, int timeout)
+{
+    int size_recv , total_size= 0;
+    struct timeval begin, now;
+    const int CHUNK_SIZE = 512;
+    char chunk[CHUNK_SIZE];
+    double timediff;
+
+    //make socket non blocking
+    fcntl(s, F_SETFL, O_NONBLOCK);
+
+    //beginning time
+    gettimeofday(&begin , 0);
+
+    while(1)
+    {
+        gettimeofday(&now , 0);
+
+        //time elapsed in seconds
+        timediff = (now.tv_sec - begin.tv_sec) + 1e-6 * (now.tv_usec - begin.tv_usec);
+
+        //if you got some data, then break after timeout
+        if( total_size > 0 && timediff > timeout )
+        {
+            break;
+        }
+
+        //if you got no data at all, wait a little longer, twice the timeout
+        else if( timediff > timeout*2)
+        {
+            break;
+        }
+
+        memset(chunk ,0 , CHUNK_SIZE);  //clear the variable
+        if((size_recv =  ::recv(s , chunk , CHUNK_SIZE , 0) ) < 0)
+        {
+            //if nothing was received then we want to wait a little before trying again, 0.1 seconds
+            usleep(100000);
+        }
+        else
+        {
+            total_size += size_recv;
+            printf("%s" , chunk);
+            //reset beginning time
+            gettimeofday(&begin , NULL);
+        }
+    }
+
+    return total_size;
+}
+
+
+void CxDataClient::process_client_rq(const TClientRequest& rq)
+{
+   switch(rq.cmd)
+   {
+      case GetDiscretPoint:
+      {
+         process_get_d_point(rq.start_point, rq.number_point);
+         break;
+      }
+      case GetAnalogPoint:
+      {
+         process_get_a_point(rq.start_point, rq.number_point);
+         break;
+      }
+      case SetDiscretPoint:
+      {
+         process_set_d_point(rq.start_point, rq.point.digital);
+         break;
+      }
+      case SetAnalogPoint:
+      {
+         process_set_a_point(rq.start_point, rq.point.analog);
+         break;
+      }
+      default : break;
+   }
+}
+
+void CxDataClient::process_get_d_point(uint16_t /*start_point*/, uint16_t /*number_point*/)
+{
+
+}
+
+void CxDataClient::process_get_a_point(uint16_t /*start_point*/, uint16_t /*number_point*/)
+{
+
+}
+
+void CxDataClient::process_set_d_point(uint16_t /*start_point*/, const TDPOINT& /*dp*/)
+{
+
+}
+
+void CxDataClient::process_set_a_point(uint16_t /*start_point*/, const TAPOINT& /*ap*/)
+{
+
+}
+
+void CxDataClient::TaskProcessor()
 {
     // use the poll system call to be notified about socket status changes
     struct pollfd pfd;
@@ -78,14 +186,20 @@ void CxDataSocket::TaskProcessor()
     pfd.revents = 0;
 
     // call poll with a timeout of 100 ms
-    if (poll(&pfd, 1, 300) > 0)
+    if (poll(&pfd, 1, 100) > 0)
     {
         // if result > 0, this means that there is either data available on the
         // socket, or the socket has been closed
-        char buffer[32];
-        if (0 != ::recv(socketfd, buffer, sizeof(buffer), 0)) // MSG_PEEK | MSG_DONTWAIT
+        TClientRequest client_request;
+        ssize_t data_size = ::recv(socketfd, &client_request, sizeof(client_request), MSG_PEEK | MSG_DONTWAIT);
+        if (0 < data_size )
         {
-           printDebug("CxDataServer/%s: ------got new data------", __FUNCTION__);
+           // read operation ok, check for full package size
+           if (static_cast<ssize_t>(sizeof(client_request)) <= data_size )
+           {
+              printDebug("CxDataServer/%s: ------got request data------", __FUNCTION__);
+              data_size = ::recv(socketfd, &client_request, sizeof(client_request), 0);
+           }
         }
         else
         {
@@ -94,19 +208,23 @@ void CxDataSocket::TaskProcessor()
         }
     }
 }
-//------------------------------------------------------------------------------
 
+bool CxDataClient::processEvent( pTEvent /*pEvent*/ )
+{
+
+   return true;
+}
+
+//------------------------------------------------------------------------------
 
 CxDataServer::CxDataServer(  const char *interfaceName, int port, std::string address)
    : CxInterface    ( interfaceName )
    , IxRunnable     ( interfaceName )
-   , IxEventConsumer( )
    , m_port    (port)
    , m_backlog (10)
    , m_address (address)
 {
-   setNotification( EVENT_DP_NEW_VALUE );
-   setNotification( EVENT_AP_NEW_VALUE );
+
 }
 
 CxDataServer::~CxDataServer()
@@ -165,11 +283,11 @@ int CxDataServer::listen()
    return 0;
 }
 
-CxDataSocket* CxDataServer::accept()
+CxDataClient* CxDataServer::accept()
 {
    struct sockaddr_in from;
    socklen_t l = sizeof(from);
-   CxDataSocket* pConnection = nullptr;
+   CxDataClient* pConnection = nullptr;
 
    printDebug("CxDataServer/%s: wait for connection...", __FUNCTION__);
 
@@ -190,7 +308,7 @@ CxDataSocket* CxDataServer::accept()
 
        printDebug("CxDataServer/%s: client accepted...", __FUNCTION__);
 
-       pConnection = new CxDataSocket(clientfd, from);
+       pConnection = new CxDataClient(clientfd, from);
    }
 
    return pConnection;
@@ -198,7 +316,7 @@ CxDataSocket* CxDataServer::accept()
 
 void CxDataServer::TaskProcessor()
 {
-   CxDataSocket* client = accept();
+   CxDataClient* client = accept();
 
    if (nullptr != client)
    {
@@ -220,7 +338,7 @@ void CxDataServer::TaskProcessor()
 
 void CxDataServer::checkConnections()
 {
-   for( std::vector<CxDataSocket*>::iterator it = m_connection_list.begin(); it != m_connection_list.end(); it++ )
+   for( std::vector<CxDataClient*>::iterator it = m_connection_list.begin(); it != m_connection_list.end(); it++ )
    {
       if (false == (*it)->valid())
       {
@@ -234,7 +352,7 @@ void CxDataServer::checkConnections()
 
 void CxDataServer::closeConnections()
 {
-   for( std::vector<CxDataSocket*>::iterator it = m_connection_list.begin(); it != m_connection_list.end(); it++  )
+   for( std::vector<CxDataClient*>::iterator it = m_connection_list.begin(); it != m_connection_list.end(); it++  )
    {
       delete *it;
    }
@@ -242,8 +360,3 @@ void CxDataServer::closeConnections()
    m_connection_list.clear();
 }
 
-bool CxDataServer::processEvent( pTEvent /*pEvent*/ )
-{
-
-   return true;
-}
