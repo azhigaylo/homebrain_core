@@ -19,6 +19,7 @@
 #include "interface/CxInterface.h"
 #include "interfaces/DataDB.h"
 #include "eventpool/IxEventConsumer.h"
+#include "provider/CxDataProvider.h"
 //------------------------------------------------------------------------------
 
 class socketaddress
@@ -106,21 +107,6 @@ class CxDataClient : public IxRunnable, public IxEventConsumer
       ~CxDataClient();
 
       /**
-       * Reads a specified amount of data into a character pointer
-       * @param the character buffer
-       * @param the length of the character buffer
-       */
-      int read(char*, int);
-
-      /**
-       * Sends an array of charactes to the client, with a specified start and end index
-       * @param the character buffer
-       * @param the starting position
-       * @param the length
-       */
-      int send(const char*, int, int);
-
-      /**
        * Sets the socket in blocking mode
        */
       void set_blocking();
@@ -157,7 +143,8 @@ class CxDataClient : public IxRunnable, public IxEventConsumer
 
       int socketfd;
       struct sockaddr_in address;
-      socketaddress* sockaddr;
+      socketaddress*     sockaddr;
+      CxDataProvider&    dataProvider;      // reference on the data provider
 
       virtual void TaskProcessor();
       virtual bool processEvent( pTEvent pEvent );
@@ -173,6 +160,8 @@ class CxDataClient : public IxRunnable, public IxEventConsumer
       void process_get_a_point(uint16_t start_point, uint16_t number_point);
       void process_set_d_point(uint16_t start_point, const TDPOINT& dp);
       void process_set_a_point(uint16_t start_point, const TAPOINT& ap);
+      void notify_d_point(uint16_t point);
+      void notify_a_point(uint16_t point);
 };
 
 //------------------------------------------------------------------------------

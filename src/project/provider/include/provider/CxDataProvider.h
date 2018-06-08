@@ -41,7 +41,7 @@
 
 //------------------------------------------------------------------------------
 
-class CxDataProvider
+class CxDataProvider: public IxEventProducer
 {
      // function's
      CxDataProvider();
@@ -50,35 +50,26 @@ class CxDataProvider
    public:
       static CxDataProvider &getInstance();
 
-      TDPOINT & getDPoint( uint16_t number );
-      void setDPoint( uint16_t number, uint16_t value );
-      void incDPoint( uint16_t number );
-      void decDPoint( uint16_t number );
-      void setDStatus( uint16_t number, int8_t status );
-      int8_t getDStatus( uint16_t number );
-      void setSilenceDPoint( uint16_t number, uint16_t value );
+      TDPOINT& getDPoint    ( uint16_t number );
+      int8_t   getDStatus   ( uint16_t number );
+      void setDPoint        ( uint16_t number, uint16_t value );
+      void setDStatus       ( uint16_t number, int8_t status );
+      void setSilenceDPoint ( uint16_t number, uint16_t value );
       void setSilenceDStatus( uint16_t number, int8_t status );
 
-      TAPOINT & getAPoint( uint16_t number );
-      void setAPoint( uint16_t number, double value );
-      void setAStatus( uint16_t number, int8_t status );
-      int8_t getAStatus( uint16_t number );
-
+      TAPOINT& getAPoint    ( uint16_t number );
+      int8_t   getAStatus   ( uint16_t number );
+      void setAPoint        ( uint16_t number, double value );
+      void setAStatus       ( uint16_t number, int8_t status );
+      void setSilenceAPoint ( uint16_t number, double value );
+      void setSilenceAStatus( uint16_t number, int8_t status );
    private:
 
       TAPOINT APOINT[a_point_total];
       TDPOINT DPOINT[d_point_total];
 
-      //CxDataServer data_server;
-
       static CxMutex digitalDataProviderMutex;
       static CxMutex analogDataProviderMutex;
-
-      CxInterface *getInterface();
-      void sendExternalDpoint( uint16_t number );
-      void sendExternalApoint( uint16_t number );
-      void subscribeOnExternalDpoint( uint16_t number );
-      void subscribeOnExternalApoint( uint16_t number );
 
  }; typedef CxDataProvider *pTCxDataProvider;
 

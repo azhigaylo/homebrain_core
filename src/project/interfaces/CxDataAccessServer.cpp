@@ -12,6 +12,7 @@
 
 #include "common/slog.h"
 #include "common/utils.h"
+
 //------------------------------------------------------------------------------
 
 #define DEFAULT_SOCKET_BUFFER 1024
@@ -19,15 +20,18 @@
 //------------------------------------------------------------------------------
 
 CxDataClient::CxDataClient(int socket_fd, struct sockaddr_in addr)
-   : IxRunnable ("socket_connection")
-   , IxEventConsumer( )
-   , socketfd   (socket_fd)
-   , address    (addr)
+   : IxRunnable      ("socket_connection")
+   , IxEventConsumer ( )
+   , socketfd        (socket_fd)
+   , address         (addr)
+   , dataProvider    (CxDataProvider::getInstance())
 {
    sockaddr = new socketaddress(addr);
 
    setNotification( EVENT_DP_NEW_VALUE );
    setNotification( EVENT_AP_NEW_VALUE );
+   setNotification( EVENT_DP_NEW_STATUS );
+   setNotification( EVENT_AP_NEW_STATUS );
 
    // start task processing
    task_run();
@@ -39,9 +43,13 @@ CxDataClient::~CxDataClient()
 {
    clrNotification( EVENT_DP_NEW_VALUE );
    clrNotification( EVENT_AP_NEW_VALUE );
+   clrNotification( EVENT_DP_NEW_STATUS );
+   clrNotification( EVENT_AP_NEW_STATUS );
 
    delete sockaddr;
+
    close();
+
    printDebug("CxDataClient/%s: removed...", __FUNCTION__);
 }
 
@@ -65,16 +73,6 @@ void CxDataClient::close()
        task_stop();
        socketfd = -1;
    }
-}
-
-int CxDataClient::read(char* buf, int len)
-{
-   return ::recv(socketfd, buf, len, 0);
-}
-
-int CxDataClient::send(const char* buf, int len, int flags)
-{
-   return ::send(socketfd, buf, len, flags);
 }
 
 int CxDataClient::recv_timeout(int s, int timeout)
@@ -128,53 +126,127 @@ int CxDataClient::recv_timeout(int s, int timeout)
     return total_size;
 }
 
-
 void CxDataClient::process_client_rq(const TClientRequest& rq)
 {
-   switch(rq.cmd)
+   switch(rq.header.cmd)
    {
       case GetDiscretPoint:
       {
-         process_get_d_point(rq.start_point, rq.number_point);
+         process_get_d_point(rq.header.start_point, rq.header.number_point);
          break;
       }
       case GetAnalogPoint:
       {
-         process_get_a_point(rq.start_point, rq.number_point);
+         process_get_a_point(rq.header.start_point, rq.header.number_point);
          break;
       }
       case SetDiscretPoint:
       {
-         process_set_d_point(rq.start_point, rq.point.digital);
+         process_set_d_point(rq.header.start_point, rq.point.digital);
          break;
       }
       case SetAnalogPoint:
       {
-         process_set_a_point(rq.start_point, rq.point.analog);
+         process_set_a_point(rq.header.start_point, rq.point.analog);
          break;
       }
       default : break;
    }
 }
 
-void CxDataClient::process_get_d_point(uint16_t /*start_point*/, uint16_t /*number_point*/)
+void CxDataClient::process_get_d_point(uint16_t start_point, uint16_t number_point)
 {
+   TResponse *resp_ptr = new TResponse;
 
+   resp_ptr->header.data_size    = sizeof(THeader) + number_point*sizeof(TDPOINT);
+   resp_ptr->header.cmd          = GetDiscretPoint;
+   resp_ptr->header.start_point  = start_point;
+   resp_ptr->header.number_point = number_point;
+
+   // fill point array
+   for (int i=0; i < number_point; i++ )
+   {
+      resp_ptr->array.digital[i] = dataProvider.getDPoint(start_point+i);
+   }
+
+   if (-1 == ::send(socketfd, resp_ptr, resp_ptr->header.data_size , 0))
+   {
+      printError("CxDataClient/%s: send error: %s", __FUNCTION__, strerror(errno));
+   }
+
+   delete resp_ptr;
 }
 
-void CxDataClient::process_get_a_point(uint16_t /*start_point*/, uint16_t /*number_point*/)
+void CxDataClient::process_get_a_point(uint16_t start_point, uint16_t number_point)
 {
+   TResponse *resp_ptr = new TResponse;
 
+   resp_ptr->header.data_size    = sizeof(THeader) + number_point*sizeof(TAPOINT);
+   resp_ptr->header.cmd          = GetAnalogPoint;
+   resp_ptr->header.start_point  = start_point;
+   resp_ptr->header.number_point = number_point;
+
+   // fill point array
+   for (int i=0; i < number_point; i++ )
+   {
+      resp_ptr->array.analog[i] = dataProvider.getAPoint(start_point+i);
+   }
+
+   if (-1 == ::send(socketfd, resp_ptr, resp_ptr->header.data_size , 0))
+   {
+      printError("CxDataClient/%s: send error: %s", __FUNCTION__, strerror(errno));
+   }
+
+   delete resp_ptr;
 }
 
-void CxDataClient::process_set_d_point(uint16_t /*start_point*/, const TDPOINT& /*dp*/)
+void CxDataClient::process_set_d_point(uint16_t start_point, const TDPOINT& dp)
 {
-
+   dataProvider.setDPoint(start_point, dp.value);
+   dataProvider.setDStatus(start_point, STATUS_SETNEW);
 }
 
-void CxDataClient::process_set_a_point(uint16_t /*start_point*/, const TAPOINT& /*ap*/)
+void CxDataClient::process_set_a_point(uint16_t start_point, const TAPOINT& ap)
 {
+   dataProvider.setAPoint(start_point, ap.value);
+   dataProvider.setAStatus(start_point, STATUS_SETNEW);
+}
 
+void CxDataClient::notify_d_point(uint16_t point)
+{
+   TResponse *resp_ptr = new TResponse;
+
+   resp_ptr->header.data_size    = sizeof(THeader) + sizeof(TDPOINT);
+   resp_ptr->header.cmd          = NotifyDiscretPoint;
+   resp_ptr->header.start_point  = point;
+   resp_ptr->header.number_point = 1;
+
+   resp_ptr->array.digital[0] = dataProvider.getDPoint(point);
+
+   if (-1 == ::send(socketfd, resp_ptr, resp_ptr->header.data_size , 0))
+   {
+      printError("CxDataClient/%s: send error: %s", __FUNCTION__, strerror(errno));
+   }
+
+   delete resp_ptr;
+}
+void CxDataClient::notify_a_point(uint16_t point)
+{
+   TResponse *resp_ptr = new TResponse;
+
+   resp_ptr->header.data_size    = sizeof(THeader) + sizeof(TAPOINT);
+   resp_ptr->header.cmd          = NotifyAnalogPoint;
+   resp_ptr->header.start_point  = point;
+   resp_ptr->header.number_point = 1;
+
+   resp_ptr->array.analog[0] = dataProvider.getAPoint(point);
+
+   if (-1 == ::send(socketfd, resp_ptr, resp_ptr->header.data_size , 0))
+   {
+      printError("CxDataClient/%s: send error: %s", __FUNCTION__, strerror(errno));
+   }
+
+   delete resp_ptr;
 }
 
 void CxDataClient::TaskProcessor()
@@ -209,10 +281,29 @@ void CxDataClient::TaskProcessor()
     }
 }
 
-bool CxDataClient::processEvent( pTEvent /*pEvent*/ )
+bool CxDataClient::processEvent( pTEvent pEvent )
 {
+   bool result = false;
+   switch(pEvent->eventType)
+   {
+      case EVENT_DP_NEW_VALUE:
+      case EVENT_DP_NEW_STATUS:
+      {
+         notify_d_point(pEvent->dataSize);
+         result = true;
+         break;
+      }
+      case EVENT_AP_NEW_VALUE:
+      case EVENT_AP_NEW_STATUS:
+      {
+         notify_a_point(pEvent->dataSize);
+         result = true;
+         break;
+      }
+      default : break;
+   }
 
-   return true;
+   return result;
 }
 
 //------------------------------------------------------------------------------

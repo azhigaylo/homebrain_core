@@ -259,7 +259,7 @@ CxLauncher::CxLauncher( const char* cgf_name ):
   ,LauncherState     ( ST_L_UNKNOWN )
   ,pInterfaceManager ( CxInterfaceManager::getInstance() )
   ,pLogDeviceManager ( CxLogDeviceManager::getInstance() )
-  ,bDataConnectReady ( false )
+  ,bPowerReady ( false )
   ,IniFileParser     ( )
   ,UsoCfgLoader      ()
   ,ProcessorList     ()
@@ -268,7 +268,7 @@ CxLauncher::CxLauncher( const char* cgf_name ):
    strncpy( cgfname, const_cast<char*>(cgf_name), sizeof(cgfname) );
 
    // set notification for data server
-   setNotification( event_pool::EVENT_DATA_CONNECTED );
+   setNotification( event_pool::EVENT_POWER_ON );
 }
 
 CxLauncher::~CxLauncher( )
@@ -336,10 +336,10 @@ void CxLauncher::TaskProcessor()
 bool CxLauncher::processEvent( pTEvent pEvent )
 {
    // value event processing
-   if( pEvent->eventType == event_pool::EVENT_DATA_CONNECTED )
+   if( pEvent->eventType == event_pool::EVENT_POWER_ON )
    {
       printDebug("CxLauncher::%s: CxLauncher DataConnectReady received", __FUNCTION__);
-      bDataConnectReady = true;
+      bPowerReady = true;
       return true;
    }
 

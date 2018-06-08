@@ -26,7 +26,6 @@ CxDataProvider::CxDataProvider()
       APOINT[point].status = STATUS_UNKNOWN;
       APOINT[point].value = 0;
    }
-
 }
 
 CxDataProvider::~CxDataProvider()
@@ -34,57 +33,12 @@ CxDataProvider::~CxDataProvider()
 
 }
 
+//------------------------------------------------------------------------------
+
 CxDataProvider &CxDataProvider::getInstance()
 {
    static CxDataProvider theInstance;
    return theInstance;
-}
-
-//------------------------------------------------------------------------------
-
-CxInterface *CxDataProvider::getInterface()
-{
-   return 0;
-}
-
-void CxDataProvider::sendExternalDpoint( uint16_t /*number*/ )
-{
-   // put in to external storage
-    CxInterface *pInterface = getInterface();
-   if (pInterface != 0)
-   {
-      //pInterface->setDpoint( number, DPOINT[number].status, DPOINT[number].value );
-   }
-}
-
-void CxDataProvider::sendExternalApoint( uint16_t /*number*/ )
-{
-   // put in to external storage
-    CxInterface *pInterface = getInterface();
-   if (pInterface != 0)
-   {
-      //pInterface->setApoint( number, APOINT[number].status, APOINT[number].value );
-   }
-}
-
-void CxDataProvider::subscribeOnExternalDpoint( uint16_t /*number*/ )
-{
-   // put in to external storage
-    CxInterface *pInterface = getInterface();
-   if (pInterface != 0)
-   {
-      //pInterface->setNotification( number, DtDigitalPoint );
-   }
-}
-
-void CxDataProvider::subscribeOnExternalApoint( uint16_t /*number*/ )
-{
-   // put in to external storage
-    CxInterface *pInterface = getInterface();
-   if (pInterface != 0)
-   {
-      //pInterface->setNotification( number, DtAnalogPoint );
-   }
 }
 
 //--------------------------------D point data provider-------------------------
@@ -93,9 +47,14 @@ TDPOINT & CxDataProvider::getDPoint( uint16_t number )
 {
    CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
 
-   subscribeOnExternalDpoint( number );
-
    return DPOINT[number];
+}
+
+int8_t CxDataProvider::getDStatus( uint16_t number )
+{
+   CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
+
+   return DPOINT[number].status;
 }
 
 void CxDataProvider::setDPoint( uint16_t number, uint16_t value )
@@ -106,27 +65,8 @@ void CxDataProvider::setDPoint( uint16_t number, uint16_t value )
    if (value != DPOINT[number].value)
    {
       DPOINT[number].value = value;
-
-      sendExternalDpoint( number );
+      sendEvent( event_pool::eEventType::EVENT_DP_NEW_VALUE, number, 0);
    }
-}
-
-void CxDataProvider::incDPoint( uint16_t number )
-{
-   CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
-
-   DPOINT[number].value++;
-
-   sendExternalDpoint( number );
-}
-
-void CxDataProvider::decDPoint( uint16_t number )
-{
-   CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
-
-   DPOINT[number].value--;
-
-   sendExternalDpoint( number );
 }
 
 void CxDataProvider::setDStatus( uint16_t number, int8_t status )
@@ -136,18 +76,9 @@ void CxDataProvider::setDStatus( uint16_t number, int8_t status )
    // we should reduce server trafic
    if (status != DPOINT[number].status)
    {
-      DPOINT[number].status |= status;
-      sendExternalDpoint( number );
+      DPOINT[number].status = status;
+      sendEvent( event_pool::eEventType::EVENT_DP_NEW_STATUS, number, 0);
    }
-}
-
-int8_t CxDataProvider::getDStatus( uint16_t number )
-{
-   CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
-
-   subscribeOnExternalDpoint( number );
-
-   return DPOINT[number].status;
 }
 
 void CxDataProvider::setSilenceDPoint( uint16_t number, uint16_t value )
@@ -161,7 +92,7 @@ void CxDataProvider::setSilenceDStatus( uint16_t number, int8_t status )
 {
    CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
 
-   DPOINT[number].status |= status;
+   DPOINT[number].status = status;
 }
 
 //--------------------------------A point data provider-------------------------
@@ -170,9 +101,14 @@ TAPOINT & CxDataProvider::getAPoint( uint16_t number )
 {
    CxMutexLocker locker(&CxDataProvider::analogDataProviderMutex);
 
-   subscribeOnExternalApoint( number );
-
    return APOINT[number];
+}
+
+int8_t CxDataProvider::getAStatus( uint16_t number )
+{
+   CxMutexLocker locker(&CxDataProvider::analogDataProviderMutex);
+
+   return APOINT[number].status;
 }
 
 void CxDataProvider::setAPoint( uint16_t number, double value )
@@ -182,7 +118,7 @@ void CxDataProvider::setAPoint( uint16_t number, double value )
    if (value != APOINT[number].value)
    {
       APOINT[number].value = value;
-      sendExternalApoint( number );
+      sendEvent( event_pool::eEventType::EVENT_AP_NEW_VALUE, number, 0);
    }
 }
 
@@ -194,15 +130,21 @@ void CxDataProvider::setAStatus( uint16_t number, int8_t status )
    if (status != APOINT[number].status)
    {
       APOINT[number].status = status;
-      sendExternalApoint( number );
+      sendEvent( event_pool::eEventType::EVENT_AP_NEW_STATUS, number, 0);
    }
 }
 
-int8_t CxDataProvider::getAStatus( uint16_t number )
+void CxDataProvider::setSilenceAPoint( uint16_t number, double value )
 {
    CxMutexLocker locker(&CxDataProvider::analogDataProviderMutex);
 
-   subscribeOnExternalApoint( number );
-
-   return APOINT[number].status;
+   APOINT[number].value = value;
 }
+
+void CxDataProvider::setSilenceAStatus( uint16_t number, int8_t status )
+{
+   CxMutexLocker locker(&CxDataProvider::analogDataProviderMutex);
+
+   APOINT[number].status = status;
+}
+

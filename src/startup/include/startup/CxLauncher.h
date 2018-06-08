@@ -62,7 +62,7 @@ class CxLauncher : public IxRunnable, public IxEventConsumer
       // logical device manager
       const CxLogDeviceManager *pLogDeviceManager;
       // state of the connection to data server
-      bool bDataConnectReady;
+      bool bPowerReady;
       // ini file parcer object
       CxIniFileParser IniFileParser;
       // project loader
