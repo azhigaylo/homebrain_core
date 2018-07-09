@@ -5,6 +5,7 @@
 #include "common/ptypes.h"
 #include "provider/CxDataProvider.h"
 //------------------------------------------------------------------------------
+#define MagicHeader        0xAA
 
 #define GetDiscretPoint    1
 #define GetAnalogPoint     2
@@ -19,7 +20,8 @@
 
    struct THeader
    {
-      uint8_t  data_size;      // overall package size
+      uint8_t  head_strt;      // 0xAA
+      uint32_t data_size;      // overall package size
       uint8_t  cmd;
       uint16_t start_point;
       uint16_t number_point;

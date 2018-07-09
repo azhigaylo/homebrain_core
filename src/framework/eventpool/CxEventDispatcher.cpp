@@ -126,7 +126,18 @@ bool CxEventDispatcher::setNotification( TEvent event, pTIxEventConsumer pIxEven
    return true;
 }
 
-bool CxEventDispatcher::clrNotification(TEvent /*event*/, pTIxEventConsumer /*pIxEventConsumer*/)
+bool CxEventDispatcher::clrNotification(TEvent event, pTIxEventConsumer pIxEventConsumer)
 {
+   for( unsigned short element = 0; element < NotificationPool.size(); element++ )
+   {
+      TNotificationUnit notification_unit = NotificationPool[element];
+
+      if( notification_unit.event.eventType == event.eventType &&
+          notification_unit.pIxEventConsumer == pIxEventConsumer )
+      {
+          NotificationPool.erase(NotificationPool.begin() + element);
+          return true;
+      }
+  }
    return false;
 }

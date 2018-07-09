@@ -150,7 +150,11 @@ void CxDataClient::process_client_rq(const TClientRequest& rq)
          process_set_a_point(rq.header.start_point, rq.point.analog);
          break;
       }
-      default : break;
+      default :
+      {
+          printWarning("CxDataClient/%s: unknown command: %d", __FUNCTION__, rq.header.cmd);
+          break;
+      }
    }
 }
 
@@ -158,6 +162,9 @@ void CxDataClient::process_get_d_point(uint16_t start_point, uint16_t number_poi
 {
    TResponse *resp_ptr = new TResponse;
 
+   printDebug("CxDataClient/%s: read dpoint request from %i, count %i point", __FUNCTION__, start_point, number_point);
+
+   resp_ptr->header.head_strt    = MagicHeader;
    resp_ptr->header.data_size    = sizeof(THeader) + number_point*sizeof(TDPOINT);
    resp_ptr->header.cmd          = GetDiscretPoint;
    resp_ptr->header.start_point  = start_point;
@@ -173,6 +180,10 @@ void CxDataClient::process_get_d_point(uint16_t start_point, uint16_t number_poi
    {
       printError("CxDataClient/%s: send error: %s", __FUNCTION__, strerror(errno));
    }
+   else
+   {
+       printDebug("CxDataClient/%s: send %i bytes", __FUNCTION__, resp_ptr->header.data_size);
+   }
 
    delete resp_ptr;
 }
@@ -181,6 +192,9 @@ void CxDataClient::process_get_a_point(uint16_t start_point, uint16_t number_poi
 {
    TResponse *resp_ptr = new TResponse;
 
+   printDebug("CxDataClient/%s: read apoint request from %i, count %i point", __FUNCTION__, start_point, number_point);
+
+   resp_ptr->header.head_strt    = MagicHeader;
    resp_ptr->header.data_size    = sizeof(THeader) + number_point*sizeof(TAPOINT);
    resp_ptr->header.cmd          = GetAnalogPoint;
    resp_ptr->header.start_point  = start_point;
@@ -196,18 +210,26 @@ void CxDataClient::process_get_a_point(uint16_t start_point, uint16_t number_poi
    {
       printError("CxDataClient/%s: send error: %s", __FUNCTION__, strerror(errno));
    }
+   else
+   {
+       printDebug("CxDataClient/%s: send %i bytes", __FUNCTION__, resp_ptr->header.data_size);
+   }
 
    delete resp_ptr;
 }
 
 void CxDataClient::process_set_d_point(uint16_t start_point, const TDPOINT& dp)
 {
+   printDebug("CxDataClient/%s: set digital point N=%i", __FUNCTION__, start_point);
+
    dataProvider.setDPoint(start_point, dp.value);
    dataProvider.setDStatus(start_point, STATUS_SETNEW);
 }
 
 void CxDataClient::process_set_a_point(uint16_t start_point, const TAPOINT& ap)
 {
+   printDebug("CxDataClient/%s: set analog point N=%i", __FUNCTION__, start_point);
+
    dataProvider.setAPoint(start_point, ap.value);
    dataProvider.setAStatus(start_point, STATUS_SETNEW);
 }
@@ -216,6 +238,7 @@ void CxDataClient::notify_d_point(uint16_t point)
 {
    TResponse *resp_ptr = new TResponse;
 
+   resp_ptr->header.head_strt    = MagicHeader;
    resp_ptr->header.data_size    = sizeof(THeader) + sizeof(TDPOINT);
    resp_ptr->header.cmd          = NotifyDiscretPoint;
    resp_ptr->header.start_point  = point;
@@ -227,6 +250,10 @@ void CxDataClient::notify_d_point(uint16_t point)
    {
       printError("CxDataClient/%s: send error: %s", __FUNCTION__, strerror(errno));
    }
+   else
+   {
+       printDebug("CxDataClient/%s: send %i bytes", __FUNCTION__, resp_ptr->header.data_size);
+   }
 
    delete resp_ptr;
 }
@@ -234,6 +261,7 @@ void CxDataClient::notify_a_point(uint16_t point)
 {
    TResponse *resp_ptr = new TResponse;
 
+   resp_ptr->header.head_strt    = MagicHeader;
    resp_ptr->header.data_size    = sizeof(THeader) + sizeof(TAPOINT);
    resp_ptr->header.cmd          = NotifyAnalogPoint;
    resp_ptr->header.start_point  = point;
@@ -244,6 +272,10 @@ void CxDataClient::notify_a_point(uint16_t point)
    if (-1 == ::send(socketfd, resp_ptr, resp_ptr->header.data_size , 0))
    {
       printError("CxDataClient/%s: send error: %s", __FUNCTION__, strerror(errno));
+   }
+   else
+   {
+       printDebug("CxDataClient/%s: send %i bytes", __FUNCTION__, resp_ptr->header.data_size);
    }
 
    delete resp_ptr;
@@ -269,8 +301,8 @@ void CxDataClient::TaskProcessor()
            // read operation ok, check for full package size
            if (static_cast<ssize_t>(sizeof(client_request)) <= data_size )
            {
-              printDebug("CxDataServer/%s: ------got request data------", __FUNCTION__);
               data_size = ::recv(socketfd, &client_request, sizeof(client_request), 0);
+              process_client_rq(client_request);
            }
         }
         else

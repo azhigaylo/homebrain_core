@@ -46,4 +46,3 @@ bool IxEventConsumer::clrNotification(eEventType event)
 
    return false;
 }
-
