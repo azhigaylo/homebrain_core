@@ -312,7 +312,7 @@ void CxLogDev_DIO_OVEN::setUsoStatus( uint16_t status )
                case CT_DISCRET_IN  :
                case CT_DISCRET_OUT :
                {
-                  dataProvider.setDPoint(pCurCh->PointNumb, STATUS_UNKNOWN);
+                  dataProvider.setDStatus(pCurCh->PointNumb, STATUS_UNKNOWN);
                   break;
                }
                default : break;
