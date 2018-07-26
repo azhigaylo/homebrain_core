@@ -189,6 +189,9 @@ bool CxLogDev_DIO_OVEN::ProcessDoDevice()
             if (STATUS_SETNEW == dataProvider.getDStatus(pCurCh->PointNumb))
             {
                TDPOINT& d_point = dataProvider.getDPoint( pCurCh->PointNumb );
+
+               printDebug("CxLogDev_DIO_OVEN/%s: detected new value=%i in channel %i", __FUNCTION__, d_point.value, i);
+
                dataProvider.setDStatus( pCurCh->PointNumb, STATUS_PROCESSED );
                if (0 != d_point.value )
                {
@@ -204,7 +207,10 @@ bool CxLogDev_DIO_OVEN::ProcessDoDevice()
 
       if (initial_mask != output_mask )
       {
-          if (true == pModBusMaster->SetRegister( dev_settings.address, discret_output_reg, output_mask ))
+          printDebug("CxLogDev_DIO_OVEN/%s: new output_mask = %i", __FUNCTION__, output_mask);
+
+          output_mask = ConvertMBint(output_mask);
+          if (true == pModBusMaster->SetRegisterBlock( dev_settings.address, discret_output_reg, 1, &output_mask ))
           {
              printDebug("CxLogDev_DIO_OVEN/%s: logdev=%s, write reg 0x32 = %i", __FUNCTION__, getDeviceName(), output_mask);
              result = true;

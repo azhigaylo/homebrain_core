@@ -89,30 +89,27 @@ bool CxModBusMaster::SetRegister( uint8_t address, uint16_t reg_numb, uint16_t r
 {
    bool result = false;
 
-   //pthread_barrier_init(&our_barrier,NULL,2);
-
    commbuf.msgSize   = sizeof(TMWRREG);
    commbuf.msgNumber = counter_item++;
 
    // set MB request
    mbWriteRequest.address       = address;
-   mbWriteRequest.command       = CMD_MB_WARRREG;
+   mbWriteRequest.command       = CMD_MB_WREG;
    mbWriteRequest.start_reg_hi  = HIGH(reg_numb);
    mbWriteRequest.start_reg_low = LOW(reg_numb);
    mbWriteRequest.REG           = reg_value;
    mbWriteRequest.CRC           = CRC16_T(reinterpret_cast<char*>(&mbWriteRequest), sizeof(mbWriteRequest)-sizeof(mbWriteRequest.CRC));
 
-   printDebug("CxModBusMaster/%s: MB(%s) send(%d byte) %d %d %d %d %d %d + crc(0x%x)",
+   printDebug("CxModBusMaster/%s: MB(%s) send(%d byte) %d %d %d %d %i + crc(0x%x)",
                                                                                    __FUNCTION__,
-                                                                                   sizeof(mbReadRequest),
                                                                                    getInterfaceName(),
-                                                                                   mbReadRequest.address,
-                                                                                   mbReadRequest.command,
-                                                                                   mbReadRequest.start_reg_hi,
-                                                                                    mbReadRequest.start_reg_low,
-                                                                                    mbReadRequest.numb_reg_hi,
-                                                                                    mbReadRequest.numb_reg_low,
-                                                                                    mbReadRequest.CRC);
+                                                                                   sizeof(mbWriteRequest),
+                                                                                   mbWriteRequest.address,
+                                                                                   mbWriteRequest.command,
+                                                                                   mbWriteRequest.start_reg_hi,
+                                                                                   mbWriteRequest.start_reg_low,
+                                                                                   mbWriteRequest.REG,
+                                                                                   mbWriteRequest.CRC);
 
    memcpy( commbuf.buffer, &mbWriteRequest, sizeof mbWriteRequest);
 
@@ -133,16 +130,15 @@ bool CxModBusMaster::SetRegisterBlock( uint8_t address, uint16_t reg_start, uint
 {
    bool result = false;
 
-   //pthread_barrier_init(&our_barrier,NULL,2);
-
    // set MB request
    mbWrBlkReg.Header.address       = address;
-   mbWrBlkReg.Header.command       = CMD_MB_WREG;
+   mbWrBlkReg.Header.command       = CMD_MB_WARRREG;
    mbWrBlkReg.Header.start_reg_hi  = HIGH(reg_start);
    mbWrBlkReg.Header.start_reg_low = LOW(reg_start);
    mbWrBlkReg.Header.numb_reg_hi   = HIGH(reg_count);
    mbWrBlkReg.Header.numb_reg_low  = LOW(reg_count);
    mbWrBlkReg.Header.NumbB         = (uint8_t)(reg_count*sizeof(uint16_t));
+
    // copy buffer
    memcpy( mbWrBlkReg.OutputBuf, pOutput, mbWrBlkReg.Header.NumbB );
    //setup CRC
@@ -153,6 +149,17 @@ bool CxModBusMaster::SetRegisterBlock( uint8_t address, uint16_t reg_start, uint
    commbuf.msgNumber = counter_item++;
 
    memcpy( commbuf.buffer, &mbWrBlkReg, commbuf.msgSize);
+
+   printDebug("CxModBusMaster/%s: MB(%s) send(%d byte) %d %d %d %d %i + crc(0x%x)",
+                                                                                   __FUNCTION__,
+                                                                                   getInterfaceName(),
+                                                                                   sizeof(mbWriteRequest),
+                                                                                   mbWrBlkReg.Header.address,
+                                                                                   mbWrBlkReg.Header.command,
+                                                                                   mbWrBlkReg.Header.start_reg_hi,
+                                                                                   mbWrBlkReg.Header.start_reg_low,
+                                                                                   mbWrBlkReg.Header.NumbB,
+                                                                                   mbWrBlkReg.OutputBuf[reg_count]);
 
    // send message to serial driver
    sendMsg( CM_OUT_DATA, &commbuf );
