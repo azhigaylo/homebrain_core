@@ -112,12 +112,12 @@ bool CxLogDev_DIO_OVEN::ProcessDevice()
       {
          if (true == recoveryFlagDO)
          {
-             result = ProcessDoDevice();
+             result = RecoveryDoDevice();
+             recoveryFlagDO = false;
          }
          else
          {
-             result = RecoveryDoDevice();
-             recoveryFlagDO = false;
+             result = ProcessDoDevice();
          }
          break;
       }
@@ -125,15 +125,15 @@ bool CxLogDev_DIO_OVEN::ProcessDevice()
       {
          if (true == recoveryFlagDO)
          {
+            result = RecoveryDoDevice();
+            recoveryFlagDO = false;
+         }
+         else
+         {
             if (true == ProcessDiDevice())
             {
                result = ProcessDoDevice();
             }
-         }
-         else
-         {
-             result = RecoveryDoDevice();
-             recoveryFlagDO = false;
          }
 
          break;
