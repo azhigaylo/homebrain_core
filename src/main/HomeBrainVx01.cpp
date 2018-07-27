@@ -71,7 +71,11 @@ int main(int argc, char* argv[])
           }
        }
 
-       initDlt();
+       if (TRACE_SINK_DLT == getDbgSink())
+       {
+           initDlt();
+           printDebug("MAIN/%s: Dlt inited...", __FUNCTION__);
+       }
 
        printDebug("MAIN/%s: started with debug level = %i", __FUNCTION__, debug);
        printDebug("MAIN/%s: started with debug sink = %i", __FUNCTION__, debug_sink);
@@ -86,7 +90,12 @@ int main(int argc, char* argv[])
 
        printDebug("MAIN/%s: Launcher thread finished...", __FUNCTION__);
 
-       deinitDlt();
+       if (TRACE_SINK_DLT == getDbgSink())
+       {
+           deinitDlt();
+           printDebug("MAIN/%s: Dlt deinited...", __FUNCTION__);
+       }
+
    }
    catch (const std::exception& e)
    {
@@ -97,3 +106,4 @@ int main(int argc, char* argv[])
 
    return EXIT_SUCCESS;
 }
+

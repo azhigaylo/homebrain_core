@@ -92,6 +92,11 @@ void setDbgSink(int sink)
    dbg_sink = sink;
 }
 
+int getDbgSink()
+{
+   return dbg_sink;
+}
+
 void initDlt()
 {
    DLT_REGISTER_APP("HB","HomeBrain trace");

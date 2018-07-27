@@ -24,6 +24,10 @@ void setDbgLevel(int lvl);
  */
 void setDbgSink(int sink);
 
+/**
+ * get debug level
+ */
+int getDbgSink();
 
 /**
  * init DLT trace component
