@@ -9,11 +9,13 @@
 #include "interfaces/CxModBusMaster.h"
 //------------------------------------------------------------------------------
 
-CxModBusMaster::CxModBusMaster( const char *interfaceName, const char *drvName ):
-    CxThreadIO     ( interfaceName, drvName )
+CxModBusMaster::CxModBusMaster( const char *interfaceName, const char *drvName )
+   :CxThreadIO     ( interfaceName, drvName )
    ,CxInterface    ( interfaceName )
    ,counter_item   ( 2 )
    ,sizeResponce   ( 0 )
+   ,last_command   ( CMD_MB_NULL )
+   ,last_address   ( 0 )
    ,cond_mutex     ( PTHREAD_MUTEX_INITIALIZER )
    ,cond_var       ( PTHREAD_COND_INITIALIZER )
    ,cond_var_flag  ( 0 )
@@ -46,8 +48,8 @@ uint16_t CxModBusMaster::GetRegister( uint8_t address, uint16_t reg_start, uint1
    commbuf.msgNumber = counter_item++;
 
    // set MB request
-   mbReadRequest.address       = address;
-   mbReadRequest.command       = CMD_MB_RREG;
+   mbReadRequest.address       = last_address = address;
+   mbReadRequest.command       = last_command = CMD_MB_RREG;
    mbReadRequest.start_reg_hi  = HIGH(reg_start);
    mbReadRequest.start_reg_low = LOW(reg_start);
    mbReadRequest.numb_reg_hi   = HIGH(reg_count);
@@ -93,8 +95,8 @@ bool CxModBusMaster::SetRegister( uint8_t address, uint16_t reg_numb, uint16_t r
    commbuf.msgNumber = counter_item++;
 
    // set MB request
-   mbWriteRequest.address       = address;
-   mbWriteRequest.command       = CMD_MB_WREG;
+   mbWriteRequest.address       = last_address = address;
+   mbWriteRequest.command       = last_command = CMD_MB_WREG;
    mbWriteRequest.start_reg_hi  = HIGH(reg_numb);
    mbWriteRequest.start_reg_low = LOW(reg_numb);
    mbWriteRequest.REG           = reg_value;
@@ -131,8 +133,8 @@ bool CxModBusMaster::SetRegisterBlock( uint8_t address, uint16_t reg_start, uint
    bool result = false;
 
    // set MB request
-   mbWrBlkReg.Header.address       = address;
-   mbWrBlkReg.Header.command       = CMD_MB_WARRREG;
+   mbWrBlkReg.Header.address       = last_address = address;
+   mbWrBlkReg.Header.command       = last_command = CMD_MB_WARRREG;
    mbWrBlkReg.Header.start_reg_hi  = HIGH(reg_start);
    mbWrBlkReg.Header.start_reg_low = LOW(reg_start);
    mbWrBlkReg.Header.numb_reg_hi   = HIGH(reg_count);
@@ -232,7 +234,7 @@ void CxModBusMaster::CommandProcessor( uint16_t ComID, void *data )
                // copy in the internal buffer(rx buffer can receive another data)
                memcpy( &mbResponce, pSerialBlock->buffer, pSerialBlock->msgSize );
 
-               if ((mbReadRequest.address == mbResponce.Header.address) && (mbReadRequest.command == mbResponce.Header.command))
+               if ((last_address == mbResponce.Header.address) && (last_command == mbResponce.Header.command))
                {
                   printDebug("CxModBusMaster/%s: MB(%s) got addr=%i / comm=%i / package=%i  ", __FUNCTION__,
                                                                                                getInterfaceName(),

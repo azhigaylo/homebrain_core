@@ -35,6 +35,8 @@ class CxModBusMaster : public CxThreadIO, public CxInterface
 
       uint16_t          counter_item;
       uint16_t          sizeResponce;
+      uint8_t           last_command;
+      uint8_t           last_address;
 
       TSerialBlock      commbuf;
       TMREQ             mbReadRequest;

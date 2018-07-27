@@ -23,6 +23,7 @@ CxLogDev_DIO_OVEN::CxLogDev_DIO_OVEN( const char *logDevName, const char *usedIn
    ,CxSysTimer     ( "logDev_DIO_Timer", 5000000000, false)  // time in nanosecond
    ,dev_settings   ( usoSettings )
    ,commError      ( 0 )
+   ,recoveryFlagDO ( true )
    ,dataProvider   ( CxDataProvider::getInstance() )
    ,pModBusMaster  ( 0 )
    ,dev_type       (GetDeviceType(usoSettings))
@@ -74,6 +75,8 @@ bool CxLogDev_DIO_OVEN::Process()
       {
          if (commError == retry_comm_count)
          {
+            // after mbus error we have to recover DO
+            recoveryFlagDO = true;
             // set STATUS_UNKNOWN for all channels
             setUsoStatus(USO_Status_NoReply);
             // set delay timer to exclude this module from polling for 5 second
@@ -107,15 +110,32 @@ bool CxLogDev_DIO_OVEN::ProcessDevice()
       }
       case DT_OUTPUT:
       {
-         result = ProcessDoDevice();
+         if (true == recoveryFlagDO)
+         {
+             result = ProcessDoDevice();
+         }
+         else
+         {
+             result = RecoveryDoDevice();
+             recoveryFlagDO = false;
+         }
          break;
       }
       case DT_MIXED:
       {
-         if (true == ProcessDiDevice())
+         if (true == recoveryFlagDO)
          {
-            result = ProcessDoDevice();
+            if (true == ProcessDiDevice())
+            {
+               result = ProcessDoDevice();
+            }
          }
+         else
+         {
+             result = RecoveryDoDevice();
+             recoveryFlagDO = false;
+         }
+
          break;
       }
       default : break;
@@ -220,6 +240,45 @@ bool CxLogDev_DIO_OVEN::ProcessDoDevice()
       {
          result = true;
       }
+   }
+
+   return result;
+}
+
+bool CxLogDev_DIO_OVEN::RecoveryDoDevice()
+{
+   bool result = false;
+   uint16_t mbResponce[5];
+   uint16_t data_register = 0;
+
+   // if nothing to set we can do read all MB registers
+   uint16_t reg_num = pModBusMaster->GetRegister( dev_settings.address, discret_output_reg, 1, mbResponce );
+
+   data_register = ConvertMBint(mbResponce[0]);
+
+   printDebug("CxLogDev_DIO_OVEN/%s: logdev=%s, reg 0x32 = %d", __FUNCTION__, getDeviceName(), data_register);
+
+   if ((0 != dev_settings.channelsPtr) && (reg_num == 1))
+   {
+      // copy channel data
+      TDioChannel *pCurCh = dev_settings.channelsPtr;
+
+      for(uint8_t i=0; i<dev_settings.chanNumb; i++,pCurCh++)
+      {
+         if ((0 != pCurCh->PointNumb) && (CT_DISCRET_OUT == GetChannelType(pCurCh)))
+         {
+            if (data_register & (1<<i))
+            {
+               dataProvider.setDPoint(pCurCh->PointNumb, 1);
+            }
+            else
+            {
+               dataProvider.setDPoint(pCurCh->PointNumb, 0);
+            }
+            dataProvider.setDStatus(pCurCh->PointNumb, STATUS_RELIABLE);
+         }
+      }
+      result = true;
    }
 
    return result;

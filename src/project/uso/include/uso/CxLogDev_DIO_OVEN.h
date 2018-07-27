@@ -70,6 +70,7 @@ class CxLogDev_DIO_OVEN : public CxLogDevice, public CxSysTimer
 
       TDIO_USO        dev_settings;       // USO settings address and so on
       uint8_t         commError;          // communication error with USO
+      bool            recoveryFlagDO;     // recovery DO after start or after modbus error
       CxDataProvider  &dataProvider;      // reference on the data provider
       CxModBusMaster  *pModBusMaster;     // pointer to the interface
       TDeviceType     dev_type;           //
@@ -77,6 +78,7 @@ class CxLogDev_DIO_OVEN : public CxLogDevice, public CxSysTimer
       bool ProcessDevice();
       bool ProcessDiDevice();
       bool ProcessDoDevice();
+      bool RecoveryDoDevice();
 
       TChType GetChannelType( const TDioChannel *pCurCh );
       TDeviceType GetDeviceType( TDIO_USO settings );
