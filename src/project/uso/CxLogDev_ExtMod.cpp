@@ -22,6 +22,7 @@ CxLogDev_ExtMod::CxLogDev_ExtMod( const char *logDevName, const char *usedInterf
    ,CxSysTimer     ( "logDev_EM_Timer", 5000000000, false)  // time in nanosecond
    ,dev_settings   ( modSettings )
    ,commError      ( 0 )
+   ,recoveryFlag   (true)
    ,dataProvider   ( CxDataProvider::getInstance() )
    ,pModBusMaster  ( 0 )
 {
@@ -68,6 +69,8 @@ bool CxLogDev_ExtMod::Process()
       {
          if (commError == retry_comm_count)
          {
+            // after mbus error we have to recover outputs
+            recoveryFlag = true;
             // set STATUS_UNKNOWN for all channels
             setExtModStatus(USO_Status_NoReply);
             // set delay timer to exclude this module from polling for 5 second
@@ -104,12 +107,12 @@ bool CxLogDev_ExtMod::ReadWriteRegisters()
          {
             case WordToApoint :
             {
-               result = convertWordToApoint ( pCurLinkedReg );
+               result = convertWordToApoint( pCurLinkedReg );
                break;
             }
             case LongToApoint:
             {
-               result = convertLongToApoint ( pCurLinkedReg );
+               result = convertLongToApoint( pCurLinkedReg );
                break;
             }
             case FloatToApoint:
@@ -119,32 +122,36 @@ bool CxLogDev_ExtMod::ReadWriteRegisters()
             }
             case HRegToDpoint:
             {
-               result = convertHRegToDpoint ( pCurLinkedReg );
+               result = convertHRegToDpoint( pCurLinkedReg );
                break;
             }
             case LRegToDpoint:
             {
-               result = convertLRegToDpoint ( pCurLinkedReg );
+               result = convertLRegToDpoint( pCurLinkedReg );
                break;
             }
             case ApointToWord:
             {
-               result = convertApointToWord( pCurLinkedReg );
+               if (true == recoveryFlag) result = convertWordToApoint( pCurLinkedReg );
+               else result = convertApointToWord( pCurLinkedReg );
                break;
             }
             case ApointToLong:
             {
-               result = convertApointToLong( pCurLinkedReg );
+               if (true == recoveryFlag) result = convertLongToApoint( pCurLinkedReg );
+               else result = convertApointToLong( pCurLinkedReg );
                break;
             }
             case ApointToFloat:
             {
-               result = convertApointToFloat( pCurLinkedReg );
+               if (true == recoveryFlag) result = convertFloatToApoint( pCurLinkedReg );
+               else result = convertApointToFloat( pCurLinkedReg );
                break;
             }
             case DpointToReg:
             {
-               result = convertDpointToReg( pCurLinkedReg );
+               if (true == recoveryFlag) result = convertLRegToDpoint( pCurLinkedReg );
+               else result = convertDpointToReg( pCurLinkedReg );
                break;
             }
             default : break;
@@ -152,6 +159,8 @@ bool CxLogDev_ExtMod::ReadWriteRegisters()
 
          if (true != result) break;
       }
+
+      if (true == recoveryFlag) recoveryFlag = false;
    }
    else
    {
@@ -274,12 +283,11 @@ bool CxLogDev_ExtMod::convertApointToWord ( const TLinkedReg* pLinkedReg )
 
    if (STATUS_SETNEW == dataProvider.getAStatus(pLinkedReg->NPoint))
    {
-      uint16_t mbrequest[5];
       TAPOINT & a_point = dataProvider.getAPoint( pLinkedReg->NPoint );
 
-      mbrequest[0] = ConvertMBint((uint16_t)a_point.value);
+      uint16_t mbrequest = ConvertMBint((uint16_t)a_point.value);
 
-      if (true == pModBusMaster->SetRegisterBlock( dev_settings.address, pLinkedReg->strtReg, 1, mbrequest ) )
+      if (true == pModBusMaster->SetRegister(dev_settings.address, pLinkedReg->strtReg, mbrequest))
       {
          dataProvider.setAStatus( pLinkedReg->NPoint, STATUS_PROCESSED );
       }
@@ -350,12 +358,11 @@ bool CxLogDev_ExtMod::convertDpointToReg( const TLinkedReg* pLinkedReg )
 
    if (STATUS_SETNEW == dataProvider.getDStatus(pLinkedReg->NPoint))
    {
-      uint16_t mbrequest[5];
-      TDPOINT & d_point = dataProvider.getDPoint( pLinkedReg->NPoint );
+      TDPOINT& d_point = dataProvider.getDPoint( pLinkedReg->NPoint );
 
-      mbrequest[0] = ConvertMBint((uint16_t)d_point.value);
+      uint16_t mbrequest = ConvertMBint((uint16_t)d_point.value);
 
-      if (true == pModBusMaster->SetRegisterBlock( dev_settings.address, pLinkedReg->strtReg, 1, mbrequest ) )
+      if (true == pModBusMaster->SetRegister(dev_settings.address, pLinkedReg->strtReg, mbrequest))
       {
          dataProvider.setDStatus( pLinkedReg->NPoint, STATUS_PROCESSED );
       }

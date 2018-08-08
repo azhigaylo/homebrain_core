@@ -48,6 +48,7 @@ class CxLogDev_ExtMod : public CxLogDevice, public CxSysTimer
 
       TContExtMod_USO  dev_settings;       // USO settings address and so on
       uint8_t          commError;          // communication error with USO
+      bool             recoveryFlag;       // recovery output after start or after modbus error
       CxDataProvider   &dataProvider;      // reference on the data provider
       CxModBusMaster   *pModBusMaster;     // pointer to the interface
 
