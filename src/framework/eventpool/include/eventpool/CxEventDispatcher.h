@@ -13,7 +13,7 @@
 #include "IxEventConsumer.h"
 #include "IxEventProducer.h"
 //------------------------------------------------------------------------------
-#define configEVENT_POOL_SIZE         (10)      // in event
+#define configEVENT_POOL_SIZE         (100)      // in event
 
 #pragma pack ( 1 )
 struct TNotificationUnit
