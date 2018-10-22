@@ -56,6 +56,7 @@ class CxSerialDriver : public IxDriver, public CxSysTimer
       int fdTTY;
       struct termios tty;
       uint32_t timeout;
+      char *my_ttyPath;
 
       TSerialBlock rxBuffer;
       TSerialBlock txBuffer;

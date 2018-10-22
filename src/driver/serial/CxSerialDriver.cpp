@@ -16,6 +16,7 @@ CxSerialDriver::CxSerialDriver( const char *drvName, const char *ttyPath, DCB *p
    ,internalDCB    ( *pDCB   )
    ,fdTTY          ( 0 )
    ,timeout        ( 0 )
+   ,my_ttyPath     (strdup(ttyPath))
    ,singlSerialLock( "serialLocker" )
 {
    memset( &tty, 0, sizeof tty );
@@ -121,6 +122,7 @@ CxSerialDriver::~CxSerialDriver()
    if (0 != fdTTY)
    {
       close (fdTTY);
+      free(my_ttyPath);
    }
 
    driver_stop();
@@ -204,7 +206,7 @@ void CxSerialDriver::ThreadProcessor( )
       //Check if our file descriptor has received data.
       if (ret > 0 && FD_ISSET(fdTTY, &fds))
       {
-         int16_t rxLenght = static_cast<uint16_t>(read( fdTTY, rxBuffer.buffer, sizeof(rxBuffer.buffer)));
+         int16_t rxLenght = read( fdTTY, rxBuffer.buffer, sizeof(rxBuffer.buffer));
 
          if (rxLenght > 0)
          {
@@ -218,13 +220,13 @@ void CxSerialDriver::ThreadProcessor( )
              // stop timeout timer
              stopTimer();
 
-             rxBuffer.msgSize = rxLenght;
+             rxBuffer.msgSize = static_cast<uint16_t>(rxLenght);
 
              sendMsg( CM_INP_DATA, &rxBuffer );
          }
          else
          {
-             printWarning("CxSerialDriver/%s: tty=%d crash, errno = %s!!!", __FUNCTION__, fdTTY, strerror(errno));
+             printError("CxSerialDriver/%s: tty=%d crash, check %s, exit...", __FUNCTION__, fdTTY, my_ttyPath);
 
              _exit(EXIT_FAILURE);
          }
