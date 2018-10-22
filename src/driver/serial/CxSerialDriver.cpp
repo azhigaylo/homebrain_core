@@ -204,21 +204,30 @@ void CxSerialDriver::ThreadProcessor( )
       //Check if our file descriptor has received data.
       if (ret > 0 && FD_ISSET(fdTTY, &fds))
       {
-         uint16_t rxLenght = static_cast<uint16_t>(read( fdTTY, rxBuffer.buffer, sizeof(rxBuffer.buffer)));
+         int16_t rxLenght = static_cast<uint16_t>(read( fdTTY, rxBuffer.buffer, sizeof(rxBuffer.buffer)));
 
-         printDebug("CxSerialDriver/%s: tty rec %d byte: %d %d %d %d %d %d %d %d %d %d %d %d %d", __FUNCTION__, rxLenght,
-                         rxBuffer.buffer[0],  rxBuffer.buffer[1],  rxBuffer.buffer[2],  rxBuffer.buffer[3],
-                         rxBuffer.buffer[4],  rxBuffer.buffer[5],  rxBuffer.buffer[6],  rxBuffer.buffer[7],
-                         rxBuffer.buffer[8],  rxBuffer.buffer[9],  rxBuffer.buffer[10], rxBuffer.buffer[11],
-                         rxBuffer.buffer[12], rxBuffer.buffer[13]);
-         CxMutexLocker locker( &singlSerialLock );
+         if (rxLenght > 0)
+         {
+             printDebug("CxSerialDriver/%s: tty rec %d byte: %d %d %d %d %d %d %d %d %d %d %d %d %d", __FUNCTION__, rxLenght,
+                             rxBuffer.buffer[0],  rxBuffer.buffer[1],  rxBuffer.buffer[2],  rxBuffer.buffer[3],
+                             rxBuffer.buffer[4],  rxBuffer.buffer[5],  rxBuffer.buffer[6],  rxBuffer.buffer[7],
+                             rxBuffer.buffer[8],  rxBuffer.buffer[9],  rxBuffer.buffer[10], rxBuffer.buffer[11],
+                             rxBuffer.buffer[12], rxBuffer.buffer[13]);
+             CxMutexLocker locker( &singlSerialLock );
 
-         // stop timeout timer
-         stopTimer();
+             // stop timeout timer
+             stopTimer();
 
-         rxBuffer.msgSize = rxLenght;
+             rxBuffer.msgSize = rxLenght;
 
-         sendMsg( CM_INP_DATA, &rxBuffer );
+             sendMsg( CM_INP_DATA, &rxBuffer );
+         }
+         else
+         {
+             printWarning("CxSerialDriver/%s: tty=%d crash, errno = %s!!!", __FUNCTION__, fdTTY, strerror(errno));
+
+             _exit(EXIT_FAILURE);
+         }
       }
    }
 
