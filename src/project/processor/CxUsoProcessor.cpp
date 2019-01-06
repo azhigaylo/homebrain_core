@@ -39,7 +39,7 @@ CxUsoProcessor::~CxUsoProcessor( )
 bool CxUsoProcessor::set_logdev( IxLogDevice *pLogDev )
 {
    // add pointer on logdev in vector
-   TLogDevListItem logDevListItemTmp = {static_cast<int8_t>(logDevCounter), pLogDev};
+   TLogDevListItem logDevListItemTmp = {logDevCounter, pLogDev};
 
    LOGDEV_LIST.push_back( logDevListItemTmp );
 

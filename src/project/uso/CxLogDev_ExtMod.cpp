@@ -192,7 +192,7 @@ bool CxLogDev_ExtMod::convertWordToApoint (  const TLinkedReg* pLinkedReg  )
    return result;
 }
 
-bool CxLogDev_ExtMod::convertLongToApoint (  const TLinkedReg* pLinkedReg  )
+bool CxLogDev_ExtMod::convertLongToApoint ( const TLinkedReg* pLinkedReg )
 {
    bool result = false;
    uint16_t mbResponce[5];
@@ -204,7 +204,7 @@ bool CxLogDev_ExtMod::convertLongToApoint (  const TLinkedReg* pLinkedReg  )
       mbResponce[0] = ConvertMBint( mbResponce[0] );
       mbResponce[1] = ConvertMBint( mbResponce[1] );
 
-      double value = (double)*((long*)mbResponce);
+      double value = *(reinterpret_cast<long*>((void*)mbResponce));
       dataProvider.setAPoint( pLinkedReg->NPoint, value );
       dataProvider.setAStatus(pLinkedReg->NPoint, STATUS_RELIABLE );
 
@@ -215,7 +215,7 @@ bool CxLogDev_ExtMod::convertLongToApoint (  const TLinkedReg* pLinkedReg  )
    return result;
 }
 
-bool CxLogDev_ExtMod::convertFloatToApoint(  const TLinkedReg* pLinkedReg  )
+bool CxLogDev_ExtMod::convertFloatToApoint( const TLinkedReg* pLinkedReg )
 {
    bool result = false;
    uint16_t mbResponce[5];
@@ -226,7 +226,7 @@ bool CxLogDev_ExtMod::convertFloatToApoint(  const TLinkedReg* pLinkedReg  )
       mbResponce[0] = ConvertMBint( mbResponce[0] );
       mbResponce[1] = ConvertMBint( mbResponce[1] );
 
-      double value = *((float*)mbResponce);
+      double value = *(reinterpret_cast<float*>((void*)mbResponce));
       dataProvider.setAPoint( pLinkedReg->NPoint, value );
       dataProvider.setAStatus( pLinkedReg->NPoint, STATUS_RELIABLE );
 
@@ -237,7 +237,7 @@ bool CxLogDev_ExtMod::convertFloatToApoint(  const TLinkedReg* pLinkedReg  )
    return result;
 }
 
-bool CxLogDev_ExtMod::convertHRegToDpoint (  const TLinkedReg* pLinkedReg  )
+bool CxLogDev_ExtMod::convertHRegToDpoint ( const TLinkedReg* pLinkedReg )
 {
    bool result = false;
    uint16_t mbResponce[5];
@@ -257,7 +257,7 @@ bool CxLogDev_ExtMod::convertHRegToDpoint (  const TLinkedReg* pLinkedReg  )
    return result;
 }
 
-bool CxLogDev_ExtMod::convertLRegToDpoint (  const TLinkedReg* pLinkedReg  )
+bool CxLogDev_ExtMod::convertLRegToDpoint ( const TLinkedReg* pLinkedReg )
 {
    bool result = false;
    uint16_t mbResponce[5];
@@ -335,7 +335,7 @@ bool CxLogDev_ExtMod::convertApointToFloat( const TLinkedReg* pLinkedReg )
       uint16_t mbrequest[5];
       TAPOINT & a_point = dataProvider.getAPoint( pLinkedReg->NPoint );
 
-      *((float*)mbrequest) = a_point.value;
+      *(reinterpret_cast<float*>((void*)mbrequest)) = a_point.value;;
       mbrequest[0] = ConvertMBint(mbrequest[0]);
       mbrequest[1] = ConvertMBint(mbrequest[1]);
 
