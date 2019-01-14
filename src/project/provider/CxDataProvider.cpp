@@ -1,4 +1,5 @@
 //------------------------------------------------------------------------------
+#include "common/slog.h"
 #include "common/utils.h"
 #include "os_wrapper/CxMutexLocker.h"
 #include "provider/CxDataProvider.h"
@@ -59,24 +60,28 @@ int8_t CxDataProvider::getDStatus( uint16_t number )
 
 void CxDataProvider::setDPoint( uint16_t number, uint16_t value )
 {
-   CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
-
    // we should reduce server trafic
    if (value != DPOINT[number].value)
    {
-      DPOINT[number].value = value;
+      printDebug("CxDataProvider/%s: number=%d, value = %d", __FUNCTION__, number, value);
+      {
+         CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
+         DPOINT[number].value = value;
+      }
       sendEvent( event_pool::eEventType::EVENT_DP_NEW_VALUE, number, 0);
    }
 }
 
 void CxDataProvider::setDStatus( uint16_t number, int8_t status )
 {
-   CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
-
    // we should reduce server trafic
    if (status != DPOINT[number].status)
    {
-      DPOINT[number].status = status;
+      printDebug("CxDataProvider/%s: number=%d, status = %d", __FUNCTION__, number, status);
+      {
+         CxMutexLocker locker(&CxDataProvider::digitalDataProviderMutex);
+         DPOINT[number].status = status;
+      }
       sendEvent( event_pool::eEventType::EVENT_DP_NEW_STATUS, number, 0);
    }
 }
@@ -113,23 +118,25 @@ int8_t CxDataProvider::getAStatus( uint16_t number )
 
 void CxDataProvider::setAPoint( uint16_t number, double value )
 {
-   CxMutexLocker locker(&CxDataProvider::analogDataProviderMutex);
-
    if (value != APOINT[number].value)
    {
-      APOINT[number].value = value;
+      {
+         CxMutexLocker locker(&CxDataProvider::analogDataProviderMutex);
+         APOINT[number].value = value;
+      }
       sendEvent( event_pool::eEventType::EVENT_AP_NEW_VALUE, number, 0);
    }
 }
 
 void CxDataProvider::setAStatus( uint16_t number, int8_t status )
 {
-   CxMutexLocker locker(&CxDataProvider::analogDataProviderMutex);
-
    // we should reduce server trafic
    if (status != APOINT[number].status)
    {
-      APOINT[number].status = status;
+      {
+         CxMutexLocker locker(&CxDataProvider::analogDataProviderMutex);
+         APOINT[number].status = status;
+      }
       sendEvent( event_pool::eEventType::EVENT_AP_NEW_STATUS, number, 0);
    }
 }

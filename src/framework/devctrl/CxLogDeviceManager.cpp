@@ -54,7 +54,7 @@ bool CxLogDeviceManager::set_logdev( IxLogDevice * pLogDev )
    CxMutexLocker locker(&CxLogDeviceManager::singlDeviceLock);
 
    // add pointer on logdev in vector
-   logDevListItemTmp.number  = (char)LOGDEV_LIST.size();
+   logDevListItemTmp.number  = LOGDEV_LIST.size();
    logDevListItemTmp.pLogDevice = pLogDev;
 
    LOGDEV_LIST.push_back( logDevListItemTmp );

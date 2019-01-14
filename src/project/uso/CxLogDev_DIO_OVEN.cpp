@@ -75,12 +75,17 @@ bool CxLogDev_DIO_OVEN::Process()
       {
          if (commError == retry_comm_count)
          {
+            printWarning("CxLogDev_DIO_OVEN/%s: connection error for %s", __FUNCTION__, getDeviceName());
+
             // after mbus error we have to recover DO
             recoveryFlagDO = true;
+
             // set STATUS_UNKNOWN for all channels
             setUsoStatus(USO_Status_NoReply);
+
             // set delay timer to exclude this module from polling for 5 second
             StartTimer();
+
             // we inc it to protect cyclic call setUsoStatus and StartTimer
             commError++;
          }
@@ -93,6 +98,7 @@ bool CxLogDev_DIO_OVEN::Process()
 void CxLogDev_DIO_OVEN::sigHandler()
 {
    commError = 0;
+   printDebug("CxLogDev_DIO_OVEN/%s: delay timer timeout for %s", __FUNCTION__, getDeviceName());
 }
 
 //------------------------------------------------------------------------------
@@ -112,12 +118,12 @@ bool CxLogDev_DIO_OVEN::ProcessDevice()
       {
          if (true == recoveryFlagDO)
          {
-             result = ProcessDoDevice();
+             result = RecoveryDoDevice();
+             recoveryFlagDO = !result;
          }
          else
          {
-             result = RecoveryDoDevice();
-             recoveryFlagDO = false;
+             result = ProcessDoDevice();
          }
          break;
       }
@@ -125,15 +131,15 @@ bool CxLogDev_DIO_OVEN::ProcessDevice()
       {
          if (true == recoveryFlagDO)
          {
+            result = RecoveryDoDevice();
+            recoveryFlagDO = !result;
+         }
+         else
+         {
             if (true == ProcessDiDevice())
             {
                result = ProcessDoDevice();
             }
-         }
-         else
-         {
-             result = RecoveryDoDevice();
-             recoveryFlagDO = false;
          }
 
          break;
@@ -385,6 +391,7 @@ void CxLogDev_DIO_OVEN::setUsoStatus( uint16_t status )
          }
       }
    }
+
 }
 
 std::string CxLogDev_DIO_OVEN::deviceType2Str(TDeviceType d_type)

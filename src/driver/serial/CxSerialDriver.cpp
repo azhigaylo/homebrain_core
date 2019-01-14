@@ -16,6 +16,7 @@ CxSerialDriver::CxSerialDriver( const char *drvName, const char *ttyPath, DCB *p
    ,internalDCB    ( *pDCB   )
    ,fdTTY          ( 0 )
    ,timeout        ( 0 )
+   ,my_ttyPath     (strdup(ttyPath))
    ,singlSerialLock( "serialLocker" )
 {
    memset( &tty, 0, sizeof tty );
@@ -121,6 +122,7 @@ CxSerialDriver::~CxSerialDriver()
    if (0 != fdTTY)
    {
       close (fdTTY);
+      free(my_ttyPath);
    }
 
    driver_stop();
@@ -204,21 +206,30 @@ void CxSerialDriver::ThreadProcessor( )
       //Check if our file descriptor has received data.
       if (ret > 0 && FD_ISSET(fdTTY, &fds))
       {
-         uint16_t rxLenght = static_cast<uint16_t>(read( fdTTY, rxBuffer.buffer, sizeof(rxBuffer.buffer)));
+         int16_t rxLenght = read( fdTTY, rxBuffer.buffer, sizeof(rxBuffer.buffer));
 
-         printDebug("CxSerialDriver/%s: tty rec %d byte: %d %d %d %d %d %d %d %d %d %d %d %d %d", __FUNCTION__, rxLenght,
-                         rxBuffer.buffer[0],  rxBuffer.buffer[1],  rxBuffer.buffer[2],  rxBuffer.buffer[3],
-                         rxBuffer.buffer[4],  rxBuffer.buffer[5],  rxBuffer.buffer[6],  rxBuffer.buffer[7],
-                         rxBuffer.buffer[8],  rxBuffer.buffer[9],  rxBuffer.buffer[10], rxBuffer.buffer[11],
-                         rxBuffer.buffer[12], rxBuffer.buffer[13]);
-         CxMutexLocker locker( &singlSerialLock );
+         if (rxLenght > 0)
+         {
+             printDebug("CxSerialDriver/%s: tty rec %d byte: %d %d %d %d %d %d %d %d %d %d %d %d %d", __FUNCTION__, rxLenght,
+                             rxBuffer.buffer[0],  rxBuffer.buffer[1],  rxBuffer.buffer[2],  rxBuffer.buffer[3],
+                             rxBuffer.buffer[4],  rxBuffer.buffer[5],  rxBuffer.buffer[6],  rxBuffer.buffer[7],
+                             rxBuffer.buffer[8],  rxBuffer.buffer[9],  rxBuffer.buffer[10], rxBuffer.buffer[11],
+                             rxBuffer.buffer[12], rxBuffer.buffer[13]);
+             CxMutexLocker locker( &singlSerialLock );
 
-         // stop timeout timer
-         stopTimer();
+             // stop timeout timer
+             stopTimer();
 
-         rxBuffer.msgSize = rxLenght;
+             rxBuffer.msgSize = static_cast<uint16_t>(rxLenght);
 
-         sendMsg( CM_INP_DATA, &rxBuffer );
+             sendMsg( CM_INP_DATA, &rxBuffer );
+         }
+         else
+         {
+             printError("CxSerialDriver/%s: tty=%d crash, check %s, exit...", __FUNCTION__, fdTTY, my_ttyPath);
+
+             _exit(EXIT_FAILURE);
+         }
       }
    }
 

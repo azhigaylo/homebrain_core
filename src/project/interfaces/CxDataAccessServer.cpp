@@ -252,7 +252,7 @@ void CxDataClient::notify_d_point(uint16_t point)
    }
    else
    {
-       printDebug("CxDataClient/%s: send %i bytes", __FUNCTION__, resp_ptr->header.data_size);
+       printDebug("CxDataClient/%s: update point %i", __FUNCTION__, resp_ptr->header.start_point);
    }
 
    delete resp_ptr;
@@ -275,7 +275,7 @@ void CxDataClient::notify_a_point(uint16_t point)
    }
    else
    {
-       printDebug("CxDataClient/%s: send %i bytes", __FUNCTION__, resp_ptr->header.data_size);
+      printDebug("CxDataClient/%s: update point %i", __FUNCTION__, resp_ptr->header.start_point);
    }
 
    delete resp_ptr;

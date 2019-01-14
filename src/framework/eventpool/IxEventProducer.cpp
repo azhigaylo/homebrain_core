@@ -28,5 +28,7 @@ bool IxEventProducer::sendEvent( eEventType event, uint16_t containerSize, void 
 
   if(pDispatcher->setEvent(EventData))return true;
 
+  printError("CxDataProvider/%s: error send event with type = %d", __FUNCTION__, EventData.eventType);
+
   return false;
 }

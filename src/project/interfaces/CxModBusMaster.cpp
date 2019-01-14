@@ -259,8 +259,8 @@ void CxModBusMaster::CommandProcessor( uint16_t ComID, void *data )
          {
             printWarning("CxModBusMaster/%s: MB(%s) timeout addr=%i / comm=%i / package=%i  ", __FUNCTION__,
                                                                                                getInterfaceName(),
-                                                                                               mbResponce.Header.address,
-                                                                                               mbResponce.Header.command,
+                                                                                               last_address,
+                                                                                               last_command,
                                                                                                pSerialBlock->msgNumber);
             break;
          }
