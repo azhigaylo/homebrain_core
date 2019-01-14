@@ -13,7 +13,7 @@
 #pragma pack ( 1 )
 struct TLogDevListItem
 {
-  char number;
+  uint16_t number;
   IxLogDevice *pLogDevice;
 };
 #pragma pack ( )
