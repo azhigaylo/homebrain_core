@@ -120,7 +120,10 @@ void CxLauncher::start_sys_interface( const char *sIntName )
          // POINT_SERVER interfaces
          if( 0 == strcmp(sType, "socket_server"))
          {
-            CxDataServer *pDataServer = new CxDataServer( sName, 8096, "127.0.0.1" );  // this item will be deleted in CxInterfaceManager::delInstance()
+            std::string sDataIp(IniFileParser.ReadString( cgfname, const_cast<char*>(sIntName), "ip" ));
+            int32_t iDataPort = IniFileParser.ReadInt(  cgfname, const_cast<char*>(sIntName), "port", 8096 );
+
+            CxDataServer *pDataServer = new CxDataServer( sName, iDataPort, std::string(sDataIp) );  // this item will be deleted in CxInterfaceManager::delInstance()
             pDataServer->open();
          }
 

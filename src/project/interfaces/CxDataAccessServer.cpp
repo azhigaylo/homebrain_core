@@ -408,7 +408,7 @@ int CxDataServer::listen()
       return errno;
    }
 
-   printDebug("CxDataServer/%s: start listening...", __FUNCTION__);
+   printDebug("CxDataServer/%s: start listening %s:%i...", __FUNCTION__, m_address.c_str(), m_port);
 
    return 0;
 }
