@@ -25,66 +25,54 @@ static volatile int32_t dbg_sink = TRACE_SINK_CONSOLE;
 
 DLT_DECLARE_CONTEXT(dlt_context);
 
+pthread_mutex_t cs_mutex;
+
+//---------------------------------mutex init------------------------------------
+void printMutexInit()
+{
+   pthread_mutexattr_t mutexattr;
+
+   pthread_mutexattr_init(&mutexattr);
+   pthread_mutexattr_settype(&mutexattr, PTHREAD_MUTEX_ERRORCHECK);
+
+   if (0 != pthread_mutex_init(&cs_mutex,&mutexattr))
+   {
+      printf("print mutex init error !!!");
+   }
+}
+
 //---------------------------------CONSOLE---------------------------------------
 
-void printErrorConsole(const char *msg)
+void printConsole(const char *msg)
 {
+    if (0 != pthread_mutex_lock(&cs_mutex)) printf("print console mutex lock error !!!");
+
     printf("%s \n", msg);
-}
 
-void printWarningConsole(const char *msg)
-{
-   if (optv > 0)
-   {
-      printf("%s \n", msg);
-   }
-}
-
-void printInfoConsole(const char *msg)
-{
-   if (optv > 1)
-   {
-      printf("%s \n", msg);
-   }
-}
-
-void printDebugConsole(const char *msg)
-{
-   if (optv > 2)
-   {
-      printf("%s \n", msg);
-   }
+    if (0 != pthread_mutex_unlock(&cs_mutex)) printf("print console mutex unlock error !!!");
 }
 
 //---------------------------------DLT-------------------------------------------
 
 void printErrorDlt(const char *msg)
 {
-   DLT_LOG(dlt_context, DLT_LOG_ERROR, DLT_STRING(msg));
+    DLT_LOG(dlt_context, DLT_LOG_ERROR, DLT_STRING(msg));
 }
 
 void printWarningDlt(const char *msg)
 {
-   if (optv > 0)
-   {
-      DLT_LOG(dlt_context, DLT_LOG_WARN, DLT_STRING(msg));
-   }
+
+    DLT_LOG(dlt_context, DLT_LOG_WARN, DLT_STRING(msg));
 }
 
 void printInfoDlt(const char *msg)
 {
-   if (optv > 1)
-   {
-      DLT_LOG(dlt_context, DLT_LOG_INFO, DLT_STRING(msg));
-   }
+    DLT_LOG(dlt_context, DLT_LOG_INFO, DLT_STRING(msg));
 }
 
 void printDebugDlt(const char *msg)
 {
-   if (optv > 2)
-   {
-      DLT_LOG(dlt_context, DLT_LOG_DEBUG, DLT_STRING(msg));
-   }
+    DLT_LOG(dlt_context, DLT_LOG_DEBUG, DLT_STRING(msg));
 }
 
 //------------------------------------------------------------------------------
@@ -92,6 +80,7 @@ void printDebugDlt(const char *msg)
 void setDbgLevel(int lvl)
 {
    optv = lvl;
+   printMutexInit();
 }
 
 void setDbgSink(int sink)
@@ -123,10 +112,7 @@ void printError(const char * const fmt,...)
 {
    // get string from va list
    va_list vargs;
-   char data[5000];
-
-   static pthread_mutex_t cs_mutex =  PTHREAD_MUTEX_INITIALIZER;
-   pthread_mutex_lock( &cs_mutex );
+   char data[1000];
 
    va_start( vargs, fmt );
    vsnprintf(data,((sizeof(data)) - 1), fmt, vargs);
@@ -143,101 +129,97 @@ void printError(const char * const fmt,...)
       case TRACE_SINK_CONSOLE :
       default:
       {
-         printErrorConsole( data );
+         printConsole( data );
          break;
       }
    }
-   pthread_mutex_unlock( &cs_mutex );
 }
 
 void printWarning(const char * const fmt, ...)
 {
-   // get string from va list
-   va_list vargs;
-   char data[5000];
-
-   static pthread_mutex_t cs_mutex =  PTHREAD_MUTEX_INITIALIZER;
-   pthread_mutex_lock( &cs_mutex );
-
-   va_start( vargs, fmt );
-   vsnprintf(data,((sizeof(data)) - 1), fmt, vargs);
-   va_end( vargs );
-
-   // send to sink
-   switch (dbg_sink)
+   if (optv > 0)
    {
-      case TRACE_SINK_DLT :
-      {
-         printWarningDlt( data );
-         break;
-      }
-      case TRACE_SINK_CONSOLE :
-      default:
-      {
-         printWarningConsole( data );
-         break;
-      }
+       // get string from va list
+       va_list vargs;
+       char data[1000];
+
+       va_start( vargs, fmt );
+       vsnprintf(data,((sizeof(data)) - 1), fmt, vargs);
+       va_end( vargs );
+
+       // send to sink
+       switch (dbg_sink)
+       {
+          case TRACE_SINK_DLT :
+          {
+             printWarningDlt( data );
+             break;
+          }
+          case TRACE_SINK_CONSOLE :
+          default:
+          {
+             printConsole( data );
+             break;
+          }
+       }
    }
-   pthread_mutex_unlock( &cs_mutex );
 }
 
 void printInfo(const char * const fmt, ...)
 {
-   // get string from va list
-   va_list vargs;
-   char data[5000];
-
-   static pthread_mutex_t cs_mutex =  PTHREAD_MUTEX_INITIALIZER;
-   pthread_mutex_lock( &cs_mutex );
-
-   va_start( vargs, fmt );
-   vsnprintf(data,((sizeof(data)) - 1), fmt, vargs);
-   va_end( vargs );
-   // send to sink
-   switch (dbg_sink)
+   if (optv > 1)
    {
-      case TRACE_SINK_DLT :
-      {
-         printInfoDlt( data );
-         break;
-      }
-      case TRACE_SINK_CONSOLE :
-      default:
-      {
-         printInfoConsole( data );
-         break;
-      }
+       // get string from va list
+       va_list vargs;
+       char data[1000];
+
+       va_start( vargs, fmt );
+       vsnprintf(data,((sizeof(data)) - 1), fmt, vargs);
+       va_end( vargs );
+       // send to sink
+       switch (dbg_sink)
+       {
+          case TRACE_SINK_DLT :
+          {
+             printInfoDlt( data );
+             break;
+          }
+          case TRACE_SINK_CONSOLE :
+          default:
+          {
+             printConsole( data );
+             break;
+          }
+       }
    }
-   pthread_mutex_unlock( &cs_mutex );
 }
 
 void printDebug(const char * const fmt, ...)
 {
-   // get string from va list
-   va_list vargs;
-   char data[5000];
-
-   static pthread_mutex_t cs_mutex =  PTHREAD_MUTEX_INITIALIZER;
-   pthread_mutex_lock( &cs_mutex );
-
-   va_start( vargs, fmt );
-   vsnprintf(data,((sizeof(data)) - 1), fmt, vargs);
-   va_end( vargs );
-   // send to sink
-   switch (dbg_sink)
+   if (optv > 2)
    {
-      case TRACE_SINK_DLT :
-      {
-         printDebugDlt( data );
-         break;
-      }
-      case TRACE_SINK_CONSOLE :
-      default:
-      {
-         printDebugConsole( data );
-         break;
-      }
+       // get string from va list
+       va_list vargs;
+       char data[1000];
+
+       va_start( vargs, fmt );
+       vsnprintf(data,((sizeof(data)) - 1), fmt, vargs);
+       va_end( vargs );
+       // send to sink
+       switch (dbg_sink)
+       {
+          case TRACE_SINK_DLT :
+          {
+             printDebugDlt( data );
+             break;
+          }
+          case TRACE_SINK_CONSOLE :
+          default:
+          {
+             printConsole( data );
+             break;
+          }
+       }
    }
-   pthread_mutex_unlock( &cs_mutex );
 }
 

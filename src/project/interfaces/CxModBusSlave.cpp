@@ -91,7 +91,7 @@ void CxModBusSlave::CommandProcessor( uint16_t ComID, void *data )
          if (0 == CRC16_T(reinterpret_cast<char*>(pSerialBlock->buffer), pSerialBlock->msgSize))
          {
             // copy in the internal buffer(rx buffer can receive another data)
-            memcpy( &commbuf, pSerialBlock->buffer, pSerialBlock->msgSize );
+            memcpy( &commbuf.buffer, pSerialBlock->buffer, pSerialBlock->msgSize );
 
             TMREQ *pMREQ = reinterpret_cast<TMREQ*>(commbuf.buffer);
 
@@ -126,8 +126,6 @@ void CxModBusSlave::CommandProcessor( uint16_t ComID, void *data )
                   }
                   default : break;
                }
-
-
             }
             else
             {

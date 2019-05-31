@@ -71,6 +71,20 @@ float getFloatFromTwoMbReg( uint16_t registerMB_1, uint16_t registerMB_2 )
   return tmpBlock.result;
 }
 
+uint32_t printByteArray(const uint8_t* in, uint32_t in_size, uint32_t out_size, char* out)
+{
+  uint32_t counter = 0;
+  for (uint32_t i = 0; i<in_size; i++ )
+  {
+    uint32_t size_shift = snprintf(out, out_size, "%d ", in[i]);
+    out +=size_shift;
+    out_size -=size_shift;
+    counter += size_shift;
+  }
+  if (counter < out_size) out[counter] = 0; else out[out_size-1] = 0;
+
+  return counter;
+}
 //-----------------------------Calculation CRC----------------------------------
 
 // CRC table

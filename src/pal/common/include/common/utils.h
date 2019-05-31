@@ -25,7 +25,7 @@ uint8_t  HIGH(uint16_t celoe);
 uint16_t getWordFromMbReg     ( uint16_t registerMB );
 uint32_t getLongFromTwoMbReg  ( uint16_t registerMB_1, uint16_t registerMB_2 );
 float    getFloatFromTwoMbReg ( uint16_t registerMB_1, uint16_t registerMB_2 );
-
+uint32_t printByteArray(const uint8_t* in, uint32_t in_size, uint32_t out_size, char* out);
 //------------------------------------------------------------------------------
 uint16_t CRC16b      ( char *Buff, uint16_t Count, uint8_t base );
 uint16_t CRC16_T     ( char *Buff, uint16_t Count );

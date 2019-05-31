@@ -213,15 +213,17 @@ void CxSerialDriver::ThreadProcessor( )
       //Check if our file descriptor has received data.
       if (ret > 0 && FD_ISSET(fdTTY, &fds))
       {
+         memset(rxBuffer.buffer, 0, sizeof(rxBuffer.buffer));
          int16_t rxLenght = read( fdTTY, rxBuffer.buffer, sizeof(rxBuffer.buffer));
 
          if (rxLenght > 0)
          {
-             printDebug("CxSerialDriver/%s: tty rec %d byte: %d %d %d %d %d %d %d %d %d %d %d %d %d", __FUNCTION__, rxLenght,
-                             rxBuffer.buffer[0],  rxBuffer.buffer[1],  rxBuffer.buffer[2],  rxBuffer.buffer[3],
-                             rxBuffer.buffer[4],  rxBuffer.buffer[5],  rxBuffer.buffer[6],  rxBuffer.buffer[7],
-                             rxBuffer.buffer[8],  rxBuffer.buffer[9],  rxBuffer.buffer[10], rxBuffer.buffer[11],
-                             rxBuffer.buffer[12], rxBuffer.buffer[13]);
+             uint32_t buf_size = 500;
+             char* dbg_str = new char[buf_size];
+             printByteArray(rxBuffer.buffer, rxLenght, buf_size, dbg_str);
+             printDebug("CxSerialDriver/%s: tty rec %d byte: %s", __FUNCTION__, rxLenght, dbg_str);
+             delete dbg_str;
+
              CxMutexLocker locker( &singlSerialLock );
 
              // stop timeout timer

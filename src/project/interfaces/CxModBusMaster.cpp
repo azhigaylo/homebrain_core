@@ -201,12 +201,10 @@ void CxModBusMaster::sleep_till_resp()
 void CxModBusMaster::waikeup_by_serial()
 {
   pthread_mutex_lock(&cond_mutex);
-
   cond_var_flag++;
+  pthread_mutex_unlock(&cond_mutex);
 
   pthread_cond_signal(&cond_var);
-
-  pthread_mutex_unlock(&cond_mutex);
 }
 
 //------------------------------------------------------------------------------
@@ -224,11 +222,11 @@ void CxModBusMaster::CommandProcessor( uint16_t ComID, void *data )
       {
          case CM_INP_DATA :
          {
-            printDebug("CxModBusMaster/%s: MB(%s) receive %d %d %d %d %d %d %d %d %d %d %d %d %d", __FUNCTION__, getInterfaceName(),
-                                  pSerialBlock->buffer[0],  pSerialBlock->buffer[1],  pSerialBlock->buffer[2],  pSerialBlock->buffer[3],
-                                  pSerialBlock->buffer[4],  pSerialBlock->buffer[5],  pSerialBlock->buffer[6],  pSerialBlock->buffer[7],
-                                  pSerialBlock->buffer[8],  pSerialBlock->buffer[9],  pSerialBlock->buffer[10], pSerialBlock->buffer[11],
-                                  pSerialBlock->buffer[12], pSerialBlock->buffer[13]);
+            uint32_t buf_size = 500;
+            char* dbg_str = new char[buf_size];
+            printByteArray(pSerialBlock->buffer, pSerialBlock->msgSize, buf_size, dbg_str);
+            printDebug("CxModBusMaster/%s: MB(%s) receive %s", __FUNCTION__, getInterfaceName(), dbg_str);
+            delete dbg_str;
 
             printDebug("CxModBusMaster/%s: MB(%s) CRC=%i / size=%i" , __FUNCTION__,
                                                                       getInterfaceName(),
