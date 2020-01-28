@@ -32,12 +32,43 @@ CxLogDev_ExtMod::CxLogDev_ExtMod( const char *logDevName, const char *usedInterf
    ,recoveryFlag   (true)
    ,dataProvider   ( CxDataProvider::getInstance() )
    ,pModBusMaster  ( 0 )
+   ,firstRegRead   ( 0 )
+   ,lastRegRead    ( 0 )
 {
    pCxInterfaceManager pInterfaceManager = CxInterfaceManager::getInstance();
    pIxInterface pInterface = pInterfaceManager->get_interface( usedInterface );
    pModBusMaster = dynamic_cast<CxModBusMaster*>(pInterface);
 
+   // find min and max register numbers
+   TLinkedReg *pCurLinkedReg = dev_settings.pLinkedReg;
+   for(uint8_t i=0; i<dev_settings.recNumb; i++,pCurLinkedReg++)
+   {
+      switch (pCurLinkedReg->opType)
+      {
+         case WordToApoint:
+         case HRegToDpoint:
+         case LRegToDpoint:
+         case DpointToReg:
+         case ApointToWord:
+         {
+            if (pCurLinkedReg->strtReg < firstRegRead) firstRegRead = pCurLinkedReg->strtReg;
+            if (pCurLinkedReg->strtReg >= lastRegRead)  lastRegRead = pCurLinkedReg->strtReg;
+            break;
+         }
+         case LongToApoint:
+         case FloatToApoint:
+         {
+            // these both operation needs 2 modbus registers, so we have to add + 1 to last register
+            if (pCurLinkedReg->strtReg < firstRegRead) firstRegRead = pCurLinkedReg->strtReg;
+            if (pCurLinkedReg->strtReg >= lastRegRead)  lastRegRead = pCurLinkedReg->strtReg + 1;
+            break;
+         }
+         default : {break;}
+      }
+   }
+
    printDebug("CxLogDev_ExtMod/%s: pModBusMaster=0x%lx", __FUNCTION__, pModBusMaster);
+   printDebug("CxLogDev_ExtMod/%s: lastRegRead=%i / firstRegRead=%i", __FUNCTION__, lastRegRead, firstRegRead);
 }
 
 CxLogDev_ExtMod::~CxLogDev_ExtMod()
@@ -59,7 +90,7 @@ bool CxLogDev_ExtMod::Process()
       if (commError < retry_comm_count)
       {
           printDebug("CxLogDev_ExtMod/%s: logdev=%s", __FUNCTION__, getDeviceName());
-          if (true == ReadWriteRegisters())
+          if (true == ProcessAllRegisters())
           {
              // set status for that USO
              setExtModStatus( USO_Status_OK );
@@ -98,6 +129,30 @@ void CxLogDev_ExtMod::sigHandler()
 
 //------------------------------------------------------------------------------
 
+bool CxLogDev_ExtMod::ProcessAllRegisters()
+{
+   bool result = false;
+
+   // if device MB table is small we can try goup all registers in one request
+   if ((lastRegRead - firstRegRead) > SUPPORTED_REG_NUM)
+   {
+      // complex
+      result = ReadWriteRegisters();
+   }
+   else
+   {
+      // small
+      result = ReadRegisters();
+      if (true == result)
+      {
+         WriteRegisters();
+      }
+   }
+
+   return result;
+}
+
+// process complex devices
 bool CxLogDev_ExtMod::ReadWriteRegisters()
 {
    bool result = false;
@@ -177,11 +232,148 @@ bool CxLogDev_ExtMod::ReadWriteRegisters()
    return result;
 }
 
+// process simple devices
+bool CxLogDev_ExtMod::WriteRegisters()
+{
+   bool result = true;
+
+   if (0 != dev_settings.pLinkedReg)
+   {
+      TLinkedReg *pCurLinkedReg = dev_settings.pLinkedReg;
+
+      for(uint16_t i=0; i<dev_settings.recNumb; i++,pCurLinkedReg++)
+      {
+         // read register
+         switch (pCurLinkedReg->opType)
+         {
+            case ApointToWord:
+            {
+               if (true == recoveryFlag) result = convertWordToApoint( pCurLinkedReg );
+               else result = convertApointToWord( pCurLinkedReg );
+               break;
+            }
+            case ApointToLong:
+            {
+               if (true == recoveryFlag) result = convertLongToApoint( pCurLinkedReg );
+               else result = convertApointToLong( pCurLinkedReg );
+               break;
+            }
+            case ApointToFloat:
+            {
+               if (true == recoveryFlag) result = convertFloatToApoint( pCurLinkedReg );
+               else result = convertApointToFloat( pCurLinkedReg );
+               break;
+            }
+            case DpointToReg:
+            {
+               if (true == recoveryFlag) result = convertLRegToDpoint( pCurLinkedReg );
+               else result = convertDpointToReg( pCurLinkedReg );
+               break;
+            }
+            default : break;
+         }
+
+         if (true != result) break;
+      }
+
+      if (true == recoveryFlag) recoveryFlag = false;
+   }
+   else
+   {
+      printWarning("CxLogDev_ExtMod/%s: pLinkedReg=0 !!!", __FUNCTION__ );
+   }
+
+   return result;
+}
+
+bool CxLogDev_ExtMod::ReadRegisters()
+{
+   bool result = false;
+
+   if (0 != dev_settings.pLinkedReg)
+   {
+      // +1 should be added because count is from zero
+      result = ReadRegisterBlock(firstRegRead, (lastRegRead - firstRegRead) + 1);
+   }
+   return result;
+}
+
+bool CxLogDev_ExtMod::ReadRegisterBlock( uint16_t start_reg, uint16_t reg_count )
+{
+   bool result = false;
+
+   printDebug("CxLogDev_ExtMod/%s: StartReg=%i / RegCount=%i", __FUNCTION__, start_reg, reg_count);
+
+   uint16_t reg_num = pModBusMaster->GetRegister(dev_settings.address, start_reg, reg_count, mbResponce);
+
+   if (reg_num == reg_count)
+   {
+      printDebug("CxLogDev_ExtMod/%s: got %i reister from device", __FUNCTION__, reg_count);
+
+      TLinkedReg *pCurLinkedReg = dev_settings.pLinkedReg;
+      for (uint16_t i = 0; i<dev_settings.recNumb; i++,pCurLinkedReg++)
+      {
+         uint16_t internal_shift = pCurLinkedReg->strtReg - firstRegRead;
+         // read register
+         switch (pCurLinkedReg->opType)
+         {
+            case WordToApoint:
+            {
+               uint16_t responce = ConvertMBint( mbResponce[internal_shift] );
+               double value = static_cast<double>(responce);
+               dataProvider.setAPoint( pCurLinkedReg->NPoint, value );
+               dataProvider.setAStatus( pCurLinkedReg->NPoint, STATUS_RELIABLE );
+               printDebug("CxLogDev_ExtMod/%s: APOINT[%i] = %.4lf", __FUNCTION__, pCurLinkedReg->NPoint, value);
+               break;
+            }
+            case HRegToDpoint:
+            {
+               uint16_t responce = ConvertMBint( mbResponce[internal_shift] );
+               dataProvider.setDPoint( pCurLinkedReg->NPoint, HIGH(responce));
+               dataProvider.setDStatus( pCurLinkedReg->NPoint, STATUS_RELIABLE);
+               printDebug("CxLogDev_ExtMod/%s: DPOINT[%i] = %d", __FUNCTION__, pCurLinkedReg->NPoint, HIGH(responce));
+               break;
+            }
+            case LRegToDpoint:
+            {
+               uint16_t responce = ConvertMBint( mbResponce[internal_shift] );
+               dataProvider.setDPoint( pCurLinkedReg->NPoint, LOW(responce));
+               dataProvider.setDStatus( pCurLinkedReg->NPoint, STATUS_RELIABLE);
+               printDebug("CxLogDev_ExtMod/%s: DPOINT[%i] = %d", __FUNCTION__, pCurLinkedReg->NPoint, LOW(responce));
+               break;
+            }
+            case LongToApoint:
+            {
+               mbResponce[internal_shift] = ConvertMBint( mbResponce[internal_shift] );
+               mbResponce[internal_shift + 1] = ConvertMBint( mbResponce[internal_shift + 1] );
+               double value = *(reinterpret_cast<long*>((void*)(mbResponce + internal_shift)));
+               dataProvider.setAPoint( pCurLinkedReg->NPoint, value );
+               dataProvider.setAStatus(pCurLinkedReg->NPoint, STATUS_RELIABLE );
+               printDebug("CxLogDev_ExtMod/%s: APOINT[%i] = %.4lf", __FUNCTION__, pCurLinkedReg->NPoint, value);
+               break;
+            }
+            case FloatToApoint:
+            {
+               mbResponce[internal_shift] = ConvertMBint( mbResponce[internal_shift] );
+               mbResponce[internal_shift+1] = ConvertMBint( mbResponce[internal_shift+1] );
+               double value = *(reinterpret_cast<float*>((void*)(mbResponce + internal_shift)));
+               dataProvider.setAPoint( pCurLinkedReg->NPoint, value );
+               dataProvider.setAStatus( pCurLinkedReg->NPoint, STATUS_RELIABLE );
+               printDebug("CxLogDev_ExtMod/%s: APOINT[%i] = %.4lf", __FUNCTION__, pCurLinkedReg->NPoint, value);
+               break;
+            }
+            default : break;
+         }
+      }
+      result = true;
+   }
+   return result;
+}
+
 //------------------------------------------------------------------------------
 bool CxLogDev_ExtMod::convertWordToApoint (  const TLinkedReg* pLinkedReg  )
 {
    bool result = false;
-   uint16_t mbResponce[5];
    uint16_t reg_num = pModBusMaster->GetRegister( dev_settings.address, pLinkedReg->strtReg, 1, mbResponce );
 
    if (reg_num == 1)
@@ -202,8 +394,6 @@ bool CxLogDev_ExtMod::convertWordToApoint (  const TLinkedReg* pLinkedReg  )
 bool CxLogDev_ExtMod::convertLongToApoint ( const TLinkedReg* pLinkedReg )
 {
    bool result = false;
-   uint16_t mbResponce[5];
-
    uint16_t reg_num = pModBusMaster->GetRegister( dev_settings.address, pLinkedReg->strtReg, 2, mbResponce );
 
    if (reg_num == 2)
@@ -225,7 +415,6 @@ bool CxLogDev_ExtMod::convertLongToApoint ( const TLinkedReg* pLinkedReg )
 bool CxLogDev_ExtMod::convertFloatToApoint( const TLinkedReg* pLinkedReg )
 {
    bool result = false;
-   uint16_t mbResponce[5];
    uint16_t reg_num = pModBusMaster->GetRegister( dev_settings.address, pLinkedReg->strtReg, 2, mbResponce );
 
    if (reg_num == 2)
@@ -247,7 +436,6 @@ bool CxLogDev_ExtMod::convertFloatToApoint( const TLinkedReg* pLinkedReg )
 bool CxLogDev_ExtMod::convertHRegToDpoint ( const TLinkedReg* pLinkedReg )
 {
    bool result = false;
-   uint16_t mbResponce[5];
    uint16_t reg_num = pModBusMaster->GetRegister( dev_settings.address, pLinkedReg->strtReg, 1, mbResponce );
 
    if (reg_num == 1)
@@ -267,7 +455,6 @@ bool CxLogDev_ExtMod::convertHRegToDpoint ( const TLinkedReg* pLinkedReg )
 bool CxLogDev_ExtMod::convertLRegToDpoint ( const TLinkedReg* pLinkedReg )
 {
    bool result = false;
-   uint16_t mbResponce[5];
    uint16_t reg_num = pModBusMaster->GetRegister( dev_settings.address, pLinkedReg->strtReg, 1, mbResponce );
 
    if (reg_num == 1)

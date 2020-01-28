@@ -19,6 +19,10 @@
 #include "provider/CxDataProvider.h"
 //------------------------------------------------------------------------------
 
+#define SUPPORTED_REG_NUM 20
+
+//------------------------------------------------------------------------------
+
 #pragma pack(push, 1)
    // link record processor
    struct TLinkedReg
@@ -36,6 +40,7 @@
      TLinkedReg *pLinkedReg;  // array of the TLinkedReg
    };
 #pragma pack(pop)
+
 //------------------------------------------------------------------------------
 
 class CxLogDev_ExtMod : public CxLogDevice, public CxSysTimer
@@ -53,14 +58,25 @@ class CxLogDev_ExtMod : public CxLogDevice, public CxSysTimer
 
    private :
 
-      TContExtMod_USO  dev_settings;       // USO settings address and so on
-      uint8_t          commError;          // communication error with USO
-      bool             recoveryFlag;       // recovery output after start or after modbus error
-      CxDataProvider   &dataProvider;      // reference on the data provider
-      CxModBusMaster   *pModBusMaster;     // pointer to the interface
+      TContExtMod_USO  dev_settings;                   // USO settings address and so on
+      uint8_t          commError;                      // communication error with USO
+      bool             recoveryFlag;                   // recovery output after start or after modbus error
+      CxDataProvider   &dataProvider;                  // reference on the data provider
+      CxModBusMaster   *pModBusMaster;                 // pointer to the interface
+      uint16_t          firstRegRead;                  // min register number in registers list
+      uint16_t          lastRegRead;                   // max register number in registers list
+      uint16_t          mbResponce[SUPPORTED_REG_NUM]; // static buffer for modbus response
 
+      bool ProcessAllRegisters();
+      // process complex devices
       bool ReadWriteRegisters();
+      // process simple devices
+      bool ReadRegisters();
+      bool WriteRegisters();
+      // read and convert blok of parameters
+      bool ReadRegisterBlock( uint16_t start_reg, uint16_t reg_count );
 
+      // read and convert every parameters
       bool convertWordToApoint ( const TLinkedReg* pLinkedReg );
       bool convertLongToApoint ( const TLinkedReg* pLinkedReg );
       bool convertFloatToApoint( const TLinkedReg* pLinkedReg );
